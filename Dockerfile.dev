@@ -1,0 +1,7 @@
+FROM golang
+
+
+WORKDIR /app
+
+
+CMD ["go", "run", "server.go"]
