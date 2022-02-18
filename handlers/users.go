@@ -9,7 +9,7 @@ import (
 
 func CreateUser(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	body := new(dao.User)
+	body := new(dao.UserInsert)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
@@ -26,4 +26,13 @@ func GetUser(c echo.Context) (err error) {
 		return
 	}
 	return c.JSON(vcago.NewResponse("users", result).Selected())
+}
+
+func ListUser(c echo.Context) (err error) {
+	ctx := c.Request().Context()
+	result := new(dao.UserList)
+	if err = result.List(ctx); err != nil {
+		return
+	}
+	return c.JSON(vcago.NewResponse("user_list", result).Selected())
 }

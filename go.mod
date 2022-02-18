@@ -3,8 +3,8 @@ module pool-user
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.1.4
-	github.com/Viva-con-Agua/vcapool v0.0.3
+	github.com/Viva-con-Agua/vcago v1.1.5
+	github.com/Viva-con-Agua/vcapool v0.0.5
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.6.3
 	go.mongodb.org/mongo-driver v1.8.3
@@ -17,7 +17,6 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v4 v4.3.0 // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
