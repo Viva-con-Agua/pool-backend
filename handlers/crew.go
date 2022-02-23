@@ -20,7 +20,7 @@ func CreateCrew(c echo.Context) (err error) {
 	if err = body.Create(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("address", body).Created())
+	return c.JSON(vcago.NewResponse("crew", body).Created())
 }
 
 func GetCrew(c echo.Context) (err error) {
@@ -29,7 +29,7 @@ func GetCrew(c echo.Context) (err error) {
 	if err = result.Get(ctx, c.Param("id")); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("address", result).Selected())
+	return c.JSON(vcago.NewResponse("crew", result).Selected())
 }
 
 func UpdateCrew(c echo.Context) (err error) {
@@ -41,7 +41,7 @@ func UpdateCrew(c echo.Context) (err error) {
 	if err = body.Update(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("address", body).Updated())
+	return c.JSON(vcago.NewResponse("crew", body).Updated())
 }
 
 func DeleteCrew(c echo.Context) (err error) {
@@ -53,18 +53,18 @@ func DeleteCrew(c echo.Context) (err error) {
 	if err = body.Delete(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("address", body).Deleted())
+	return c.JSON(vcago.NewResponse("crew", body).Deleted())
 }
 
 func ListCrew(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	body := new(dao.AddressQuery)
+	body := new(dao.CrewQuery)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	result := new(dao.AddressList)
+	result := new(dao.CrewList)
 	if err = result.Get(ctx, body.Filter()); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("address_list", result).Selected())
+	return c.JSON(vcago.NewResponse("crew_list", result).Selected())
 }

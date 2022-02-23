@@ -34,7 +34,6 @@ func NewProfile(user *vcago.User) *Profile {
 		FirstName: user.Profile.FirstName,
 		LastName:  user.Profile.LastName,
 		FullName:  user.Profile.FullName,
-		Gender:    user.Profile.Gender,
 		UserID:    user.ID,
 	}
 }

@@ -23,7 +23,7 @@ func (i *Crew) Create(ctx context.Context) (err error) {
 		i.ID = uuid.New().String()
 	}
 	i.Modified = vcago.NewModified()
-	err = UserCollection.InsertOne(ctx, &i)
+	err = CrewsCollection.InsertOne(ctx, &i)
 	return
 }
 
@@ -58,6 +58,6 @@ func (i *CrewQuery) Filter() bson.M {
 type CrewList []Crew
 
 func (i *CrewList) Get(ctx context.Context, filter bson.M) (err error) {
-	err = CrewsCollection.Find(ctx, filter, &i)
+	err = CrewsCollection.Find(ctx, filter, i)
 	return
 }

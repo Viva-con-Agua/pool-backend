@@ -1,6 +1,6 @@
 .PHONY: build up restart logs stage prod
 
-repo=vivaconagua/auth-service
+repo=vivaconagua/pool-user
 
 
 
