@@ -11,7 +11,7 @@ import (
 type UserInsert struct {
 	ID       string         `json:"id,omitempty" bson:"_id"`
 	Email    string         `json:"email" bson:"email" validate:"required,email"`
-	Roles    string         `json:"roles" bson:"roles"`
+	Roles    vcago.RoleList `json:"roles" bson:"roles"`
 	Country  string         `json:"country" bson:"country"`
 	Modified vcago.Modified `json:"modified" bson:"modified"`
 }

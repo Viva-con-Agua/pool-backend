@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -23,7 +22,6 @@ func CallbackHandler(c echo.Context) (err error) {
 	}
 	userDAO := new(dao.User)
 	err = userDAO.Get(ctx, tokenUser.ID)
-	log.Print(err)
 	if vcago.MongoNoDocuments(err) {
 		if userDAO, err = dao.CreateUserFromToken(ctx, tokenUser); err != nil {
 			return
