@@ -64,18 +64,24 @@ func (i *User) Get(ctx context.Context, id string) (err error) {
 		return
 	}
 	profile := new(Profile)
-	err = ProfilesCollection.FindOne(ctx, bson.M{"user_id": id}, &profile)
+	err = ProfilesCollection.FindOne(ctx, bson.M{"user_id": id}, profile)
 	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
 	address := new(Address)
-	err = AddressesCollection.FindOne(ctx, bson.M{"user_id": id}, &address)
+	err = AddressesCollection.FindOne(ctx, bson.M{"user_id": id}, address)
+	if err != nil && !vcago.MongoNoDocuments(err) {
+		return
+	}
+	userCrew := new(UserCrew)
+	err = UserCrewCollection.FindOne(ctx, bson.M{"user_id": id}, userCrew)
 	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
 	err = nil
 	i.Profile = vcapool.Profile(*profile)
 	i.Address = vcapool.Address(*address)
+	i.Crew = vcapool.UserCrew(*userCrew)
 	return
 }
 

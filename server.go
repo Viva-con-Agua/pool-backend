@@ -23,6 +23,10 @@ func main() {
 	login.GET("/refresh", handlers.RefreshHandler, vcapool.RefreshCookieConfig())
 	api := e.Group("/users")
 
+	api.POST("/crew", handlers.CreateUserCrew, vcapool.AccessCookieConfig())
+
+	api.GET("/active/request", handlers.CreateUserActive, vcapool.AccessCookieConfig())
+
 	api.Use(vcapool.AccessCookieConfig())
 	address := api.Group("/address")
 	address.POST("", handlers.CreateAddress)
