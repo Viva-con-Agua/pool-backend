@@ -8,13 +8,25 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type Crew struct {
-	ID       string         `json:"id,omitempty" bson:"_id"`
-	Name     string         `json:"name" bson:"name"`
-	City     string         `json:"city" bson:"city"`
-	Country  string         `json:"country" bson:"country"`
-	Modified vcago.Modified `json:"modified" bson:"modified"`
-}
+type (
+	Crew struct {
+		ID       string         `json:"id,omitempty" bson:"_id"`
+		Name     string         `json:"name" bson:"name"`
+		Cities   []City         `json:"cities" bson:"cities"`
+		Modified vcago.Modified `json:"modified" bson:"modified"`
+	}
+	City struct {
+		City        string   `json:"city" bson:"city"`
+		Country     string   `json:"country" bson:"country"`
+		CountryCode string   `json:"country_code" bson:"country_code"`
+		PlaceID     string   `json:"place_id" bson:"place_id"`
+		Position    Position `json:"position" bson:"position"`
+	}
+	Position struct {
+		Lat float64 `json:"lat" bson:"lat"`
+		Lng float64 `json:"lin" bson:"lin"`
+	}
+)
 
 var CrewsCollection = Database.Collection("crews").CreateIndex("name", true)
 
