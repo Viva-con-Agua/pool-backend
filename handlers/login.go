@@ -6,6 +6,7 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var HydraClient = vcago.NewHydraClient()
@@ -21,14 +22,26 @@ func CallbackHandler(c echo.Context) (err error) {
 		return
 	}
 	userDAO := new(dao.User)
-	err = userDAO.Get(ctx, tokenUser.ID)
+	if err = userDAO.Get(ctx, bson.M{"_id": tokenUser.ID}); err != nil && !vcago.MongoNoDocuments(err) {
+		return
+	}
 	if vcago.MongoNoDocuments(err) {
-		if userDAO, err = dao.CreateUserFromToken(ctx, tokenUser); err != nil {
+		userInsert := dao.NewUser(tokenUser)
+		if err = userInsert.Create(ctx); err != nil {
+			return
+		}
+		if err = userDAO.Get(ctx, bson.M{"_id": tokenUser.ID}); err != nil && !vcago.MongoNoDocuments(err) {
 			return
 		}
 	}
-	if err != nil {
-		return
+	if tokenUser.CheckUpdate(userDAO.LastUpdate) {
+		userInsert := dao.ConvertUser(tokenUser, &userDAO.Modified)
+		if err = userInsert.Update(ctx); err != nil {
+			return
+		}
+		if err = userDAO.Get(ctx, bson.M{"_id": tokenUser.ID}); err != nil {
+			return
+		}
 	}
 	user := vcapool.User(*userDAO)
 	token := new(vcapool.AuthToken)
@@ -47,7 +60,7 @@ func RefreshHandler(c echo.Context) (err error) {
 		return
 	}
 	userDAO := new(dao.User)
-	if err = userDAO.Get(ctx, userID); err != nil {
+	if err = userDAO.Get(ctx, bson.M{"_id": userID}); err != nil {
 		return
 	}
 	user := vcapool.User(*userDAO)

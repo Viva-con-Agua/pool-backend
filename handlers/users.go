@@ -5,6 +5,7 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func CreateUser(c echo.Context) (err error) {
@@ -22,7 +23,7 @@ func CreateUser(c echo.Context) (err error) {
 func GetUser(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	result := new(dao.User)
-	if err = result.Get(ctx, c.Param("id")); err != nil {
+	if err = result.Get(ctx, bson.M{"_id": c.Param("id")}); err != nil {
 		return
 	}
 	return c.JSON(vcago.NewResponse("users", result).Selected())

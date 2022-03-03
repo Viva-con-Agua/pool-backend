@@ -21,16 +21,24 @@ func main() {
 	login := e.Group("/auth")
 	login.POST("/callback", handlers.CallbackHandler)
 	login.GET("/refresh", handlers.RefreshHandler, vcapool.RefreshCookieConfig())
-	api := e.Group("/users")
+	users := e.Group("/users")
+	users.GET("", handlers.ListUser, vcapool.AccessCookieConfig())
 
-	api.POST("/crew", handlers.CreateUserCrew, vcapool.AccessCookieConfig())
+	crewUser := users.Group("/crew")
+	crewUser.POST("", handlers.CreateUserCrew, vcapool.AccessCookieConfig())
 
-	api.GET("/active/request", handlers.CreateUserActive, vcapool.AccessCookieConfig())
+	roles := users.Group("/role")
+	roles.POST("", handlers.RoleCreate, vcapool.AccessCookieConfig())
+	roles.DELETE("", handlers.RoleDelete, vcapool.AccessCookieConfig())
 
-	api.Use(vcapool.AccessCookieConfig())
-	address := api.Group("/address")
-	address.POST("", handlers.CreateAddress)
-	address.PUT("", handlers.UpdateAddress)
+	activeUser := users.Group("/active")
+	activeUser.GET("/request", handlers.RequestUserActive, vcapool.AccessCookieConfig())
+	activeUser.POST("/confirm", handlers.ConfirmUserActive, vcapool.AccessCookieConfig())
+	activeUser.POST("/reject", handlers.RejectUserActive, vcapool.AccessCookieConfig())
+
+	address := users.Group("/address")
+	address.POST("", handlers.CreateAddress, vcapool.AccessCookieConfig())
+	address.PUT("", handlers.UpdateAddress, vcapool.AccessCookieConfig())
 
 	crews := e.Group("/crews")
 	crews.POST("", handlers.CreateCrew)

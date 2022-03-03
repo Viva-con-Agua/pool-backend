@@ -29,16 +29,7 @@ type (
 
 type Profile vcapool.Profile
 
-func NewProfile(user *vcago.User) *Profile {
-	return &Profile{
-		FirstName: user.Profile.FirstName,
-		LastName:  user.Profile.LastName,
-		FullName:  user.Profile.FullName,
-		UserID:    user.ID,
-	}
-}
-
-var ProfilesCollection = Database.Collection("profiles")
+var ProfilesCollection = Database.Collection("profiles").CreateIndex("user_id", true)
 
 func (i *Profile) Create(ctx context.Context) (err error) {
 	i.ID = uuid.NewString()

@@ -24,6 +24,7 @@ type Address struct {
 
 type Address vcapool.Address
 
+/*
 func (i *Address) ToVca() *vcapool.Address {
 	return &vcapool.Address{
 		ID:          i.ID,
@@ -36,7 +37,7 @@ func (i *Address) ToVca() *vcapool.Address {
 		UserID:      i.UserID,
 		Modified:    i.Modified,
 	}
-}
+}*/
 
 var AddressesCollection = Database.Collection("addresses").CreateIndex("user_id", true)
 
