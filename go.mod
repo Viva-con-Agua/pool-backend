@@ -47,6 +47,6 @@ require (
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 )
 
-replace github.com/Viva-con-Agua/vcapool => /home/dls/Projects/go/src/github.com/Viva-con-Agua/vcapool
+//replace github.com/Viva-con-Agua/vcapool => /home/dls/Projects/go/src/github.com/Viva-con-Agua/vcapool
 
-replace github.com/Viva-con-Agua/vcago => /home/dls/Projects/go/src/github.com/Viva-con-Agua/vcago
+//replace github.com/Viva-con-Agua/vcago => /home/dls/Projects/go/src/github.com/Viva-con-Agua/vcago
