@@ -69,3 +69,8 @@ func (i *UserActiveRequest) Reject(ctx context.Context) (r *UserActive, err erro
 	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
 	return
 }
+
+func (i *UserActive) Permission(ctx context.Context, filter bson.M) (err error) {
+	err = UserActiveCollection.Permission(ctx, filter, i)
+	return
+}

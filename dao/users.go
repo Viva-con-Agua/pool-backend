@@ -109,3 +109,7 @@ func (i *UserList) List(ctx context.Context) (err error) {
 	err = UserCollection.Aggregate(ctx, pipe.Pipe, i)
 	return
 }
+func (i *User) Permission(ctx context.Context, filter bson.M) (err error) {
+	err = UserCollection.Permission(ctx, filter, i)
+	return
+}

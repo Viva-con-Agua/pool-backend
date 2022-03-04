@@ -33,21 +33,34 @@ func RequestUserActive(c echo.Context) (err error) {
 	return c.JSON(vcago.NewResponse("user_active", result).Created())
 }
 
+//ConfirmUserActive is the webapp handler for confirm the active state of an user.
 func ConfirmUserActive(c echo.Context) (err error) {
 	ctx := c.Request().Context()
+	//validate and bind body
 	body := new(dao.UserActiveRequest)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	/*
-		user := new(vcapool.User)
-		if user, err = vcapool.AccessCookieUser(c); err != nil {
-			return
-		}*/
+	//get requested user from token
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
+		return
+	}
+	//check if requested user has the network or operation permission
+	if !userReq.PoolRoles.Validate("network;operation") {
+		return vcago.NewStatusPermissionDenied()
+	}
+	//check if requested user and the target users has the same crew
+	userCrew := new(dao.UserCrew)
+	if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew}); err != nil {
+		return
+	}
+	//confirm active state
 	result := new(dao.UserActive)
 	if result, err = body.Confirm(ctx); err != nil {
 		return
 	}
+	//response the result as vcago.Response
 	return c.JSON(vcago.NewResponse("user_active", result).Executed())
 }
 

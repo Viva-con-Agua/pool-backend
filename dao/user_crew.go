@@ -25,3 +25,8 @@ func (i *UserCrewCreateRequest) Create(ctx context.Context, userID string) (r *U
 	err = UserCrewCollection.InsertOne(ctx, r)
 	return
 }
+
+func (i *UserCrew) Permission(ctx context.Context, filter bson.M) (err error) {
+	err = UserCrewCollection.Permission(ctx, filter, i)
+	return
+}
