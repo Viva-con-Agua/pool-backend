@@ -24,6 +24,10 @@ func main() {
 	users := e.Group("/users")
 	users.GET("", handlers.ListUser, vcapool.AccessCookieConfig())
 
+	profile := users.Group("/profile")
+	profile.POST("", handlers.ProfileCreate, vcapool.AccessCookieConfig())
+	profile.PUT("", handlers.ProfileUpdate, vcapool.AccessCookieConfig())
+
 	crewUser := users.Group("/crew")
 	crewUser.POST("", handlers.CreateUserCrew, vcapool.AccessCookieConfig())
 

@@ -55,12 +55,12 @@ func RoleDelete(c echo.Context) (err error) {
 	if err = user.Get(ctx, bson.M{"_id": body.UserID}); err != nil {
 		return
 	}
-	var role *dao.Role
-	if err = role.Get(ctx, bson.M{"name": body.Role}); err != nil {
+	role := new(dao.Role)
+	if err = role.Get(ctx, bson.M{"name": body.Role, "user_id": body.UserID}); err != nil {
 		return
 	}
 	if !userReq.Roles.CheckRoot((*vcago.Role)(role)) && !userReq.PoolRoles.CheckRoot((*vcago.Role)(role)) {
-		return vcago.NewValidationError("no permission for set this role")
+		return vcago.NewValidationError("no permission for delete this role")
 	}
 	if err = role.Delete(ctx); err != nil {
 		return

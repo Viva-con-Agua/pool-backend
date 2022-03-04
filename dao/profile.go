@@ -9,24 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-/*
-type (
-	Profile struct {
-		ID          string `bson:"_id" json:"id"`
-		FirstName   string `bson:"first_name" json:"first_name" validate:"required"`
-		LastName    string `bson:"last_name" json:"last_name" validate:"required"`
-		FullName    string `bson:"full_name" json:"full_name"`
-		DisplayName string `bson:"display_name" json:"display_name"`
-		Gender      string `bson:"gender" json:"gender"`
-		Avatar      Avatar `bson:"avatar" json:"avatar"`
-		UserID      string `bson:"user_id" json:"user_id"`
-	}
-	Avatar struct {
-		URL  string `bson:"url" json:"url"`
-		Type string `bson:"type" json:"type"`
-	}
-)*/
-
 type Profile vcapool.Profile
 
 var ProfilesCollection = Database.Collection("profiles").CreateIndex("user_id", true)
