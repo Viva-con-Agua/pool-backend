@@ -70,6 +70,20 @@ func RejectUserActive(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
+	//get requested user from token
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
+		return
+	}
+	//check if requested user has the network or operation permission
+	if !userReq.PoolRoles.Validate("network;operation") {
+		return vcago.NewStatusPermissionDenied()
+	}
+	//check if requested user and the target users has the same crew
+	userCrew := new(dao.UserCrew)
+	if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew}); err != nil {
+		return
+	}
 	result := new(dao.UserActive)
 	if result, err = body.Reject(ctx); err != nil {
 		return

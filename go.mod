@@ -3,7 +3,7 @@ module pool-user
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.1.13
+	github.com/Viva-con-Agua/vcago v1.1.15
 	github.com/Viva-con-Agua/vcapool v0.0.12
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.6.3
