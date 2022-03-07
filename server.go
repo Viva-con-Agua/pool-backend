@@ -39,6 +39,7 @@ func main() {
 	activeUser.GET("/request", handlers.RequestUserActive, vcapool.AccessCookieConfig())
 	activeUser.POST("/confirm", handlers.ConfirmUserActive, vcapool.AccessCookieConfig())
 	activeUser.POST("/reject", handlers.RejectUserActive, vcapool.AccessCookieConfig())
+	activeUser.GET("/withdraw", handlers.WithdrawUserActive, vcapool.AccessCookieConfig())
 
 	address := users.Group("/address")
 	address.POST("", handlers.CreateAddress, vcapool.AccessCookieConfig())

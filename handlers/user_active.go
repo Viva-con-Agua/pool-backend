@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"pool-user/dao"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
@@ -15,7 +17,9 @@ func RequestUserActive(c echo.Context) (err error) {
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
-
+	if time.Unix(user.Modified.Created, 0).AddDate(0, 6, 0).Unix() < time.Now().Unix() {
+		return vcago.NewStatusBadRequest(errors.New("create_date"))
+	}
 	result := new(dao.UserActive)
 	if err = result.Get(ctx, bson.M{"user_id": user.ID}); err != nil && !vcago.MongoNoDocuments(err) {
 		return
@@ -86,6 +90,22 @@ func RejectUserActive(c echo.Context) (err error) {
 	}
 	result := new(dao.UserActive)
 	if result, err = body.Reject(ctx); err != nil {
+		return
+	}
+	return c.JSON(vcago.NewResponse("user_active", result).Executed())
+}
+
+func WithdrawUserActive(c echo.Context) (err error) {
+	ctx := c.Request().Context()
+	user := new(vcapool.User)
+	if user, err = vcapool.AccessCookieUser(c); err != nil {
+		return
+	}
+	result := new(dao.UserActive)
+	if err = result.Get(ctx, bson.M{"user_id": user.ID}); err != nil {
+		return
+	}
+	if result, err = result.Withdraw(ctx); err != nil {
 		return
 	}
 	return c.JSON(vcago.NewResponse("user_active", result).Executed())

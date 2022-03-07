@@ -40,6 +40,14 @@ func (i *UserActive) Request(ctx context.Context, user *vcapool.User) (err error
 
 }
 
+func (i *UserActive) Withdraw(ctx context.Context) (r *UserActive, err error) {
+	ua := (*vcapool.UserActive)(i)
+	ua.Withdraw()
+	r = (*UserActive)(ua)
+	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	return
+}
+
 type UserActiveRequest struct {
 	UserID string `json:"user_id"`
 	State  bool   `json:"state"`
@@ -53,7 +61,7 @@ func (i *UserActiveRequest) Confirm(ctx context.Context) (r *UserActive, err err
 	if !userActive.IsRequested() {
 		return r, vcago.NewStatusBadRequest(errors.New("active state is not requested"))
 	}
-	userActive.Active()
+	userActive.Confirmed()
 	r = (*UserActive)(userActive)
 	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
 	return
