@@ -88,12 +88,19 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 	if err = PoolRoleCollection.Find(ctx, bson.M{"user_id": i.ID}, poolRoles); err != nil {
 		return
 	}
+	avatar := new(vcapool.Avatar)
+	err = AvatarCollection.FindOne(ctx, bson.M{"user_id": i.ID}, avatar)
+	if err != nil && !vcago.MongoNoDocuments(err) {
+		return
+	}
 	err = nil
 	i.Profile = vcapool.Profile(*profile)
 	i.Address = vcapool.Address(*address)
 	i.Crew = vcapool.UserCrew(*userCrew)
 	i.Active = vcapool.UserActive(*userActive)
 	i.PoolRoles = *poolRoles
+	i.Avatar = *avatar
+
 	return
 }
 
@@ -106,6 +113,7 @@ func (i *UserList) List(ctx context.Context) (err error) {
 	pipe.AddModelAt(UserCrewCollection.Name, "_id", "user_id", "crew")
 	pipe.AddModelAt(UserActiveCollection.Name, "_id", "user_id", "active")
 	pipe.AddListAt(PoolRoleCollection.Name, "_id", "user_id", "pool_roles")
+	pipe.AddModelAt(AvatarCollection.Name, "_id", "user_id", "avatar")
 	err = UserCollection.Aggregate(ctx, pipe.Pipe, i)
 	return
 }

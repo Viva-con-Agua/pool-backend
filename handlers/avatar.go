@@ -11,7 +11,7 @@ import (
 
 func CreateAvatar(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	body := new(dao.Profile)
+	body := new(dao.Avatar)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
@@ -28,7 +28,7 @@ func CreateAvatar(c echo.Context) (err error) {
 
 func DeleteAvatar(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	body := new(dao.Profile)
+	body := new(dao.Avatar)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}

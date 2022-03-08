@@ -30,3 +30,14 @@ func (i *UserCrew) Permission(ctx context.Context, filter bson.M) (err error) {
 	err = UserCrewCollection.Permission(ctx, filter, i)
 	return
 }
+
+func (i *UserCrew) Update(ctx context.Context) (err error) {
+	i.Modified.Update()
+	err = UserCrewCollection.UpdateOne(ctx, bson.M{"user_id": i.UserID}, i)
+	return
+}
+
+func (i *UserCrew) Delete(ctx context.Context, filter bson.M) (err error) {
+	err = UserCrewCollection.DeleteOne(ctx, filter)
+	return
+}
