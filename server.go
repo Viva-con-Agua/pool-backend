@@ -45,6 +45,10 @@ func main() {
 	address.POST("", handlers.CreateAddress, vcapool.AccessCookieConfig())
 	address.PUT("", handlers.UpdateAddress, vcapool.AccessCookieConfig())
 
+	avatar := users.Group("/avatar")
+	avatar.POST("", handlers.CreateAvatar, vcapool.AccessCookieConfig())
+	avatar.DELETE("", handlers.DeleteAddress, vcapool.AccessCookieConfig())
+
 	crews := e.Group("/crews")
 	crews.POST("", handlers.CreateCrew)
 	crews.GET("", handlers.ListCrew)
