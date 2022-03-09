@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"pool-user/dao"
-	"time"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
@@ -17,12 +16,12 @@ func RequestUserActive(c echo.Context) (err error) {
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
-	if time.Unix(user.Modified.Created, 0).AddDate(0, 6, 0).Unix() < time.Now().Unix() {
-		return vcago.NewStatusBadRequest(errors.New("create_date"))
-	}
 	result := new(dao.UserActive)
 	if err = result.Get(ctx, bson.M{"user_id": user.ID}); err != nil && !vcago.MongoNoDocuments(err) {
 		return
+	}
+	if user.Crew.CrewID == "" {
+		return vcago.NewStatusBadRequest(errors.New("not an crew member"))
 	}
 	if vcago.MongoNoDocuments(err) {
 		err = nil
@@ -51,13 +50,15 @@ func ConfirmUserActive(c echo.Context) (err error) {
 		return
 	}
 	//check if requested user has the network or operation permission
-	if !userReq.PoolRoles.Validate("network;operation") {
+	if !userReq.PoolRoles.Validate("network;operation") && !userReq.Roles.Validate("employee") {
 		return vcago.NewStatusPermissionDenied()
 	}
 	//check if requested user and the target users has the same crew
-	userCrew := new(dao.UserCrew)
-	if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew}); err != nil {
-		return
+	if !userReq.Roles.Validate("employee") {
+		userCrew := new(dao.UserCrew)
+		if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew.CrewID}); err != nil {
+			return
+		}
 	}
 	//confirm active state
 	result := new(dao.UserActive)
@@ -80,18 +81,25 @@ func RejectUserActive(c echo.Context) (err error) {
 		return
 	}
 	//check if requested user has the network or operation permission
-	if !userReq.PoolRoles.Validate("network;operation") {
+	if !userReq.PoolRoles.Validate("network;operation") && !userReq.Roles.Validate("employee") {
 		return vcago.NewStatusPermissionDenied()
 	}
 	//check if requested user and the target users has the same crew
-	userCrew := new(dao.UserCrew)
-	if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew}); err != nil {
-		return
+	if !userReq.Roles.Validate("employee") {
+		userCrew := new(dao.UserCrew)
+		if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew.CrewID}); err != nil {
+			return
+		}
 	}
 	result := new(dao.UserActive)
-	if result, err = body.Reject(ctx); err != nil {
+	if result, err = result.Reject(ctx, body.UserID); err != nil {
 		return
 	}
+	nvm := new(dao.UserNVM)
+	if nvm, err = nvm.Reject(ctx, body.UserID); err != nil {
+		return
+	}
+
 	return c.JSON(vcago.NewResponse("user_active", result).Executed())
 }
 
@@ -106,6 +114,13 @@ func WithdrawUserActive(c echo.Context) (err error) {
 		return
 	}
 	if result, err = result.Withdraw(ctx); err != nil {
+		return
+	}
+	result2 := new(dao.UserNVM)
+	if err = result2.Get(ctx, bson.M{"user_id": user.ID}); err != nil {
+		return
+	}
+	if result2, err = result2.Withdraw(ctx); err != nil {
 		return
 	}
 	return c.JSON(vcago.NewResponse("user_active", result).Executed())

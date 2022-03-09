@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -31,6 +32,9 @@ func RoleCreate(c echo.Context) (err error) {
 	var role *vcago.Role
 	if role, err = vcapool.NewRole(body.Role, user.ID); err != nil {
 		return
+	}
+	if user.NVM.Status != "confirmed" {
+		return vcago.NewStatusBadRequest(errors.New("nvm required"))
 	}
 	if !userReq.Roles.CheckRoot(role) && !userReq.PoolRoles.CheckRoot(role) {
 		return vcago.NewValidationError("no permission for set this role")

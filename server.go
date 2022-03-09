@@ -21,6 +21,8 @@ func main() {
 	login := e.Group("/auth")
 	login.POST("/callback", handlers.CallbackHandler)
 	login.GET("/refresh", handlers.RefreshHandler, vcapool.RefreshCookieConfig())
+	login.GET("/logout", handlers.LogoutHandler, vcapool.AccessCookieConfig())
+
 	users := e.Group("/users")
 	users.GET("", handlers.ListUser, vcapool.AccessCookieConfig())
 
@@ -42,6 +44,11 @@ func main() {
 	activeUser.POST("/confirm", handlers.ConfirmUserActive, vcapool.AccessCookieConfig())
 	activeUser.POST("/reject", handlers.RejectUserActive, vcapool.AccessCookieConfig())
 	activeUser.GET("/withdraw", handlers.WithdrawUserActive, vcapool.AccessCookieConfig())
+
+	nvmUser := users.Group("/nvm")
+	nvmUser.GET("/confirm", handlers.ConfirmUserNVM, vcapool.AccessCookieConfig())
+	nvmUser.POST("/reject", handlers.RejectUserNVM, vcapool.AccessCookieConfig())
+	nvmUser.GET("/withdraw", handlers.WithdrawUserNVM, vcapool.AccessCookieConfig())
 
 	address := users.Group("/address")
 	address.POST("", handlers.CreateAddress, vcapool.AccessCookieConfig())

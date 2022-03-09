@@ -4,6 +4,7 @@ import (
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,10 +14,13 @@ func CreateCrew(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	/*user := new(vcapool.User)
-	if user, err = vcapool.AccessCookieUser(c); err != nil {
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
-	}*/
+	}
+	if !userReq.Roles.Validate("employee") {
+		return vcago.NewStatusPermissionDenied()
+	}
 	if err = body.Create(ctx); err != nil {
 		return
 	}
@@ -38,6 +42,13 @@ func UpdateCrew(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
+		return
+	}
+	if !userReq.Roles.Validate("employee") {
+		return vcago.NewStatusPermissionDenied()
+	}
 	if err = body.Update(ctx); err != nil {
 		return
 	}
@@ -49,6 +60,13 @@ func DeleteCrew(c echo.Context) (err error) {
 	body := new(dao.Crew)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
+	}
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
+		return
+	}
+	if !userReq.Roles.Validate("employee") {
+		return vcago.NewStatusPermissionDenied()
 	}
 	if err = body.Delete(ctx); err != nil {
 		return

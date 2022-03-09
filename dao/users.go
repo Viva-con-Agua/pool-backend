@@ -84,6 +84,11 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
+	userNVM := new(UserNVM)
+	err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": i.ID}, userNVM)
+	if err != nil && !vcago.MongoNoDocuments(err) {
+		return
+	}
 	poolRoles := new(vcago.RoleList)
 	if err = PoolRoleCollection.Find(ctx, bson.M{"user_id": i.ID}, poolRoles); err != nil {
 		return
@@ -98,6 +103,7 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 	i.Address = vcapool.Address(*address)
 	i.Crew = vcapool.UserCrew(*userCrew)
 	i.Active = vcapool.UserActive(*userActive)
+	i.NVM = vcapool.UserNVM(*userNVM)
 	i.PoolRoles = *poolRoles
 	i.Avatar = *avatar
 
@@ -112,6 +118,7 @@ func (i *UserList) List(ctx context.Context) (err error) {
 	pipe.AddModelAt(ProfilesCollection.Name, "_id", "user_id", "profile")
 	pipe.AddModelAt(UserCrewCollection.Name, "_id", "user_id", "crew")
 	pipe.AddModelAt(UserActiveCollection.Name, "_id", "user_id", "active")
+	pipe.AddModelAt(UserNVMCollection.Name, "_id", "user_id", "nvm")
 	pipe.AddListAt(PoolRoleCollection.Name, "_id", "user_id", "pool_roles")
 	pipe.AddModelAt(AvatarCollection.Name, "_id", "user_id", "avatar")
 	err = UserCollection.Aggregate(ctx, pipe.Pipe, i)

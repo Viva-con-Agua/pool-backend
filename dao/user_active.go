@@ -14,9 +14,6 @@ type UserActive vcapool.UserActive
 var UserActiveCollection = Database.Collection("user_active").CreateIndex("user_id", true)
 
 func (i *UserActive) Create(ctx context.Context, user *vcapool.User) (r *UserActive, err error) {
-	if user.Crew.CrewID == "" {
-		return nil, vcago.NewStatusBadRequest(errors.New("not an crew member"))
-	}
 	ua := vcapool.NewUserActive(user.ID)
 	r = (*UserActive)(ua)
 	err = UserActiveCollection.InsertOne(ctx, r)
@@ -67,9 +64,9 @@ func (i *UserActiveRequest) Confirm(ctx context.Context) (r *UserActive, err err
 	return
 }
 
-func (i *UserActiveRequest) Reject(ctx context.Context) (r *UserActive, err error) {
+func (i *UserActive) Reject(ctx context.Context, id string) (r *UserActive, err error) {
 	userActive := new(vcapool.UserActive)
-	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": i.UserID}, userActive); err != nil {
+	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": id}, userActive); err != nil {
 		return
 	}
 	userActive.Rejected()

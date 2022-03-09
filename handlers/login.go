@@ -74,5 +74,11 @@ func RefreshHandler(c echo.Context) (err error) {
 }
 
 func LogoutHandler(c echo.Context) (err error) {
-	return
+	user := new(vcapool.User)
+	if user, err = vcapool.AccessCookieUser(c); err != nil {
+		return
+	}
+	c.SetCookie(vcapool.ResetAccessCookie())
+	c.SetCookie(vcapool.ResetRefreshCookie())
+	return c.JSON(vcago.NewResponse("logout", user.ID).Executed())
 }
