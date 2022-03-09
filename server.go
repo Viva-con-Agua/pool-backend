@@ -30,6 +30,8 @@ func main() {
 
 	crewUser := users.Group("/crew")
 	crewUser.POST("", handlers.CreateUserCrew, vcapool.AccessCookieConfig())
+	crewUser.PUT("", handlers.UpdateUserCrew, vcapool.AccessCookieConfig())
+	crewUser.DELETE("", handlers.DeleteUserCrew, vcapool.AccessCookieConfig())
 
 	roles := users.Group("/role")
 	roles.POST("", handlers.RoleCreate, vcapool.AccessCookieConfig())
