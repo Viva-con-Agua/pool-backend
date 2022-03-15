@@ -95,11 +95,17 @@ func RejectUserActive(c echo.Context) (err error) {
 	if result, err = result.Reject(ctx, body.UserID); err != nil {
 		return
 	}
-	nvm := new(dao.UserNVM)
-	if nvm, err = nvm.Reject(ctx, body.UserID); err != nil {
+	result2 := new(dao.UserNVM)
+	err = result2.Get(ctx, bson.M{"user_id": userReq.ID})
+	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
-
+	if !vcago.MongoNoDocuments(err) {
+		err = nil
+		if result2, err = result2.Withdraw(ctx); err != nil {
+			return
+		}
+	}
 	return c.JSON(vcago.NewResponse("user_active", result).Executed())
 }
 
@@ -117,11 +123,15 @@ func WithdrawUserActive(c echo.Context) (err error) {
 		return
 	}
 	result2 := new(dao.UserNVM)
-	if err = result2.Get(ctx, bson.M{"user_id": user.ID}); err != nil {
+	err = result2.Get(ctx, bson.M{"user_id": user.ID})
+	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
-	if result2, err = result2.Withdraw(ctx); err != nil {
-		return
+	if !vcago.MongoNoDocuments(err) {
+		err = nil
+		if result2, err = result2.Withdraw(ctx); err != nil {
+			return
+		}
 	}
 	return c.JSON(vcago.NewResponse("user_active", result).Executed())
 }

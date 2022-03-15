@@ -32,11 +32,11 @@ func UpdateUserCrew(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	user := new(vcapool.User)
-	if user, err = vcapool.AccessCookieUser(c); err != nil {
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
-	if user.ID != body.UserID {
+	if userReq.ID != body.UserID {
 		return vcago.NewStatusPermissionDenied()
 	}
 	if err = body.Update(ctx); err != nil {
@@ -44,32 +44,63 @@ func UpdateUserCrew(c echo.Context) (err error) {
 	}
 	//active state
 	result := new(dao.UserActive)
-	if err = result.Get(ctx, bson.M{"user_id": user.ID}); err != nil {
+	err = result.Get(ctx, bson.M{"user_id": userReq.ID})
+	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
-	if result, err = result.Withdraw(ctx); err != nil {
+	if !vcago.MongoNoDocuments(err) {
+		err = nil
+		if result, err = result.Withdraw(ctx); err != nil {
+			return
+		}
+	}
+	result2 := new(dao.UserNVM)
+	err = result2.Get(ctx, bson.M{"user_id": userReq.ID})
+	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
+	}
+	if !vcago.MongoNoDocuments(err) {
+		err = nil
+		if result2, err = result2.Withdraw(ctx); err != nil {
+			return
+		}
 	}
 	return c.JSON(vcago.NewResponse("user_crew", body).Updated())
 }
 
 func DeleteUserCrew(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	user := new(vcapool.User)
-	if user, err = vcapool.AccessCookieUser(c); err != nil {
+	userReq := new(vcapool.User)
+	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
 	result := new(dao.UserCrew)
-	if err = result.Delete(ctx, bson.M{"user_id": user.ID}); err != nil {
+	if err = result.Delete(ctx, bson.M{"user_id": userReq.ID}); err != nil {
 		return
 	}
 	//active state
+	//active state
 	resultA := new(dao.UserActive)
-	if err = resultA.Get(ctx, bson.M{"user_id": user.ID}); err != nil {
+	err = resultA.Get(ctx, bson.M{"user_id": userReq.ID})
+	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
-	if resultA, err = resultA.Withdraw(ctx); err != nil {
+	if !vcago.MongoNoDocuments(err) {
+		err = nil
+		if resultA, err = resultA.Withdraw(ctx); err != nil {
+			return
+		}
+	}
+	result2 := new(dao.UserNVM)
+	err = result2.Get(ctx, bson.M{"user_id": userReq.ID})
+	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
+	}
+	if !vcago.MongoNoDocuments(err) {
+		err = nil
+		if result2, err = result2.Withdraw(ctx); err != nil {
+			return
+		}
 	}
 	return c.JSON(vcago.NewResponse("user_crew", result).Deleted())
 

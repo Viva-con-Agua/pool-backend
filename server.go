@@ -12,9 +12,9 @@ func main() {
 	e := echo.New()
 	e.Debug = false
 	// Middleware
-	e.Use(vcago.Logger.Init())
+	e.Use(vcago.Logger.Init("pool-user"))
 	e.Use(vcago.CORS.Init())
-
+	vcago.Nats.LoadEnv().Connect()
 	//error
 	e.HTTPErrorHandler = vcago.HTTPErrorHandler
 	e.Validator = vcago.JSONValidator
