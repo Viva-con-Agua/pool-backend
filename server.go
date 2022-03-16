@@ -60,8 +60,8 @@ func main() {
 
 	crews := e.Group("/crews")
 	crews.POST("", handlers.CreateCrew, vcago.AccessCookieConfig())
-	crews.GET("", handlers.ListCrew)
-	crews.GET("/:id", handlers.GetCrew)
+	crews.GET("", handlers.ListCrew, vcago.AccessCookieConfig())
+	crews.GET("/:id", handlers.GetCrew, vcago.AccessCookieConfig())
 	crews.PUT("", handlers.UpdateCrew, vcago.AccessCookieConfig())
 	crews.DELETE("", handlers.DeleteCrew, vcago.AccessCookieConfig())
 
