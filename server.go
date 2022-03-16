@@ -14,7 +14,7 @@ func main() {
 	// Middleware
 	e.Use(vcago.Logger.Init("pool-user"))
 	e.Use(vcago.CORS.Init())
-	vcago.Nats.LoadEnv().Connect()
+	vcago.Nats.Connect()
 	//error
 	e.HTTPErrorHandler = vcago.HTTPErrorHandler
 	e.Validator = vcago.JSONValidator
