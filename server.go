@@ -59,11 +59,11 @@ func main() {
 	avatar.DELETE("", handlers.DeleteAddress, vcapool.AccessCookieConfig())
 
 	crews := e.Group("/crews")
-	crews.POST("", handlers.CreateCrew)
+	crews.POST("", handlers.CreateCrew, vcago.AccessCookieConfig())
 	crews.GET("", handlers.ListCrew)
 	crews.GET("/:id", handlers.GetCrew)
-	crews.PUT("", handlers.UpdateCrew)
-	crews.DELETE("", handlers.DeleteCrew)
+	crews.PUT("", handlers.UpdateCrew, vcago.AccessCookieConfig())
+	crews.DELETE("", handlers.DeleteCrew, vcago.AccessCookieConfig())
 
 	test := e.Group("/test/users")
 	test.GET("", handlers.ListUser)
