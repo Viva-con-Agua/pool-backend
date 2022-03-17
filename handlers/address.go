@@ -14,7 +14,7 @@ func CreateAddress(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	user := new(vcapool.User)
+	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}

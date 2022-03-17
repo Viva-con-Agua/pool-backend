@@ -21,7 +21,7 @@ func RoleCreate(c echo.Context) (err error) {
 	if vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -51,7 +51,7 @@ func RoleDelete(c echo.Context) (err error) {
 	if vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}

@@ -13,8 +13,8 @@ type UserActive vcapool.UserActive
 
 var UserActiveCollection = Database.Collection("user_active").CreateIndex("user_id", true)
 
-func (i *UserActive) Create(ctx context.Context, user *vcapool.User) (r *UserActive, err error) {
-	ua := vcapool.NewUserActive(user.ID)
+func (i *UserActive) Create(ctx context.Context, id string) (r *UserActive, err error) {
+	ua := vcapool.NewUserActive(id)
 	r = (*UserActive)(ua)
 	err = UserActiveCollection.InsertOne(ctx, r)
 	return
@@ -25,10 +25,7 @@ func (i *UserActive) Get(ctx context.Context, filter bson.M) (err error) {
 	return
 }
 
-func (i *UserActive) Request(ctx context.Context, user *vcapool.User) (err error) {
-	if user.Crew.CrewID == "" {
-		return vcago.NewStatusBadRequest(errors.New("not an crew member"))
-	}
+func (i *UserActive) Request(ctx context.Context) (err error) {
 	ua := (*vcapool.UserActive)(i)
 	ua.Requested()
 	i = (*UserActive)(ua)

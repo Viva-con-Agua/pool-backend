@@ -12,14 +12,14 @@ import (
 
 func ConfirmUserNVM(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	user := new(vcapool.User)
+	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
-	if user.Active.Status != "confirmed" {
+	if user.ActiveState != "confirmed" {
 		return vcago.NewStatusBadRequest(errors.New("active required"))
 	}
-	if user.Address.ID == "" {
+	if user.AddressID == "" {
 		return vcago.NewStatusBadRequest(errors.New("address required"))
 	}
 	if user.Profile.Birthdate == 0 {
@@ -49,7 +49,7 @@ func RejectUserNVM(c echo.Context) (err error) {
 		return
 	}
 	//get requested user from token
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func RejectUserNVM(c echo.Context) (err error) {
 
 func WithdrawUserNVM(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	user := new(vcapool.User)
+	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}

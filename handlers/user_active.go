@@ -12,7 +12,7 @@ import (
 
 func RequestUserActive(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	user := new(vcapool.User)
+	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -20,16 +20,16 @@ func RequestUserActive(c echo.Context) (err error) {
 	if err = result.Get(ctx, bson.M{"user_id": user.ID}); err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
-	if user.Crew.CrewID == "" {
+	if user.CrewID == "" {
 		return vcago.NewStatusBadRequest(errors.New("not an crew member"))
 	}
 	if vcago.MongoNoDocuments(err) {
 		err = nil
-		if result, err = result.Create(ctx, user); err != nil {
+		if result, err = result.Create(ctx, user.ID); err != nil {
 			return
 		}
 	} else {
-		if err = result.Request(ctx, user); err != nil {
+		if err = result.Request(ctx); err != nil {
 			return
 		}
 	}
@@ -45,7 +45,7 @@ func ConfirmUserActive(c echo.Context) (err error) {
 		return
 	}
 	//get requested user from token
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -56,7 +56,7 @@ func ConfirmUserActive(c echo.Context) (err error) {
 	//check if requested user and the target users has the same crew
 	if !userReq.Roles.Validate("employee") {
 		userCrew := new(dao.UserCrew)
-		if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew.CrewID}); err != nil {
+		if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.CrewID}); err != nil {
 			return
 		}
 	}
@@ -76,7 +76,7 @@ func RejectUserActive(c echo.Context) (err error) {
 		return
 	}
 	//get requested user from token
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -87,7 +87,7 @@ func RejectUserActive(c echo.Context) (err error) {
 	//check if requested user and the target users has the same crew
 	if !userReq.Roles.Validate("employee") {
 		userCrew := new(dao.UserCrew)
-		if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.Crew.CrewID}); err != nil {
+		if err = userCrew.Permission(ctx, bson.M{"user_id": body.UserID, "crew_id": userReq.CrewID}); err != nil {
 			return
 		}
 	}
@@ -111,7 +111,7 @@ func RejectUserActive(c echo.Context) (err error) {
 
 func WithdrawUserActive(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	user := new(vcapool.User)
+	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}

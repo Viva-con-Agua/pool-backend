@@ -74,7 +74,7 @@ func RefreshHandler(c echo.Context) (err error) {
 }
 
 func LogoutHandler(c echo.Context) (err error) {
-	user := new(vcapool.User)
+	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}

@@ -14,7 +14,7 @@ func CreateCrew(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -42,7 +42,7 @@ func UpdateCrew(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
@@ -61,7 +61,7 @@ func DeleteCrew(c echo.Context) (err error) {
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	userReq := new(vcapool.User)
+	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
 		return
 	}
