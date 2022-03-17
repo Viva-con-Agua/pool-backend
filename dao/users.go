@@ -35,6 +35,21 @@ func NewUser(user *vcago.User) (r *UserInsert) {
 	return
 }
 
+func GetSendMail(ctx context.Context, currentUser string, contactUser string, scope string) (r *vcago.MailData, err error) {
+	user := new(User)
+	if err = UserCollection.FindOne(ctx, bson.M{"_id": currentUser}, user); err != nil {
+		return
+	}
+	cUser := new(User)
+	if err = UserCollection.FindOne(ctx, bson.M{"_id": contactUser}, cUser); err != nil {
+		return
+	}
+	r = vcago.NewMailData(cUser.Email, "pool-user", scope, cUser.Country)
+	r.AddCurrentUser(user.ID, user.Email, user.FirstName, user.LastName)
+	r.AddContactUser(cUser.ID, cUser.Email, cUser.FirstName, cUser.LastName)
+	return
+}
+
 func ConvertUser(user *vcago.User, modified *vcago.Modified) (r *UserInsert) {
 	bytes, _ := json.Marshal(&user)
 	r = new(UserInsert)
