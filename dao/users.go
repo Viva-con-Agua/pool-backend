@@ -100,7 +100,7 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 		return
 	}
 	userNVM := new(UserNVM)
-	err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": i.ID}, userNVM)
+	err = UserNVMCollection.FindOne(ctx, bson.M{"user_id": i.ID}, userNVM)
 	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
@@ -129,11 +129,13 @@ type UserList []vcapool.User
 
 type UserQuery struct {
 	ActiveState []string `query:"active_state"`
+	CrewID      string   `query:"crew_id"`
 }
 
 func (i *UserQuery) Match() *vcago.MongoMatch {
 	match := new(vcago.MongoMatch)
 	match.AddStringList("active.status", i.ActiveState)
+	match.AddString("crew.crew_id", i.CrewID)
 	return match
 }
 

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"log"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -70,7 +69,6 @@ func ConfirmUserActive(c echo.Context) (err error) {
 	if mailData, err = dao.GetSendMail(ctx, userReq.ID, result.UserID, "active_confirmed"); err != nil {
 		return
 	}
-	log.Print(mailData)
 	vcago.Nats.Publish("mail.send", mailData)
 	dao.MailSend.Send(mailData)
 	//response the result as vcago.Response
@@ -104,13 +102,13 @@ func RejectUserActive(c echo.Context) (err error) {
 		return
 	}
 	result2 := new(dao.UserNVM)
-	err = result2.Get(ctx, bson.M{"user_id": userReq.ID})
+	err = result2.Get(ctx, bson.M{"user_id": body.UserID})
 	if err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
 	if !vcago.MongoNoDocuments(err) {
 		err = nil
-		if result2, err = result2.Withdraw(ctx); err != nil {
+		if result2, err = result2.Reject(ctx, body.UserID); err != nil {
 			return
 		}
 	}
