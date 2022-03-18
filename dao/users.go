@@ -127,15 +127,27 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 
 type UserList []vcapool.User
 
-type UserQuery struct {
-	ActiveState []string `query:"active_state"`
-	CrewID      string   `query:"crew_id"`
-}
+type UserQuery vcapool.UserQuery
 
 func (i *UserQuery) Match() *vcago.MongoMatch {
-	match := new(vcago.MongoMatch)
+	match := vcago.NewMongoMatch()
+	match.AddLikeString("first_name", i.FirstName)
+	match.AddLikeString("last_name", i.LastName)
+	match.AddLikeString("full_name", i.FullName)
+	match.AddLikeString("display_name", i.DisplayName)
+	match.AddEqualString("crew.crew_id", i.CrewID)
+	match.AddElemMatchList("system_roles", "name", i.SystemRoles)
+	match.AddElemMatchList("pool_roles", "name", i.PoolRoles)
+	match.AddEqualBool("privacy_policy", i.PrivacyPolicy)
 	match.AddStringList("active.status", i.ActiveState)
-	match.AddString("crew.crew_id", i.CrewID)
+	match.AddStringList("nvm.status", i.NVMState)
+	match.AddEqualString("crew.crew_id", i.CrewID)
+	match.AddEqualString("country", i.Country)
+	match.AddEqualBool("confirmed", i.Confirmed)
+	match.AddGteInt64("modified.updated", i.UpdatedFrom)
+	match.AddGteInt64("modified.created", i.CreatedFrom)
+	match.AddLteInt64("modified.updated", i.UpdatedTo)
+	match.AddLteInt64("modified.created", i.CreatedTo)
 	return match
 }
 

@@ -20,7 +20,7 @@ func (i *UserCrewCreateRequest) Create(ctx context.Context, userID string) (r *U
 	if err = CrewsCollection.FindOne(ctx, bson.M{"_id": i.CrewID}, crew); err != nil {
 		return
 	}
-	userCrew := vcapool.NewUserCrew(userID, i.CrewID, crew.Name)
+	userCrew := vcapool.NewUserCrew(userID, i.CrewID, crew.Name, crew.Email)
 	r = (*UserCrew)(userCrew)
 	err = UserCrewCollection.InsertOne(ctx, r)
 	return

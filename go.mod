@@ -3,8 +3,8 @@ module pool-user
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.2.4
-	github.com/Viva-con-Agua/vcapool v0.0.20
+	github.com/Viva-con-Agua/vcago v1.2.7
+	github.com/Viva-con-Agua/vcapool v0.1.1
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
 	go.mongodb.org/mongo-driver v1.8.4
@@ -40,7 +40,7 @@ require (
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220317061510-51cd9980dadf // indirect
+	golang.org/x/sys v0.0.0-20220318055525-2edf467146b5 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
