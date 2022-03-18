@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func CreateUser(c echo.Context) (err error) {
+func CreateUserAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserInsert)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -20,7 +20,7 @@ func CreateUser(c echo.Context) (err error) {
 	return c.JSON(vcago.NewResponse("users", body).Created())
 }
 
-func GetUser(c echo.Context) (err error) {
+func GetUserAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	result := new(dao.User)
 	if err = result.Get(ctx, bson.M{"_id": c.Param("id")}); err != nil {
@@ -29,7 +29,7 @@ func GetUser(c echo.Context) (err error) {
 	return c.JSON(vcago.NewResponse("users", result).Selected())
 }
 
-func ListUser(c echo.Context) (err error) {
+func ListUserAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserQuery)
 	if err = vcago.BindAndValidate(c, body); err != nil {

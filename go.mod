@@ -3,8 +3,8 @@ module pool-user
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.2.3
-	github.com/Viva-con-Agua/vcapool v0.0.19
+	github.com/Viva-con-Agua/vcago v1.2.4
+	github.com/Viva-con-Agua/vcapool v0.0.20
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
 	go.mongodb.org/mongo-driver v1.8.4
@@ -29,6 +29,7 @@ require (
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sonh/qs v0.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect

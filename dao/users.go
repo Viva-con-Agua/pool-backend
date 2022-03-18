@@ -127,7 +127,17 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 
 type UserList []vcapool.User
 
-func (i *UserList) List(ctx context.Context) (err error) {
+type UserQuery struct {
+	ActiveState []string `query:"active_state"`
+}
+
+func (i *UserQuery) Match() *vcago.MongoMatch {
+	match := new(vcago.MongoMatch)
+	match.AddStringList("active.status", i.ActiveState)
+	return match
+}
+
+func (i *UserQuery) List(ctx context.Context) (r *UserList, err error) {
 	pipe := vcago.NewMongoPipe()
 	pipe.AddModelAt(AddressesCollection.Name, "_id", "user_id", "address")
 	pipe.AddModelAt(ProfilesCollection.Name, "_id", "user_id", "profile")
@@ -136,7 +146,9 @@ func (i *UserList) List(ctx context.Context) (err error) {
 	pipe.AddModelAt(UserNVMCollection.Name, "_id", "user_id", "nvm")
 	pipe.AddListAt(PoolRoleCollection.Name, "_id", "user_id", "pool_roles")
 	pipe.AddModelAt(AvatarCollection.Name, "_id", "user_id", "avatar")
-	err = UserCollection.Aggregate(ctx, pipe.Pipe, i)
+	pipe.AddMatch(i.Match())
+	r = new(UserList)
+	err = UserCollection.Aggregate(ctx, pipe.Pipe, r)
 	return
 }
 func (i *User) Permission(ctx context.Context, filter bson.M) (err error) {
