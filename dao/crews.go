@@ -12,6 +12,7 @@ type (
 	Crew struct {
 		ID       string         `json:"id,omitempty" bson:"_id"`
 		Name     string         `json:"name" bson:"name"`
+		Email    string         `json:"email" bson:"email"`
 		Cities   []City         `json:"cities" bson:"cities"`
 		Modified vcago.Modified `json:"modified" bson:"modified"`
 	}
