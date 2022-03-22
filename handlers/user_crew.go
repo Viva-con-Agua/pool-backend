@@ -50,7 +50,7 @@ func UpdateUserCrew(c echo.Context) (err error) {
 	}
 	if !vcago.MongoNoDocuments(err) {
 		err = nil
-		if result, err = result.Withdraw(ctx); err != nil {
+		if err = result.Withdraw(ctx); err != nil {
 			return
 		}
 	}
@@ -87,7 +87,7 @@ func DeleteUserCrew(c echo.Context) (err error) {
 	}
 	if !vcago.MongoNoDocuments(err) {
 		err = nil
-		if resultA, err = resultA.Withdraw(ctx); err != nil {
+		if err = resultA.Withdraw(ctx); err != nil {
 			return
 		}
 	}

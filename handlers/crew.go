@@ -81,7 +81,7 @@ func ListCrew(c echo.Context) (err error) {
 		return
 	}
 	result := new(dao.CrewList)
-	if err = result.Get(ctx, body.Filter()); err != nil {
+	if result, err = body.List(ctx); err != nil {
 		return
 	}
 	return c.JSON(vcago.NewResponse("crew_list", result).Selected())

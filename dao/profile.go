@@ -27,7 +27,8 @@ func (i *Profile) Get(ctx context.Context, id string) (err error) {
 
 func (i *Profile) Update(ctx context.Context) (err error) {
 	i.Modified.Update()
-	err = ProfilesCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, &i)
+	update := bson.M{"$set": i}
+	err = ProfilesCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
 	return
 }
 

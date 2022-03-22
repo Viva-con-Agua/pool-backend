@@ -67,8 +67,10 @@ func main() {
 
 	admin := e.Group("/admin")
 	adminUser := admin.Group("/users")
-
 	adminUser.GET("", handlers.ListUserAdmin)
+
+	adminCrew := admin.Group("/crews")
+	adminCrew.GET("", handlers.ListCrewAdmin)
 
 	test := e.Group("/test/users")
 	test.GET("", handlers.ListUser)

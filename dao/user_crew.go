@@ -33,7 +33,8 @@ func (i *UserCrew) Permission(ctx context.Context, filter bson.M) (err error) {
 
 func (i *UserCrew) Update(ctx context.Context) (err error) {
 	i.Modified.Update()
-	err = UserCrewCollection.UpdateOne(ctx, bson.M{"user_id": i.UserID}, i)
+	update := bson.M{"$set": i}
+	err = UserCrewCollection.UpdateOne(ctx, bson.M{"user_id": i.UserID}, update)
 	return
 }
 

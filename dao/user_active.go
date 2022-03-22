@@ -29,16 +29,18 @@ func (i *UserActive) Request(ctx context.Context) (err error) {
 	ua := (*vcapool.UserActive)(i)
 	ua.Requested()
 	i = (*UserActive)(ua)
-	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, i)
+	update := bson.M{"$set": i}
+	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
 	return
 
 }
 
-func (i *UserActive) Withdraw(ctx context.Context) (r *UserActive, err error) {
+func (i *UserActive) Withdraw(ctx context.Context) (err error) {
 	ua := (*vcapool.UserActive)(i)
 	ua.Withdraw()
-	r = (*UserActive)(ua)
-	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	i = (*UserActive)(ua)
+	update := bson.M{"$set": i}
+	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
 	return
 }
 
@@ -47,28 +49,30 @@ type UserActiveRequest struct {
 	State  bool   `json:"state"`
 }
 
-func (i *UserActiveRequest) Confirm(ctx context.Context) (r *UserActive, err error) {
+func (i *UserActive) Confirm(ctx context.Context, userID string) (err error) {
 	userActive := new(vcapool.UserActive)
-	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": i.UserID}, userActive); err != nil {
+	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": userID}, userActive); err != nil {
 		return
 	}
 	if !userActive.IsRequested() {
-		return r, vcago.NewStatusBadRequest(errors.New("active state is not requested"))
+		return vcago.NewStatusBadRequest(errors.New("active state is not requested"))
 	}
 	userActive.Confirmed()
-	r = (*UserActive)(userActive)
-	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	i = (*UserActive)(userActive)
+	update := bson.M{"$set": i}
+	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
 	return
 }
 
-func (i *UserActive) Reject(ctx context.Context, id string) (r *UserActive, err error) {
+func (i *UserActive) Reject(ctx context.Context, id string) (err error) {
 	userActive := new(vcapool.UserActive)
 	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": id}, userActive); err != nil {
 		return
 	}
 	userActive.Rejected()
-	r = (*UserActive)(userActive)
-	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	i = (*UserActive)(userActive)
+	update := bson.M{"$set": i}
+	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
 	return
 }
 

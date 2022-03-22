@@ -27,7 +27,8 @@ func (i *UserNVM) Withdraw(ctx context.Context) (r *UserNVM, err error) {
 	ua := (*vcapool.UserNVM)(i)
 	ua.Withdraw()
 	r = (*UserNVM)(ua)
-	err = UserNVMCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	update := bson.M{"$set": r}
+	err = UserNVMCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, update)
 	return
 }
 
@@ -35,7 +36,8 @@ func (i *UserNVM) Confirm(ctx context.Context) (r *UserNVM, err error) {
 	ua := (*vcapool.UserNVM)(i)
 	ua.Confirmed()
 	r = (*UserNVM)(ua)
-	err = UserNVMCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	update := bson.M{"$set": r}
+	err = UserNVMCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, update)
 	return
 }
 
@@ -51,7 +53,8 @@ func (i *UserNVM) Reject(ctx context.Context, id string) (r *UserNVM, err error)
 	}
 	userNVM.Rejected()
 	r = (*UserNVM)(userNVM)
-	err = UserNVMCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, r)
+	update := bson.M{"$set": r}
+	err = UserNVMCollection.UpdateOne(ctx, bson.M{"_id": r.ID}, update)
 	return
 }
 

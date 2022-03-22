@@ -55,7 +55,8 @@ func (i *Address) Get(ctx context.Context, id string) (err error) {
 
 func (i *Address) Update(ctx context.Context) (err error) {
 	i.Modified.Update()
-	err = AddressesCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, &i)
+	update := bson.M{"$set": &i}
+	err = AddressesCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
 	return
 }
 

@@ -65,12 +65,15 @@ var UserCollection = Database.Collection("users").CreateIndex("email", true)
 //Create handles vcago.User model that is providing by auth-service.
 func (i *UserInsert) Create(ctx context.Context) (err error) {
 	err = UserCollection.InsertOne(ctx, &i)
+	vcago.Nats.Publish("user.created", i)
 	return
 }
 
 func (i *UserInsert) Update(ctx context.Context) (err error) {
 	i.Modified.Update()
-	err = UserCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, &i)
+	update := bson.M{"$set": i}
+	err = UserCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
+	vcago.Nats.Publish("user.updated", i)
 	return
 }
 
