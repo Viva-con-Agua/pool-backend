@@ -50,7 +50,7 @@ func CallbackHandler(c echo.Context) (err error) {
 	}
 	c.SetCookie(token.AccessCookie())
 	c.SetCookie(token.RefreshCookie())
-	return c.JSON(vcago.NewResponse("access_user", user).Selected())
+	return vcago.NewSelected("access_user", user)
 }
 
 func RefreshHandler(c echo.Context) (err error) {
@@ -70,7 +70,7 @@ func RefreshHandler(c echo.Context) (err error) {
 	}
 	c.SetCookie(token.AccessCookie())
 	c.SetCookie(token.RefreshCookie())
-	return c.JSON(vcago.NewResponse("refresh_token", user).Selected())
+	return vcago.NewSelected("refresh_token", user)
 }
 
 func LogoutHandler(c echo.Context) (err error) {
@@ -80,5 +80,5 @@ func LogoutHandler(c echo.Context) (err error) {
 	}
 	c.SetCookie(vcapool.ResetAccessCookie())
 	c.SetCookie(vcapool.ResetRefreshCookie())
-	return c.JSON(vcago.NewResponse("logout", user.ID).Executed())
+	return vcago.NewExecuted("logout", user.ID)
 }

@@ -14,7 +14,7 @@ type AdminRoleRequest struct {
 	Role  string `json:"role"`
 }
 
-func AdminRoleCreate(c echo.Context) (err error) {
+func RoleCreateAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(AdminRoleRequest)
 	if vcago.BindAndValidate(c, body); err != nil {
@@ -31,10 +31,10 @@ func AdminRoleCreate(c echo.Context) (err error) {
 	if err = (*dao.Role)(role).Create(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("role", role).Created())
+	return vcago.NewCreated("role", role)
 }
 
-func AdminRoleDelete(c echo.Context) (err error) {
+func RoleDeleteAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(AdminRoleRequest)
 	if vcago.BindAndValidate(c, body); err != nil {
@@ -51,5 +51,5 @@ func AdminRoleDelete(c echo.Context) (err error) {
 	if err = role.Delete(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("role", role).Deleted())
+	return vcago.NewDeleted("role", role)
 }

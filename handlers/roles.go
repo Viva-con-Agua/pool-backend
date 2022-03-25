@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -34,15 +33,15 @@ func RoleCreate(c echo.Context) (err error) {
 		return
 	}
 	if user.NVM.Status != "confirmed" {
-		return vcago.NewStatusBadRequest(errors.New("nvm required"))
+		return vcago.NewBadRequest("role", "nvm required", nil)
 	}
 	if !userReq.Roles.CheckRoot(role) && !userReq.PoolRoles.CheckRoot(role) {
-		return vcago.NewValidationError("no permission for set this role")
+		return vcago.NewBadRequest("role", "no permission for set this role", nil)
 	}
 	if err = (*dao.Role)(role).Create(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("role", role).Created())
+	return vcago.NewCreated("role", role)
 }
 
 func RoleDelete(c echo.Context) (err error) {
@@ -69,5 +68,5 @@ func RoleDelete(c echo.Context) (err error) {
 	if err = role.Delete(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("role", role).Deleted())
+	return vcago.NewDeleted("role", role)
 }

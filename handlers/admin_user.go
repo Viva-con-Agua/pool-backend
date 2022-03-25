@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func CreateUserAdmin(c echo.Context) (err error) {
+func UserCreateAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserInsert)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -17,19 +17,19 @@ func CreateUserAdmin(c echo.Context) (err error) {
 	if err = body.Create(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("users", body).Created())
+	return vcago.NewCreated("users", body)
 }
 
-func GetUserAdmin(c echo.Context) (err error) {
+func UserGetAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	result := new(dao.User)
 	if err = result.Get(ctx, bson.M{"_id": c.Param("id")}); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("users", result).Selected())
+	return vcago.NewSelected("users", result)
 }
 
-func ListUserAdmin(c echo.Context) (err error) {
+func UserListAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserQuery)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -39,5 +39,5 @@ func ListUserAdmin(c echo.Context) (err error) {
 	if result, err = body.List(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("user_list", result).Selected())
+	return vcago.NewSelected("user_list", result)
 }

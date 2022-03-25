@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func CreateUserCrew(c echo.Context) (err error) {
+func UserCrewCreate(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserCrewCreateRequest)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -23,10 +23,10 @@ func CreateUserCrew(c echo.Context) (err error) {
 	if result, err = body.Create(ctx, user.ID); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("user_crew", result).Created())
+	return vcago.NewCreated("user_crew", result)
 }
 
-func UpdateUserCrew(c echo.Context) (err error) {
+func UserCrewUpdate(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserCrew)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -65,10 +65,10 @@ func UpdateUserCrew(c echo.Context) (err error) {
 			return
 		}
 	}
-	return c.JSON(vcago.NewResponse("user_crew", body).Updated())
+	return vcago.NewUpdated("user_crew", body)
 }
 
-func DeleteUserCrew(c echo.Context) (err error) {
+func UserCrewDelete(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	userReq := new(vcapool.AccessToken)
 	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
@@ -102,6 +102,6 @@ func DeleteUserCrew(c echo.Context) (err error) {
 			return
 		}
 	}
-	return c.JSON(vcago.NewResponse("user_crew", result).Deleted())
+	return vcago.NewDeleted("user_crew", result)
 
 }

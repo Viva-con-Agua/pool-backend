@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ListCrewAdmin(c echo.Context) (err error) {
+func CrewListAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.CrewQuery)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -17,5 +17,5 @@ func ListCrewAdmin(c echo.Context) (err error) {
 	if result, err = body.List(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("crew_list", result).Selected())
+	return vcago.NewSelected("crew_list", result)
 }

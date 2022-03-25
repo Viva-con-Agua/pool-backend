@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ConfirmUserNVM(c echo.Context) (err error) {
+func UserNVMConfirm(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
@@ -39,10 +39,10 @@ func ConfirmUserNVM(c echo.Context) (err error) {
 			return
 		}
 	}
-	return c.JSON(vcago.NewResponse("user_active", result).Created())
+	return vcago.NewCreated("user_active", result)
 }
 
-func RejectUserNVM(c echo.Context) (err error) {
+func UserNVMReject(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserNVMRequest)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -61,10 +61,10 @@ func RejectUserNVM(c echo.Context) (err error) {
 	if result, err = result.Reject(ctx, body.UserID); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("user_active", result).Executed())
+	return vcago.NewExecuted("user_active", result)
 }
 
-func WithdrawUserNVM(c echo.Context) (err error) {
+func UserNVMWithdraw(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
@@ -77,5 +77,5 @@ func WithdrawUserNVM(c echo.Context) (err error) {
 	if result, err = result.Withdraw(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("user_active", result).Executed())
+	return vcago.NewExecuted("user_active", result)
 }

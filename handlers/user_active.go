@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func RequestUserActive(c echo.Context) (err error) {
+func UserActiveRequest(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
@@ -33,11 +33,11 @@ func RequestUserActive(c echo.Context) (err error) {
 			return
 		}
 	}
-	return c.JSON(vcago.NewResponse("user_active", result).Created())
+	return vcago.NewCreated("user_active", result)
 }
 
 //ConfirmUserActive is the webapp handler for confirm the active state of an user.
-func ConfirmUserActive(c echo.Context) (err error) {
+func UserActiveConfirm(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	//validate and bind body
 	body := new(dao.UserActiveRequest)
@@ -72,10 +72,10 @@ func ConfirmUserActive(c echo.Context) (err error) {
 	vcago.Nats.Publish("mail.send", mailData)
 	dao.MailSend.Send(mailData)
 	//response the result as vcago.Response
-	return c.JSON(vcago.NewResponse("user_active", result).Executed())
+	return vcago.NewExecuted("user_active", result)
 }
 
-func RejectUserActive(c echo.Context) (err error) {
+func UserActiveReject(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserActiveRequest)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -117,10 +117,10 @@ func RejectUserActive(c echo.Context) (err error) {
 		return
 	}
 	dao.MailSend.Send(mailData)
-	return c.JSON(vcago.NewResponse("user_active", result).Executed())
+	return vcago.NewExecuted("user_active", result)
 }
 
-func WithdrawUserActive(c echo.Context) (err error) {
+func UserActiveWithdraw(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	user := new(vcapool.AccessToken)
 	if user, err = vcapool.AccessCookieUser(c); err != nil {
@@ -144,5 +144,5 @@ func WithdrawUserActive(c echo.Context) (err error) {
 			return
 		}
 	}
-	return c.JSON(vcago.NewResponse("user_active", result).Executed())
+	return vcago.NewExecuted("user_active", result)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func CreateCrew(c echo.Context) (err error) {
+func CrewCreate(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.Crew)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -19,24 +19,24 @@ func CreateCrew(c echo.Context) (err error) {
 		return
 	}
 	if !userReq.Roles.Validate("employee") {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("crew", nil)
 	}
 	if err = body.Create(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("crew", body).Created())
+	return vcago.NewCreated("crew", body)
 }
 
-func GetCrew(c echo.Context) (err error) {
+func CrewGet(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	result := new(dao.Crew)
 	if err = result.Get(ctx, c.Param("id")); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("crew", result).Selected())
+	return vcago.NewSelected("crew", result)
 }
 
-func UpdateCrew(c echo.Context) (err error) {
+func CrewUpdate(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.Crew)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -52,10 +52,10 @@ func UpdateCrew(c echo.Context) (err error) {
 	if err = body.Update(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("crew", body).Updated())
+	return vcago.NewUpdated("crew", body)
 }
 
-func DeleteCrew(c echo.Context) (err error) {
+func CrewDelete(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.Crew)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -71,10 +71,10 @@ func DeleteCrew(c echo.Context) (err error) {
 	if err = body.Delete(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("crew", body).Deleted())
+	return vcago.NewDeleted("crew", body)
 }
 
-func ListCrew(c echo.Context) (err error) {
+func CrewList(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.CrewQuery)
 	if err = vcago.BindAndValidate(c, body); err != nil {
@@ -84,5 +84,5 @@ func ListCrew(c echo.Context) (err error) {
 	if result, err = body.List(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("crew_list", result).Selected())
+	return vcago.NewSelected("crew_list", result)
 }

@@ -23,7 +23,7 @@ func ProfileCreate(c echo.Context) (err error) {
 	if err = body.Create(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("profile", body).Created())
+	return vcago.NewCreated("profile", body)
 }
 
 func ProfileUpdate(c echo.Context) (err error) {
@@ -42,5 +42,5 @@ func ProfileUpdate(c echo.Context) (err error) {
 	if err = body.Update(ctx); err != nil {
 		return
 	}
-	return c.JSON(vcago.NewResponse("profile", body).Updated())
+	return vcago.NewUpdated("profile", body)
 }

@@ -24,59 +24,59 @@ func main() {
 	login.GET("/logout", handlers.LogoutHandler, vcapool.AccessCookieConfig())
 
 	users := e.Group("/users")
-	users.GET("", handlers.ListUser, vcapool.AccessCookieConfig())
+	users.GET("", handlers.UserList, vcapool.AccessCookieConfig())
 
 	profile := users.Group("/profile")
 	profile.POST("", handlers.ProfileCreate, vcapool.AccessCookieConfig())
 	profile.PUT("", handlers.ProfileUpdate, vcapool.AccessCookieConfig())
 
 	crewUser := users.Group("/crew")
-	crewUser.POST("", handlers.CreateUserCrew, vcapool.AccessCookieConfig())
-	crewUser.PUT("", handlers.UpdateUserCrew, vcapool.AccessCookieConfig())
-	crewUser.DELETE("", handlers.DeleteUserCrew, vcapool.AccessCookieConfig())
+	crewUser.POST("", handlers.UserCrewCreate, vcapool.AccessCookieConfig())
+	crewUser.PUT("", handlers.UserCrewUpdate, vcapool.AccessCookieConfig())
+	crewUser.DELETE("", handlers.UserCrewDelete, vcapool.AccessCookieConfig())
 
 	roles := users.Group("/role")
 	roles.POST("", handlers.RoleCreate, vcapool.AccessCookieConfig())
 	roles.DELETE("", handlers.RoleDelete, vcapool.AccessCookieConfig())
 
 	activeUser := users.Group("/active")
-	activeUser.GET("/request", handlers.RequestUserActive, vcapool.AccessCookieConfig())
-	activeUser.POST("/confirm", handlers.ConfirmUserActive, vcapool.AccessCookieConfig())
-	activeUser.POST("/reject", handlers.RejectUserActive, vcapool.AccessCookieConfig())
-	activeUser.GET("/withdraw", handlers.WithdrawUserActive, vcapool.AccessCookieConfig())
+	activeUser.GET("/request", handlers.UserActiveRequest, vcapool.AccessCookieConfig())
+	activeUser.POST("/confirm", handlers.UserActiveConfirm, vcapool.AccessCookieConfig())
+	activeUser.POST("/reject", handlers.UserActiveReject, vcapool.AccessCookieConfig())
+	activeUser.GET("/withdraw", handlers.UserActiveWithdraw, vcapool.AccessCookieConfig())
 
 	nvmUser := users.Group("/nvm")
-	nvmUser.GET("/confirm", handlers.ConfirmUserNVM, vcapool.AccessCookieConfig())
-	nvmUser.POST("/reject", handlers.RejectUserNVM, vcapool.AccessCookieConfig())
-	nvmUser.GET("/withdraw", handlers.WithdrawUserNVM, vcapool.AccessCookieConfig())
+	nvmUser.GET("/confirm", handlers.UserNVMConfirm, vcapool.AccessCookieConfig())
+	nvmUser.POST("/reject", handlers.UserNVMReject, vcapool.AccessCookieConfig())
+	nvmUser.GET("/withdraw", handlers.UserNVMWithdraw, vcapool.AccessCookieConfig())
 
 	address := users.Group("/address")
-	address.POST("", handlers.CreateAddress, vcapool.AccessCookieConfig())
-	address.PUT("", handlers.UpdateAddress, vcapool.AccessCookieConfig())
+	address.POST("", handlers.AddressCreate, vcapool.AccessCookieConfig())
+	address.PUT("", handlers.AddressUpdate, vcapool.AccessCookieConfig())
+	address.GET("/:id", handlers.AddressGet, vcapool.AccessCookieConfig())
+	address.DELETE("/:id", handlers.AddressDelete, vcapool.AccessCookieConfig())
 
 	avatar := users.Group("/avatar")
-	avatar.POST("", handlers.CreateAvatar, vcapool.AccessCookieConfig())
-	avatar.DELETE("", handlers.DeleteAddress, vcapool.AccessCookieConfig())
+	avatar.POST("", handlers.AvatarCreate, vcapool.AccessCookieConfig())
+	avatar.DELETE("", handlers.AvatarDelete, vcapool.AccessCookieConfig())
 
 	crews := e.Group("/crews")
-	crews.POST("", handlers.CreateCrew, vcapool.AccessCookieConfig())
-	crews.GET("", handlers.ListCrew, vcapool.AccessCookieConfig())
-	crews.GET("/:id", handlers.GetCrew, vcapool.AccessCookieConfig())
-	crews.PUT("", handlers.UpdateCrew, vcapool.AccessCookieConfig())
-	crews.DELETE("", handlers.DeleteCrew, vcapool.AccessCookieConfig())
+	crews.POST("", handlers.CrewCreate, vcapool.AccessCookieConfig())
+	crews.GET("", handlers.CrewList, vcapool.AccessCookieConfig())
+	crews.GET("/:id", handlers.CrewGet, vcapool.AccessCookieConfig())
+	crews.PUT("", handlers.CrewUpdate, vcapool.AccessCookieConfig())
+	crews.DELETE("", handlers.CrewDelete, vcapool.AccessCookieConfig())
 
 	admin := e.Group("/admin")
 	adminUser := admin.Group("/users")
-	adminUser.GET("", handlers.ListUserAdmin)
+	adminUser.GET("", handlers.UserListAdmin)
 
 	adminCrew := admin.Group("/crews")
-	adminCrew.GET("", handlers.ListCrewAdmin)
+	adminCrew.GET("", handlers.CrewListAdmin)
 
-	test := e.Group("/test/users")
-	test.GET("", handlers.ListUser)
 	//server
-	appPort := vcago.Config.GetEnvString("APP_PORT", "n", "1323")
+	port := vcago.Config.GetEnvString("APP_PORT", "n", "1323")
 
-	e.Logger.Fatal(e.Start(":" + appPort))
+	e.Logger.Fatal(e.Start(":" + port))
 
 }

@@ -18,8 +18,14 @@ func (i *Avatar) Create(ctx context.Context) (err error) {
 	return
 }
 
-func (i *Avatar) Delete(ctx context.Context) (err error) {
+func (i *Avatar) Update(ctx context.Context) (err error) {
 	i.Modified.Update()
-	err = AvatarCollection.DeleteOne(ctx, bson.M{"_id": i.ID})
+	update := bson.M{"$set": i}
+	err = AvatarCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
+	return
+}
+
+func (i *Avatar) Delete(ctx context.Context, filter bson.M) (err error) {
+	err = AvatarCollection.DeleteOne(ctx, filter)
 	return
 }
