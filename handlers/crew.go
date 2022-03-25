@@ -47,7 +47,7 @@ func CrewUpdate(c echo.Context) (err error) {
 		return
 	}
 	if !userReq.Roles.Validate("employee") {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("crew")
 	}
 	if err = body.Update(ctx); err != nil {
 		return
@@ -66,7 +66,7 @@ func CrewDelete(c echo.Context) (err error) {
 		return
 	}
 	if !userReq.Roles.Validate("employee") {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("crew")
 	}
 	if err = body.Delete(ctx); err != nil {
 		return

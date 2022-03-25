@@ -46,7 +46,7 @@ func CallbackHandler(c echo.Context) (err error) {
 	user := vcapool.User(*userDAO)
 	token := new(vcapool.AuthToken)
 	if token, err = vcapool.NewAuthToken(&user); err != nil {
-		return vcago.NewStatusInternal(err)
+		return
 	}
 	c.SetCookie(token.AccessCookie())
 	c.SetCookie(token.RefreshCookie())
@@ -66,7 +66,7 @@ func RefreshHandler(c echo.Context) (err error) {
 	user := vcapool.User(*userDAO)
 	token := new(vcapool.AuthToken)
 	if token, err = vcapool.NewAuthToken(&user); err != nil {
-		return vcago.NewStatusInternal(err)
+		return
 	}
 	c.SetCookie(token.AccessCookie())
 	c.SetCookie(token.RefreshCookie())

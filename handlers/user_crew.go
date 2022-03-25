@@ -37,7 +37,7 @@ func UserCrewUpdate(c echo.Context) (err error) {
 		return
 	}
 	if userReq.ID != body.UserID {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("crew")
 	}
 	if err = body.Update(ctx); err != nil {
 		return

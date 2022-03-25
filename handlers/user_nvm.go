@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -17,13 +16,13 @@ func UserNVMConfirm(c echo.Context) (err error) {
 		return
 	}
 	if user.ActiveState != "confirmed" {
-		return vcago.NewStatusBadRequest(errors.New("active required"))
+		return vcago.NewBadRequest("user_nvm", "active required")
 	}
 	if user.AddressID == "" {
-		return vcago.NewStatusBadRequest(errors.New("address required"))
+		return vcago.NewBadRequest("user_nvm", "address required")
 	}
 	if user.Profile.Birthdate == 0 {
-		return vcago.NewStatusBadRequest(errors.New("birthdate required"))
+		return vcago.NewBadRequest("user_nvm", "birthdate required")
 	}
 	result := new(dao.UserNVM)
 	if err = result.Get(ctx, bson.M{"user_id": user.ID}); err != nil && !vcago.MongoNoDocuments(err) {
@@ -39,7 +38,7 @@ func UserNVMConfirm(c echo.Context) (err error) {
 			return
 		}
 	}
-	return vcago.NewCreated("user_active", result)
+	return vcago.NewCreated("user_nvm", result)
 }
 
 func UserNVMReject(c echo.Context) (err error) {
@@ -55,13 +54,13 @@ func UserNVMReject(c echo.Context) (err error) {
 	}
 	//check if requested user has the network or operation permission
 	if !userReq.PoolRoles.Validate("employee") {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("user_nvm")
 	}
 	result := new(dao.UserNVM)
 	if result, err = result.Reject(ctx, body.UserID); err != nil {
 		return
 	}
-	return vcago.NewExecuted("user_active", result)
+	return vcago.NewExecuted("user_nvm", result)
 }
 
 func UserNVMWithdraw(c echo.Context) (err error) {
@@ -77,5 +76,5 @@ func UserNVMWithdraw(c echo.Context) (err error) {
 	if result, err = result.Withdraw(ctx); err != nil {
 		return
 	}
-	return vcago.NewExecuted("user_active", result)
+	return vcago.NewExecuted("user_nvm", result)
 }

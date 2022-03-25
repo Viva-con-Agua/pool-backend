@@ -42,7 +42,7 @@ type AddressQuery struct {
 }
 
 func (i *AddressQuery) Filter() bson.M {
-	f := vcago.NewMongoFilterM()
+	f := vcago.NewMongoFilter()
 	f.Equal("_id", i.ID)
 	return f.Filter
 }
