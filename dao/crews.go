@@ -71,14 +71,14 @@ type CrewQuery vcapool.CrewQuery
 
 func (i *CrewQuery) Match() *vcago.MongoMatch {
 	match := vcago.NewMongoMatch()
-	match.AddLikeString("_id", i.ID)
-	match.AddEqualString("email", i.Email)
-	match.AddElemMatchList("cities", "city", i.Cities)
+	match.LikeString("_id", i.ID)
+	match.EqualString("email", i.Email)
+	match.ElemMatchList("cities", "city", i.Cities)
 	return match
 }
 func (i *CrewQuery) List(ctx context.Context) (r *CrewList, err error) {
 	pipe := vcago.NewMongoPipe()
-	pipe.AddMatch(i.Match())
+	pipe.Match(i.Match())
 	r = new(CrewList)
 	err = CrewsCollection.Aggregate(ctx, pipe.Pipe, r)
 	return

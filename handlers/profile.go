@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -37,7 +36,7 @@ func ProfileUpdate(c echo.Context) (err error) {
 		return
 	}
 	if user.ID != body.UserID {
-		return vcago.NewStatusBadRequest(errors.New("permission denied"))
+		return vcago.NewPermissionDenied("profile")
 	}
 	if err = body.Update(ctx); err != nil {
 		return

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -21,7 +20,7 @@ func UserActiveRequest(c echo.Context) (err error) {
 		return
 	}
 	if user.CrewID == "" {
-		return vcago.NewStatusBadRequest(errors.New("not an crew member"))
+		return vcago.NewBadRequest("user_active", "not an crew member")
 	}
 	if vcago.MongoNoDocuments(err) {
 		err = nil
@@ -51,7 +50,7 @@ func UserActiveConfirm(c echo.Context) (err error) {
 	}
 	//check if requested user has the network or operation permission
 	if !userReq.PoolRoles.Validate("network;operation") && !userReq.Roles.Validate("employee") {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("user_active")
 	}
 	//check if requested user and the target users has the same crew
 	if !userReq.Roles.Validate("employee") {
@@ -88,7 +87,7 @@ func UserActiveReject(c echo.Context) (err error) {
 	}
 	//check if requested user has the network or operation permission
 	if !userReq.PoolRoles.Validate("network;operation") && !userReq.Roles.Validate("employee") {
-		return vcago.NewStatusPermissionDenied()
+		return vcago.NewPermissionDenied("user_active")
 	}
 	//check if requested user and the target users has the same crew
 	if !userReq.Roles.Validate("employee") {

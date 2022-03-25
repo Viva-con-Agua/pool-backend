@@ -3,8 +3,8 @@ module pool-user
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.2.10
-	github.com/Viva-con-Agua/vcapool v0.1.2
+	github.com/Viva-con-Agua/vcago v1.2.11
+	github.com/Viva-con-Agua/vcapool v0.1.3
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
 	go.mongodb.org/mongo-driver v1.8.4
@@ -36,7 +36,7 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirecta
+	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect; indirecta
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect

@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
@@ -55,7 +54,7 @@ func (i *UserActive) Confirm(ctx context.Context, userID string) (err error) {
 		return
 	}
 	if !userActive.IsRequested() {
-		return vcago.NewStatusBadRequest(errors.New("active state is not requested"))
+		return vcago.NewBadRequest("user_active", "active state is not requested")
 	}
 	userActive.Confirmed()
 	i = (*UserActive)(userActive)
