@@ -60,8 +60,8 @@ func UserActiveConfirm(c echo.Context) (err error) {
 		}
 	}
 	//confirm active state
-	result := new(dao.UserActive)
-	if err = result.Confirm(ctx, body.UserID); err != nil {
+	result := new(vcapool.UserActive)
+	if result, err = body.Confirm(ctx, body.UserID); err != nil {
 		return
 	}
 	mailData := new(vcago.MailData)
@@ -96,8 +96,8 @@ func UserActiveReject(c echo.Context) (err error) {
 			return
 		}
 	}
-	result := new(dao.UserActive)
-	if err = result.Reject(ctx, body.UserID); err != nil {
+	result := new(vcapool.UserActive)
+	if result, err = body.Reject(ctx, body.UserID); err != nil {
 		return
 	}
 	result2 := new(dao.UserNVM)

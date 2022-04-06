@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
@@ -26,13 +25,8 @@ type UserInsert struct {
 
 type User vcapool.User
 
-//NewUser creates an new User from given vcago.User
-func NewUser(user *vcago.User) (r *UserInsert) {
-	bytes, _ := json.Marshal(&user)
-	r = new(UserInsert)
-	_ = json.Unmarshal(bytes, &r)
-	r.Modified = vcago.NewModified()
-	return
+type UserDatabase struct {
+	vcapool.UserDatabase
 }
 
 func GetSendMail(ctx context.Context, currentUser string, contactUser string, scope string) (r *vcago.MailData, err error) {
@@ -50,30 +44,25 @@ func GetSendMail(ctx context.Context, currentUser string, contactUser string, sc
 	return
 }
 
-func ConvertUser(user *vcago.User, modified *vcago.Modified) (r *UserInsert) {
-	bytes, _ := json.Marshal(&user)
-	r = new(UserInsert)
-	_ = json.Unmarshal(bytes, &r)
-	r.Modified = *modified
-	return
-
-}
-
 //UseUserCollection represents the user collection
 var UserCollection = Database.Collection("users").CreateIndex("email", true)
 
 //Create handles vcago.User model that is providing by auth-service.
-func (i *UserInsert) Create(ctx context.Context) (err error) {
-	err = UserCollection.InsertOne(ctx, &i)
-	vcago.Nats.Publish("user.created", i)
-	return
-}
-
-func (i *UserInsert) Update(ctx context.Context) (err error) {
-	i.Modified.Update()
-	update := bson.M{"$set": i}
-	err = UserCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
-	vcago.Nats.Publish("user.updated", i)
+func (i *UserDatabase) Create(ctx context.Context) (r *vcapool.User, err error) {
+	if err = UserCollection.InsertOne(ctx, &i); err != nil {
+		return
+	}
+	r = i.User()
+	nvm := vcapool.NewUserNVM(i.ID)
+	if err = UserNVMCollection.InsertOne(ctx, nvm); err != nil {
+		return
+	}
+	active := vcapool.NewUserActive(i.ID)
+	if err = UserActiveCollection.InsertOne(ctx, active); err != nil {
+		return
+	}
+	r.NVM = *nvm
+	r.Active = *active
 	return
 }
 

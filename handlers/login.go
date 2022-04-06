@@ -9,58 +9,61 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+type LoginHandler struct {
+	vcago.Handler
+}
+
+func NewLoginHandler() *LoginHandler {
+	handler := vcago.NewHandler("login")
+	return &LoginHandler{
+		*handler,
+	}
+}
+
 var HydraClient = vcago.NewHydraClient()
 
-func CallbackHandler(c echo.Context) (err error) {
-	ctx := c.Request().Context()
+func (i *LoginHandler) Callback(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
 	body := new(vcago.Callback)
 	if vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
 	tokenUser := new(vcago.User)
-	if tokenUser, err = HydraClient.Callback(ctx, body); err != nil {
+	if tokenUser, err = HydraClient.Callback(c.Ctx(), body); err != nil {
 		return
 	}
-	userDAO := new(dao.User)
-	if err = userDAO.Get(ctx, bson.M{"_id": tokenUser.ID}); err != nil && !vcago.MongoNoDocuments(err) {
+	userSystem := dao.NewUserSystem(tokenUser)
+	result := new(vcapool.User)
+	if result, err = userSystem.Get(c.Ctx()); err != nil && !vcago.MongoNoDocuments(err) {
 		return
 	}
 	if vcago.MongoNoDocuments(err) {
-		userInsert := dao.NewUser(tokenUser)
-		if err = userInsert.Create(ctx); err != nil {
-			return
-		}
-		if err = userDAO.Get(ctx, bson.M{"_id": tokenUser.ID}); err != nil && !vcago.MongoNoDocuments(err) {
+		if result, err = userSystem.Create(c.Ctx()); err != nil {
 			return
 		}
 	}
-	if tokenUser.CheckUpdate(userDAO.LastUpdate) {
-		userInsert := dao.ConvertUser(tokenUser, &userDAO.Modified)
-		if err = userInsert.Update(ctx); err != nil {
-			return
-		}
-		if err = userDAO.Get(ctx, bson.M{"_id": tokenUser.ID}); err != nil {
+	if tokenUser.CheckUpdate(result.LastUpdate) {
+		if result, err = userSystem.Update(c.Ctx()); err != nil {
 			return
 		}
 	}
-	user := vcapool.User(*userDAO)
 	token := new(vcapool.AuthToken)
-	if token, err = vcapool.NewAuthToken(&user); err != nil {
+	if token, err = vcapool.NewAuthToken(result); err != nil {
 		return
 	}
 	c.SetCookie(token.AccessCookie())
 	c.SetCookie(token.RefreshCookie())
-	return vcago.NewSelected("access_user", user)
+	return c.Selected(result)
 }
 
-func RefreshHandler(c echo.Context) (err error) {
-	ctx := c.Request().Context()
+func (i *LoginHandler) Refresh(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
 	var userID string
 	if userID, err = vcapool.RefreshCookieUserID(c); err != nil {
 		return
 	}
 	userDAO := new(dao.User)
-	if err = userDAO.Get(ctx, bson.M{"_id": userID}); err != nil {
+	if err = userDAO.Get(c.Ctx(), bson.M{"_id": userID}); err != nil {
 		return
 	}
 	user := vcapool.User(*userDAO)
@@ -73,12 +76,13 @@ func RefreshHandler(c echo.Context) (err error) {
 	return vcago.NewSelected("refresh_token", user)
 }
 
-func LogoutHandler(c echo.Context) (err error) {
-	user := new(vcapool.AccessToken)
-	if user, err = vcapool.AccessCookieUser(c); err != nil {
+func (i *LoginHandler) Logout(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
 	c.SetCookie(vcapool.ResetAccessCookie())
 	c.SetCookie(vcapool.ResetRefreshCookie())
-	return vcago.NewExecuted("logout", user.ID)
+	return vcago.NewExecuted("logout", token.ID)
 }

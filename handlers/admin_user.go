@@ -4,20 +4,22 @@ import (
 	"pool-user/dao"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func UserCreateAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	body := new(dao.UserInsert)
+	body := new(dao.UserDatabase)
 	if err = vcago.BindAndValidate(c, body); err != nil {
 		return
 	}
-	if err = body.Create(ctx); err != nil {
+	result := new(vcapool.User)
+	if result, err = body.Create(ctx); err != nil {
 		return
 	}
-	return vcago.NewCreated("users", body)
+	return vcago.NewCreated("user", result)
 }
 
 func UserGetAdmin(c echo.Context) (err error) {
