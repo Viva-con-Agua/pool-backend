@@ -56,6 +56,31 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+type LoginAPIRequest struct {
+	Email string `json:"email"`
+}
+
+func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(LoginAPIRequest)
+	if vcago.BindAndValidate(c, body); err != nil {
+		return
+	}
+	userSystem := new(dao.User)
+	result := new(vcapool.User)
+	if err = userSystem.Get(c.Ctx(), bson.M{"email": body.Email}); err != nil && !vcago.MongoNoDocuments(err) {
+		return
+	}
+	result = (*vcapool.User)(userSystem)
+	token := new(vcapool.AuthToken)
+	if token, err = vcapool.NewAuthToken(result); err != nil {
+		return
+	}
+	c.SetCookie(token.AccessCookie())
+	c.SetCookie(token.RefreshCookie())
+	return c.Selected(result)
+}
+
 func (i *LoginHandler) Refresh(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	var userID string

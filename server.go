@@ -23,6 +23,9 @@ func main() {
 	login := e.Group("/auth")
 	login.Use(loginHandler.Context)
 	login.POST("/callback", loginHandler.Callback)
+	if vcago.Config.GetEnvBool("API_TEST_LOGIN", "n", false) {
+		login.POST("/testlogin", loginHandler.LoginAPI)
+	}
 	login.GET("/refresh", loginHandler.Refresh, vcapool.RefreshCookieConfig())
 	login.GET("/logout", loginHandler.Logout, vcago.AccessCookieMiddleware(&vcapool.AccessToken{}))
 
@@ -70,8 +73,8 @@ func main() {
 
 	crews := e.Group("/crews")
 	crews.POST("", handlers.CrewCreate, vcapool.AccessCookieConfig())
-	crews.GET("", handlers.CrewList, vcapool.AccessCookieConfig())
-	crews.GET("/:id", handlers.CrewGet, vcapool.AccessCookieConfig())
+	crews.GET("", handlers.CrewList)
+	crews.GET("/:id", handlers.CrewGet)
 	crews.PUT("", handlers.CrewUpdate, vcapool.AccessCookieConfig())
 	crews.DELETE("", handlers.CrewDelete, vcapool.AccessCookieConfig())
 
