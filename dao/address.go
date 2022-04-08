@@ -5,35 +5,48 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+type AddressCreate struct {
+	vcapool.AddressCreate
+}
+
+type AddressParam struct {
+	vcapool.AddressParam
+}
+
+type AddressUpdate struct {
+	vcapool.AddressUpdate
+}
 
 type Address vcapool.Address
 
 var AddressesCollection = Database.Collection("addresses").CreateIndex("user_id", true)
 
-func (i *Address) Create(ctx context.Context) (err error) {
-	i.ID = uuid.NewString()
-	i.Modified = vcago.NewModified()
-	err = AddressesCollection.InsertOne(ctx, &i)
+func (i *AddressCreate) Create(ctx context.Context, token *vcapool.AccessToken) (r *vcapool.Address, err error) {
+	r = i.Address(token)
+	err = AddressesCollection.InsertOne(ctx, &r)
 	return
 }
 
-func (i *Address) Get(ctx context.Context, filter bson.M) (err error) {
-	err = AddressesCollection.FindOne(ctx, filter, i)
+func (i *AddressParam) Get(ctx context.Context) (r *vcapool.Address, err error) {
+	r = new(vcapool.Address)
+	err = AddressesCollection.FindOne(ctx, i.Filter(), r)
 	return
 }
 
-func (i *Address) Update(ctx context.Context) (err error) {
-	i.Modified.Update()
-	update := bson.M{"$set": &i}
-	err = AddressesCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
+func (i *AddressUpdate) Update(ctx context.Context) (r *vcapool.Address, err error) {
+	if err = AddressesCollection.UpdateOneSet(ctx, bson.M{"_id": i.ID}, i); err != nil {
+		return
+	}
+	r = new(vcapool.Address)
+	err = AddressesCollection.FindOne(ctx, bson.M{"_id": i.ID}, r)
 	return
 }
 
-func (i *Address) Delete(ctx context.Context, filter bson.M) (err error) {
-	err = AddressesCollection.DeleteOne(ctx, filter)
+func (i *AddressParam) Delete(ctx context.Context) (err error) {
+	err = AddressesCollection.DeleteOne(ctx, i.Filter())
 	return
 }
 
@@ -53,3 +66,5 @@ func (i *AddressList) Get(ctx context.Context, filter bson.M) (err error) {
 	err = AddressesCollection.Find(ctx, filter, &i)
 	return
 }
+
+//func (i *)

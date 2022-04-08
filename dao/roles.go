@@ -16,7 +16,7 @@ func (i *Role) Create(ctx context.Context) (err error) {
 	if err = PoolRoleCollection.InsertOne(ctx, i); err != nil {
 		return
 	}
-	update := bson.M{"last_update": time.Now().Format(time.RFC3339), "modified.updated": time.Now().Unix()}
+	update := bson.M{"$set": bson.M{"last_update": time.Now().Format(time.RFC3339), "modified.updated": time.Now().Unix()}}
 	err = UserCollection.UpdateOne(ctx, bson.M{"_id": i.UserID}, update)
 	return
 }
@@ -30,7 +30,7 @@ func (i *Role) Delete(ctx context.Context) (err error) {
 	if err = PoolRoleCollection.DeleteOne(ctx, bson.M{"_id": i.ID}); err != nil {
 		return
 	}
-	update := bson.M{"last_update": time.Now().Format(time.RFC3339), "modified.updated": time.Now().Unix()}
+	update := bson.M{"$set": bson.M{"last_update": time.Now().Format(time.RFC3339), "modified.updated": time.Now().Unix()}}
 	err = UserCollection.UpdateOne(ctx, bson.M{"_id": i.UserID}, update)
 	return
 }
