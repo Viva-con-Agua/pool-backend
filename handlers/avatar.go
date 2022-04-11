@@ -29,9 +29,8 @@ func (i *AvatarHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	body.UserID = token.ID
 	result := new(vcapool.Avatar)
-	if result, err = body.Create(c.Ctx()); err != nil {
+	if result, err = body.Create(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -47,11 +46,8 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if token.AvatarID != body.ID {
-		return vcago.NewPermissionDenied("avatar", body.ID)
-	}
 	result := new(vcapool.Avatar)
-	if result, err = body.Update(c.Ctx()); err != nil {
+	if result, err = body.Update(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.Updated(result)
@@ -60,17 +56,13 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 
 func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.Avatar)
+	body := new(dao.AvatarParam)
 	token := new(vcapool.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	id := c.Param("c")
-	if token.AvatarID != id {
-		return vcago.NewPermissionDenied("avatar", body.ID)
-	}
-	if err = body.Delete(c.Ctx(), id); err != nil {
+	if err = body.Delete(c.Ctx(), token); err != nil {
 		return
 	}
-	return c.Deleted(id)
+	return c.Deleted(body.ID)
 }
