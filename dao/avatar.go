@@ -15,18 +15,22 @@ type AvatarUpdate struct {
 	vcapool.AvatarUpdate
 }
 
+type AvatarParam struct {
+	vcapool.AvatarParam
+}
+
 type Avatar vcapool.Avatar
 
 var AvatarCollection = Database.Collection("avatar").CreateIndex("user_id", true)
 
-func (i *AvatarCreate) Create(ctx context.Context) (r *vcapool.Avatar, err error) {
-	r = i.Avatar()
+func (i *AvatarCreate) Create(ctx context.Context, token *vcapool.AccessToken) (r *vcapool.Avatar, err error) {
+	r = i.Avatar(token.ID)
 	err = AvatarCollection.InsertOne(ctx, r)
 	return
 }
 
-func (i *AvatarUpdate) Update(ctx context.Context) (r *vcapool.Avatar, err error) {
-	if err = AvatarCollection.UpdateOneSet(ctx, bson.M{"_id": i.ID}, i); err != nil {
+func (i *AvatarUpdate) Update(ctx context.Context, token *vcapool.AccessToken) (r *vcapool.Avatar, err error) {
+	if err = AvatarCollection.UpdateOneSet(ctx, bson.M{"_id": i.ID, "user_id": token.ID}, i); err != nil {
 		return
 	}
 	r = new(vcapool.Avatar)
@@ -36,7 +40,7 @@ func (i *AvatarUpdate) Update(ctx context.Context) (r *vcapool.Avatar, err error
 	return
 }
 
-func (i *Avatar) Delete(ctx context.Context, id string) (err error) {
-	err = AvatarCollection.DeleteOne(ctx, bson.M{"_id": id})
+func (i *AvatarParam) Delete(ctx context.Context, token *vcapool.AccessToken) (err error) {
+	err = AvatarCollection.DeleteOne(ctx, bson.M{"_id": i.ID, "user_id": token.ID})
 	return
 }
