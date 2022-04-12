@@ -37,7 +37,7 @@ func (i *AddressParam) Get(ctx context.Context) (r *vcapool.Address, err error) 
 }
 
 func (i *AddressUpdate) Update(ctx context.Context) (r *vcapool.Address, err error) {
-	if err = AddressesCollection.UpdateOneSet(ctx, bson.M{"_id": i.ID}, i); err != nil {
+	if err = AddressesCollection.UpdateOneSet(ctx, bson.M{"_id": i.ID}, i.AddressUpdate); err != nil {
 		return
 	}
 	r = new(vcapool.Address)
