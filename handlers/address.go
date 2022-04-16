@@ -46,11 +46,8 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if !token.Roles.Validate("employee;admin") {
-		body.UserID = token.ID
-	}
 	result := new(vcapool.Address)
-	if result, err = body.Get(c.Ctx()); err != nil {
+	if result, err = body.Get(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -66,11 +63,8 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if token.AddressID != body.ID {
-		return vcago.NewPermissionDenied("address", body.ID)
-	}
 	result := new(vcapool.Address)
-	if result, err = body.Update(c.Ctx()); err != nil {
+	if result, err = body.Update(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.Updated(result)
@@ -86,25 +80,26 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if token.AddressID != body.ID {
-		return vcago.NewPermissionDenied("address", body.ID)
-	}
-	if err = body.Delete(c.Ctx()); err != nil {
+	if err = body.Delete(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
 }
 
 //TODO
-func AddressList(c echo.Context) (err error) {
-	ctx := c.Request().Context()
+func (i *AddressHandler) List(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
 	body := new(dao.AddressQuery)
-	if err = vcago.BindAndValidate(c, body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new(dao.AddressList)
-	if err = result.Get(ctx, body.Filter()); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	return vcago.NewSelected("address_list", result)
+	result := new(vcapool.AddressList)
+	if result, err = body.List(c.Ctx(), token); err != nil {
+		return
+	}
+	return c.Listed(result)
 }
