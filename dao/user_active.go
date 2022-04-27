@@ -2,14 +2,16 @@ package dao
 
 import (
 	"context"
-	"errors"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserActive vcapool.UserActive
+
+type UserActiveRequest struct {
+	vcapool.UserActiveRequest
+}
 
 var UserActiveCollection = Database.Collection("user_active").CreateIndex("user_id", true)
 
@@ -44,35 +46,23 @@ func (i *UserActive) Withdraw(ctx context.Context) (err error) {
 	return
 }
 
-type UserActiveRequest struct {
-	UserID string `json:"user_id"`
-	State  bool   `json:"state"`
-}
-
-func (i *UserActive) Confirm(ctx context.Context, userID string) (err error) {
-	userActive := new(vcapool.UserActive)
-	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": userID}, userActive); err != nil {
+//Confirm confirmes UserActive state
+func (i *UserActiveRequest) Confirm(ctx context.Context, userID string) (r *vcapool.UserActive, err error) {
+	if err = UserActiveCollection.UpdateOneSet(ctx, bson.M{"user_id": i.UserID}, i.Confirmed()); err != nil {
 		return
 	}
-	if !userActive.IsRequested() {
-		return vcago.NewStatusBadRequest(errors.New("active state is not requested"))
-	}
-	userActive.Confirmed()
-	i = (*UserActive)(userActive)
-	update := bson.M{"$set": i}
-	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
+	r = new(vcapool.UserActive)
+	err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": i.UserID}, r)
 	return
 }
 
-func (i *UserActive) Reject(ctx context.Context, id string) (err error) {
-	userActive := new(vcapool.UserActive)
-	if err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": id}, userActive); err != nil {
+//Reject rejects UserActive state
+func (i *UserActiveRequest) Reject(ctx context.Context, id string) (r *vcapool.UserActive, err error) {
+	if err = UserActiveCollection.UpdateOneSet(ctx, bson.M{"user_id": i.UserID}, i.Rejected()); err != nil {
 		return
 	}
-	userActive.Rejected()
-	i = (*UserActive)(userActive)
-	update := bson.M{"$set": i}
-	err = UserActiveCollection.UpdateOne(ctx, bson.M{"_id": i.ID}, update)
+	r = new(vcapool.UserActive)
+	err = UserActiveCollection.FindOne(ctx, bson.M{"user_id": i.UserID}, r)
 	return
 }
 

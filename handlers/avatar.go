@@ -6,41 +6,63 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
-func AvatarCreate(c echo.Context) (err error) {
-	ctx := c.Request().Context()
-	body := new(dao.Avatar)
-	if err = vcago.BindAndValidate(c, body); err != nil {
-		return
-	}
-	userReq := new(vcapool.AccessToken)
-	if userReq, err = vcapool.AccessCookieUser(c); err != nil {
-		return
-	}
-	body.UserID = userReq.ID
-	if err = body.Create(ctx); err != nil {
-		return
-	}
-	return vcago.NewCreated("avatar", body)
+type AvatarHandler struct {
+	vcago.Handler
 }
 
-func AvatarDelete(c echo.Context) (err error) {
-	ctx := c.Request().Context()
-	body := new(dao.Avatar)
-	if err = vcago.BindAndValidate(c, body); err != nil {
+func NewAvatarHandler() *AvatarHandler {
+	handler := vcago.NewHandler("avatar")
+	return &AvatarHandler{
+		*handler,
+	}
+}
+
+func (i *AvatarHandler) Create(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(dao.AvatarCreate)
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	user := new(vcapool.AccessToken)
-	if user, err = vcapool.AccessCookieUser(c); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if user.ID != body.UserID {
-		return vcago.NewPermissionDenied("avatar", body.ID)
-	}
-	if err = body.Delete(ctx, bson.M{"_id": c.Param("id")}); err != nil {
+	result := new(vcapool.Avatar)
+	if result, err = body.Create(c.Ctx(), token); err != nil {
 		return
 	}
-	return vcago.NewDeleted("avatar", body)
+	return c.Created(result)
+}
+
+func (i *AvatarHandler) Update(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(dao.AvatarUpdate)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new(vcapool.Avatar)
+	if result, err = body.Update(c.Ctx(), token); err != nil {
+		return
+	}
+	return c.Updated(result)
+
+}
+
+func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(dao.AvatarParam)
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = body.Delete(c.Ctx(), token); err != nil {
+		return
+	}
+	return c.Deleted(body.ID)
 }

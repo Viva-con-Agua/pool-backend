@@ -18,10 +18,16 @@ func main() {
 	//error
 	e.HTTPErrorHandler = vcago.HTTPErrorHandler
 	e.Validator = vcago.JSONValidator
+
+	loginHandler := handlers.NewLoginHandler()
 	login := e.Group("/auth")
-	login.POST("/callback", handlers.CallbackHandler)
-	login.GET("/refresh", handlers.RefreshHandler, vcapool.RefreshCookieConfig())
-	login.GET("/logout", handlers.LogoutHandler, vcapool.AccessCookieConfig())
+	login.Use(loginHandler.Context)
+	login.POST("/callback", loginHandler.Callback)
+	if vcago.Config.GetEnvBool("API_TEST_LOGIN", "n", false) {
+		login.POST("/testlogin", loginHandler.LoginAPI)
+	}
+	login.GET("/refresh", loginHandler.Refresh, vcapool.RefreshCookieConfig())
+	login.GET("/logout", loginHandler.Logout, vcago.AccessCookieMiddleware(&vcapool.AccessToken{}))
 
 	users := e.Group("/users")
 	users.GET("", handlers.UserList, vcapool.AccessCookieConfig())
@@ -50,20 +56,25 @@ func main() {
 	nvmUser.POST("/reject", handlers.UserNVMReject, vcapool.AccessCookieConfig())
 	nvmUser.GET("/withdraw", handlers.UserNVMWithdraw, vcapool.AccessCookieConfig())
 
+	addressHandler := handlers.NewAddressHandler()
 	address := users.Group("/address")
-	address.POST("", handlers.AddressCreate, vcapool.AccessCookieConfig())
-	address.PUT("", handlers.AddressUpdate, vcapool.AccessCookieConfig())
-	address.GET("/:id", handlers.AddressGet, vcapool.AccessCookieConfig())
-	address.DELETE("/:id", handlers.AddressDelete, vcapool.AccessCookieConfig())
+	address.Use(addressHandler.Context)
+	address.POST("", addressHandler.Create, vcapool.AccessCookieConfig())
+	address.PUT("", addressHandler.Update, vcapool.AccessCookieConfig())
+	address.GET("/:id", addressHandler.Get, vcapool.AccessCookieConfig())
+	address.DELETE("/:id", addressHandler.Delete, vcapool.AccessCookieConfig())
 
+	avatarHandler := handlers.NewAvatarHandler()
 	avatar := users.Group("/avatar")
-	avatar.POST("", handlers.AvatarCreate, vcapool.AccessCookieConfig())
-	avatar.DELETE("", handlers.AvatarDelete, vcapool.AccessCookieConfig())
+	avatar.Use(avatarHandler.Context)
+	avatar.POST("", avatarHandler.Create, vcapool.AccessCookieConfig())
+	avatar.PUT("", avatarHandler.Update, vcapool.AccessCookieConfig())
+	avatar.DELETE("/:id", avatarHandler.Delete, vcapool.AccessCookieConfig())
 
 	crews := e.Group("/crews")
 	crews.POST("", handlers.CrewCreate, vcapool.AccessCookieConfig())
-	crews.GET("", handlers.CrewList, vcapool.AccessCookieConfig())
-	crews.GET("/:id", handlers.CrewGet, vcapool.AccessCookieConfig())
+	crews.GET("", handlers.CrewList)
+	crews.GET("/:id", handlers.CrewGet)
 	crews.PUT("", handlers.CrewUpdate, vcapool.AccessCookieConfig())
 	crews.DELETE("", handlers.CrewDelete, vcapool.AccessCookieConfig())
 
