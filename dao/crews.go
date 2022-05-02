@@ -54,9 +54,10 @@ func (i *Crew) Update(ctx context.Context) (err error) {
 		return
 	}
 	update = bson.M{"$set": bson.M{"email": i.Email, "name": i.Name, "modified.updated": i.Modified.Updated}}
-	if err = UserCrewCollection.Update(ctx, bson.M{"crew_id": i.ID}, update); err != nil {
+	if err = UserCrewCollection.Update(ctx, bson.M{"crew_id": i.ID}, update); err != nil && !vcago.MongoNoUpdated(err) {
 		return
 	}
+	err = nil
 	return
 }
 

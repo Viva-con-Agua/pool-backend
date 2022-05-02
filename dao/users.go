@@ -117,6 +117,42 @@ func (i *User) Get(ctx context.Context, filter bson.M) (err error) {
 	return
 }
 
+func UserDelete(ctx context.Context, token *vcapool.AccessToken) (err error) {
+	if err = UserCollection.DeleteOne(ctx, bson.M{"_id": token.ID}); err != nil {
+		return
+	}
+	filter := bson.M{"user_id": token.ID}
+	if err = ProfilesCollection.DeleteOne(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	if err = AddressesCollection.DeleteOne(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	if err = UserCrewCollection.DeleteOne(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	if err = UserActiveCollection.DeleteOne(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	if err = UserNVMCollection.DeleteOne(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	if err = PoolRoleCollection.DeleteMany(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	if err = AvatarCollection.DeleteOne(ctx, filter); err != nil && !vcago.MongoNoDeleted(err) {
+		return
+	}
+	err = nil
+	return
+}
+
 type UserList []vcapool.User
 
 type UserQuery vcapool.UserQuery
