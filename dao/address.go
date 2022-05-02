@@ -29,7 +29,7 @@ type (
 var AddressesCollection = Database.Collection("addresses").CreateIndex("user_id", true)
 
 func (i *AddressCreate) Create(ctx context.Context, token *vcapool.AccessToken) (r *vcapool.Address, err error) {
-	r = i.Address(token)
+	r = i.Address(token.ID)
 	err = AddressesCollection.InsertOne(ctx, &r)
 	return
 }

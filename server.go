@@ -32,6 +32,11 @@ func main() {
 	users := e.Group("/users")
 	users.GET("", handlers.UserList, vcapool.AccessCookieConfig())
 
+	userHandler := handlers.NewUserHandler()
+	user := users.Group("/user")
+	user.Use(userHandler.Context)
+	user.DELETE("", userHandler.Delete, vcapool.AccessCookieConfig())
+
 	profile := users.Group("/profile")
 	profile.POST("", handlers.ProfileCreate, vcapool.AccessCookieConfig())
 	profile.PUT("", handlers.ProfileUpdate, vcapool.AccessCookieConfig())
@@ -78,9 +83,19 @@ func main() {
 	crews.PUT("", handlers.CrewUpdate, vcapool.AccessCookieConfig())
 	crews.DELETE("", handlers.CrewDelete, vcapool.AccessCookieConfig())
 
+	crewAPIKeyHandler := handlers.NewCrewAPIKeyHandler()
+	crewsAPIKey := crews.Group("/migrate")
+	crewsAPIKey.Use(crewAPIKeyHandler.Context)
+	crewsAPIKey.POST("", crewAPIKeyHandler.Create, vcago.KeyAuthMiddleware())
+
 	admin := e.Group("/admin")
 	adminUser := admin.Group("/users")
 	adminUser.GET("", handlers.UserListAdmin)
+
+	migrateHandler := handlers.NewUserMigrationHandler()
+	migrate := adminUser.Group("/migrate")
+	migrate.Use(migrateHandler.Context)
+	migrate.POST("/user", migrateHandler.Create)
 
 	adminCrew := admin.Group("/crews")
 	adminCrew.GET("", handlers.CrewListAdmin)

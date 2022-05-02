@@ -9,6 +9,29 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+type UserHandler struct {
+	vcago.Handler
+}
+
+func NewUserHandler() *UserHandler {
+	handler := vcago.NewHandler("user")
+	return &UserHandler{
+		*handler,
+	}
+}
+
+func (UserHandler) Delete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = dao.UserDelete(c.Ctx(), token); err != nil {
+		return
+	}
+	return c.Deleted(token.ID)
+}
+
 func UserCreate(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	body := new(dao.UserDatabase)
