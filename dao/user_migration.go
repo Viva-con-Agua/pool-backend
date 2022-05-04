@@ -86,21 +86,25 @@ func (i *UserMigrate) MigrateUser(ctx context.Context) (err error) {
 	if err = CrewsCollection.FindOne(ctx, bson.M{"_id": i.Crew.ID}, crew); err != nil {
 		return
 	}
+	err = nil
 	userCrew := vcapool.NewUserCrew(user.ID, i.Crew.ID, crew.Name, crew.Email)
 	uc := (*UserCrew)(userCrew)
 	uc.Modified = i.Crew.Modified
 
-	if err = UserCrewCollection.InsertOne(ctx, uc); err != nil {
+	if err = UserCrewCollection.InsertOne(ctx, uc); err != nil && !vcago.MongoConfict(err) {
 		return
 	}
+	err = nil
 	address := i.Address.Address(user.ID)
-	if err = AddressesCollection.InsertOne(ctx, address); err != nil {
+	if err = AddressesCollection.InsertOne(ctx, address); err != nil && !vcago.MongoConfict(err) {
 		return
 	}
+	err = nil
 	profile := i.Profile.Profile(user.ID)
-	if err = ProfilesCollection.InsertOne(ctx, profile); err != nil {
+	if err = ProfilesCollection.InsertOne(ctx, profile); err != nil && !vcago.MongoConfict(err) {
 		return
 	}
+	err = nil
 	userActive := i.UserActive()
 	if userActive != nil {
 		if err = UserActiveCollection.UpdateOneSet(ctx, bson.M{"user_id": user.ID}, userActive); err != nil {
@@ -116,9 +120,10 @@ func (i *UserMigrate) MigrateUser(ctx context.Context) (err error) {
 	for n := range i.Roles {
 		role := new(vcago.Role)
 		role, err = vcapool.NewRole(i.Roles[n], user.ID)
-		if err = PoolRoleCollection.InsertOne(ctx, role); err != nil {
+		if err = PoolRoleCollection.InsertOne(ctx, role); err != nil && !vcago.MongoConfict(err) {
 			return
 		}
+		err = nil
 	}
 	return
 }

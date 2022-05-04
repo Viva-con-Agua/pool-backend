@@ -34,8 +34,8 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Viva-con-Agua/vcago v1.2.11/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
-github.com/Viva-con-Agua/vcago v1.3.2 h1:3mH7KtO9SaUXN1gnYfUdB3z5Bsl73ttMYhqWennXvYM=
-github.com/Viva-con-Agua/vcago v1.3.2/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
+github.com/Viva-con-Agua/vcago v1.3.3 h1:tNHHI+x1/a+CTt8ou3wgPNv+SwGUoJcYUia/1gfUntk=
+github.com/Viva-con-Agua/vcago v1.3.3/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
 github.com/Viva-con-Agua/vcapool v0.2.0 h1:NjXad9thQ/I3tgdWTtgWzHD1YAJIFscMZR1TjSp1eBg=
 github.com/Viva-con-Agua/vcapool v0.2.0/go.mod h1:fmR1AYIbc9LuVQgbu3tPD1tnQkhPkqrsUKY3ZCJ6h4w=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
