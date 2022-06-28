@@ -26,7 +26,7 @@ type (
 	}
 	Position struct {
 		Lat float64 `json:"lat" bson:"lat"`
-		Lng float64 `json:"lin" bson:"lin"`
+		Lng float64 `json:"lng" bson:"lng"`
 	}
 )
 
