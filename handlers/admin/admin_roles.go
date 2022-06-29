@@ -1,0 +1,74 @@
+package admin
+
+import (
+	"pool-user/dao"
+	"pool-user/models"
+
+	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/labstack/echo/v4"
+)
+
+type RoleHandler struct {
+	vcago.Handler
+}
+
+var Role = &RoleHandler{*vcago.NewHandler("role")}
+
+func (i *RoleHandler) Routes(group *echo.Group) {
+	group.Use(i.Context)
+	group.POST("", i.Create)
+	group.DELETE("", i.Delete)
+}
+
+func (i *RoleHandler) Create(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.RoleRequest)
+	if c.BindAndValidate(body); err != nil {
+		return
+	}
+	user := new(models.User)
+	if err = dao.UserCollection.FindOne(
+		c.Ctx(),
+		models.UserPipeline().Match(body.MatchUser()).Pipe,
+		user,
+	); err != nil {
+		return
+	}
+	var result *vcago.Role
+	if result, err = body.New(); err != nil {
+		return
+	}
+	if err = dao.PoolRoleCollection.InsertOne(c.Ctx(), result); err != nil {
+		return
+	}
+	return c.Created(result)
+}
+
+func (i *RoleHandler) Delete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.RoleRequest)
+	if c.BindAndValidate(body); err != nil {
+		return
+	}
+	user := new(models.User)
+	if err = dao.UserCollection.FindOne(
+		c.Ctx(),
+		models.UserPipeline().Match(body.Match()).Pipe,
+		user,
+	); err != nil {
+		return
+	}
+	result := new(vcago.Role)
+	if err = dao.PoolRoleCollection.FindOne(
+		c.Ctx(),
+		vmdb.NewPipeline().Match(body.Match()).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	if err = dao.PoolRoleCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+		return
+	}
+	return c.Deleted(body)
+}

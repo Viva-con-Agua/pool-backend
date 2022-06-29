@@ -1,5 +1,6 @@
-package handlers
+package admin
 
+/*
 import (
 	"pool-user/dao"
 
@@ -29,3 +30,4 @@ func (i *UserMigrateHandler) Create(cc echo.Context) (err error) {
 	}
 	return c.Created(body)
 }
+*/
