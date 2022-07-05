@@ -45,7 +45,7 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.User)
-	if err = dao.UserCollection.FindOne(c.Ctx(), body.Pipeline(), result); err != nil {
+	if err = dao.UserCollection.AggregateOne(c.Ctx(), body.Pipeline(), result); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -62,7 +62,7 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.User)
-	if err = dao.UserCollection.Find(c.Ctx(), body.Pipeline(), result); err != nil {
+	if err = dao.UserCollection.Aggregate(c.Ctx(), body.Pipeline(), result); err != nil {
 		return
 	}
 	return c.Selected(result)

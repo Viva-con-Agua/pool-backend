@@ -41,11 +41,11 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.User)
-	if err = dao.UserCollection.FindOne(
+	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
 		models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
 		result,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	if err == mongo.ErrNoDocuments {
@@ -54,7 +54,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		if err = dao.UserCollection.InsertOne(c.Ctx(), userDatabase); err != nil {
 			return
 		}
-		if err = dao.UserCollection.FindOne(
+		if err = dao.UserCollection.AggregateOne(
 			c.Ctx(),
 			models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
 			result,
@@ -84,11 +84,11 @@ func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.User)
-	if err = dao.UserCollection.FindOne(
+	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
 		models.UserPipeline().Match(models.UserMatchEmail(body.Email)).Pipe,
 		result,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	token := new(vcapool.AuthToken)
@@ -107,11 +107,11 @@ func (i *LoginHandler) Refresh(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.User)
-	if err = dao.UserCollection.FindOne(
+	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
 		models.UserPipeline().Match(models.UserMatch(userID)).Pipe,
 		result,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	token := new(vcapool.AuthToken)

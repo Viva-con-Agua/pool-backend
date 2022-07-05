@@ -9,7 +9,6 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserCrewHandler struct {
@@ -43,6 +42,12 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.UserCrewCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
+	if err = dao.ActiveCollection.InsertOne(c.Ctx(), models.NewActive(token.ID, crew.ID)); err != nil {
+		return
+	}
+	if err = dao.NVMCollection.InsertOne(c.Ctx(), models.NewNVM(token.ID)); err != nil {
+		return
+	}
 	return c.Created(result)
 }
 
@@ -69,7 +74,7 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 		bson.D{{Key: "user_id", Value: body.UserID}},
 		vmdb.NewUpdateSet(models.ActiveWithdraw()),
 		nil,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	//reject nvm state
@@ -78,7 +83,7 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 		bson.D{{Key: "user_id", Value: body.UserID}},
 		vmdb.NewUpdateSet(models.NVMWithdraw()),
 		nil,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	return c.Updated(result)
@@ -87,30 +92,33 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	token := new(vcapool.AccessToken)
-	if err = c.AccessToken(*token); err != nil {
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
 	if err = dao.UserCrewCollection.DeleteOne(c.Ctx(), bson.D{{Key: "user_id", Value: token.ID}}); err != nil {
 		return
 	}
 	//reset active and nvm
-	if err = dao.ActiveCollection.UpdateOne(
+	if err = dao.ActiveCollection.DeleteOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	//reject nvm state
-	if err = dao.NVMCollection.UpdateOne(
+	if err = dao.NVMCollection.DeleteOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
+	if err = dao.PoolRoleCollection.DeleteMany(
+		c.Ctx(),
+		bson.D{{Key: "user_id", Value: token.ID}},
+	); err != nil && vmdb.ErrNoDocuments(err) {
+		return
+	}
+	err = nil
 	return c.Deleted(token.ID)
 
 }

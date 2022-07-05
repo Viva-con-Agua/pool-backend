@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"net/http"
 	"pool-user/dao"
 	"pool-user/models"
@@ -50,6 +51,7 @@ func (i *ActiveHandler) Request(cc echo.Context) (err error) {
 		vmdb.NewUpdateSet(models.ActiveRequest()),
 		result,
 	); err != nil {
+		log.Print(err)
 		return
 	}
 	//return "successfully requested."
@@ -164,7 +166,7 @@ func (i *ActiveHandler) Withdraw(cc echo.Context) (err error) {
 		bson.D{{Key: "user_id", Value: token.ID}},
 		vmdb.NewUpdateSet(models.NVMReject()),
 		nil,
-	); err != nil && err != mongo.ErrNoDocuments {
+	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
 	/*

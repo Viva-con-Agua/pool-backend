@@ -40,8 +40,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	}
 	result := body.Crew()
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
-		c.Log(err)(err)
-		return c.ErrorResponse(err)
+		return
 	}
 	return c.Created(result)
 }
@@ -52,8 +51,8 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new(models.Crew)
-	if dao.CrewsCollection.Find(c.Ctx(), body.Pipeline(), result); err != nil {
+	result := new([]models.Crew)
+	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
 	return c.Listed(result)
@@ -66,7 +65,7 @@ func (i *CrewHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Crew)
-	if err = dao.CrewsCollection.FindOne(c.Ctx(), body.Pipeline(), result); err != nil {
+	if err = dao.CrewsCollection.FindOne(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
 	return c.Selected(result)

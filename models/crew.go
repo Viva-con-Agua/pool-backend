@@ -67,12 +67,12 @@ func (i *CrewParam) Pipeline() mongo.Pipeline {
 	return vmdb.NewPipeline().Pipe
 }
 
-func (i *CrewQuery) Pipeline() mongo.Pipeline {
-	match := vmdb.NewMatch()
-	match.EqualStringList("_id", i.ID)
-	match.LikeString("email", i.Email)
-	match.LikeString("name", i.Name)
-	return vmdb.NewPipeline().Match(match).Pipe
+func (i *CrewQuery) Filter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("_id", i.ID)
+	filter.Like("email", i.Email)
+	filter.Like("name", i.Name)
+	return bson.D(*filter)
 }
 
 func CrewPermission(token *vcapool.AccessToken) (err error) {

@@ -1,11 +1,11 @@
 package token
 
 import (
+	"log"
 	"pool-user/dao"
 	"pool-user/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -33,11 +33,12 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	user := new(models.User)
-	if err = dao.UserCollection.FindOne(
+	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
 		models.UserPipeline().Match(body.MatchUser()).Pipe,
 		user,
 	); err != nil {
+		log.Print(err)
 		return
 	}
 	var result *vcago.Role
@@ -69,7 +70,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.FindOne(
 		c.Ctx(),
-		models.UserPipeline().Match(body.Match()).Pipe,
+		body.Filter(),
 		user,
 	); err != nil {
 		return
@@ -77,7 +78,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	result := new(vcago.Role)
 	if err = dao.PoolRoleCollection.FindOne(
 		c.Ctx(),
-		vmdb.NewPipeline().Match(body.Match()).Pipe,
+		body.Filter(),
 		result,
 	); err != nil {
 		return

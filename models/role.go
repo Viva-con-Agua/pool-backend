@@ -119,13 +119,6 @@ func (i *RoleRequest) MatchUser() (match *vmdb.Match) {
 	return
 }
 
-func (i *RoleRequest) Match() (match *vmdb.Match) {
-	match = vmdb.NewMatch()
-	match.EqualString("name", i.Role)
-	match.EqualString("user_id", i.UserID)
-	return
-}
-
 func (i *RoleRequest) Filter() bson.D {
 	return bson.D{{Key: "name", Value: i.Role}, {Key: "user_id", Value: i.UserID}}
 }

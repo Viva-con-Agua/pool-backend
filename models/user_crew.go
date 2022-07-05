@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type (
@@ -40,14 +39,15 @@ func NewUserCrew(userID string, crewID string, name string, email string) *UserC
 		UserID:   userID,
 		Name:     name,
 		Email:    email,
+		CrewID:   crewID,
 		Modified: vcago.NewModified(),
 	}
 }
 
-func (i *UserCrewCreate) CrewFilter() mongo.Pipeline {
-	match := vmdb.NewMatch()
+func (i *UserCrewCreate) CrewFilter() bson.D {
+	match := vmdb.NewFilter()
 	match.EqualString("_id", i.CrewID)
-	return vmdb.NewPipeline().Match(match).Pipe
+	return bson.D(*match)
 }
 
 func (i *UserCrewUpdate) Filter(token *vcapool.AccessToken) bson.D {

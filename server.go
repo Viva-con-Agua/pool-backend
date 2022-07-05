@@ -16,7 +16,7 @@ func main() {
 
 	//user routes
 	tokenUser := e.Group("/users")
-	token.User.Routes(tokenUser.Group("/user"))
+	token.User.Routes(tokenUser)
 	token.Profile.Routes(tokenUser.Group("/profile"))
 	token.UserCrew.Routes(tokenUser.Group("/crew"))
 	token.Role.Routes(tokenUser.Group("/role"))

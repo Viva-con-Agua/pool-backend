@@ -79,8 +79,8 @@ func (i *AddressParam) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
 	return vmdb.NewPipeline().Match(match).Pipe
 }
 
-func (i *AddressQuery) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
-	match := vmdb.NewMatch()
+func (i *AddressQuery) Filter(token *vcapool.AccessToken) bson.D {
+	match := vmdb.NewFilter()
 	if token.Roles.Validate("employee;admin") {
 		match.EqualStringList("_id", i.ID)
 		match.EqualStringList("crew_id", i.CrewID)
@@ -92,7 +92,7 @@ func (i *AddressQuery) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
 	match.GteInt64("modified.created", i.CreatedFrom)
 	match.LteInt64("modified.updated", i.UpdatedTo)
 	match.LteInt64("modified.created", i.CreatedTo)
-	return vmdb.NewPipeline().Match(match).Pipe
+	return bson.D(*match)
 }
 
 func (i *AddressUpdate) Filter(token *vcapool.AccessToken) bson.D {

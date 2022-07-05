@@ -26,7 +26,6 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), body); err != nil {
-		c.Log(err)(err)
 		return c.ErrorResponse(err)
 	}
 	return c.Created(body)

@@ -37,7 +37,7 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	}
 	result := body.Address(token.ID)
 	if err = dao.AddressesCollection.InsertOne(c.Ctx(), result); err != nil {
-		c.Log(err)(err)
+		c.Log(err)
 		return c.ErrorResponse(err)
 	}
 	return c.Created(result)
@@ -54,8 +54,8 @@ func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.Pipeline(token), result); err != nil {
-		c.Log(err)(err)
+	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.Filter(token), result); err != nil {
+		c.Log(err)
 		return
 	}
 	return c.Selected(result)
@@ -73,7 +73,6 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	}
 	result := new(models.Address)
 	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
-		c.Log(err)(err)
 		return
 	}
 	return c.Updated(result)
@@ -90,8 +89,7 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 		return
 	}
 	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
-		c.Log(err)(err)
-		return c.ErrorResponse(err)
+		return
 	}
 	return c.Deleted(body.ID)
 }
@@ -108,9 +106,8 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.Address)
-	if err = dao.AddressesCollection.Find(c.Ctx(), body.Pipeline(token), result); err != nil {
-		c.Log(err)(err)
-		return c.ErrorResponse(err)
+	if err = dao.AddressesCollection.Find(c.Ctx(), body.Filter(token), result); err != nil {
+		return
 	}
 	return c.Listed(result)
 }

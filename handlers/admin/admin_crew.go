@@ -26,7 +26,7 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Crew)
-	if dao.CrewsCollection.Find(c.Ctx(), body.Pipeline(), result); err != nil {
+	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
 	return c.Listed(result)
