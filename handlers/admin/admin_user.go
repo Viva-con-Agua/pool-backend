@@ -1,5 +1,6 @@
-package handlers
+package admin
 
+/*
 import (
 	"pool-user/dao"
 
@@ -24,7 +25,7 @@ func UserCreateAdmin(c echo.Context) (err error) {
 
 func UserGetAdmin(c echo.Context) (err error) {
 	ctx := c.Request().Context()
-	result := new(dao.User)
+	result := new(models.User)
 	if err = result.Get(ctx, bson.M{"_id": c.Param("id")}); err != nil {
 		return
 	}
@@ -42,4 +43,4 @@ func UserListAdmin(c echo.Context) (err error) {
 		return
 	}
 	return vcago.NewSelected("user_list", result)
-}
+}*/

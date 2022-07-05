@@ -1,5 +1,6 @@
 package dao
 
+/*
 import (
 	"context"
 	"time"
@@ -127,3 +128,4 @@ func (i *UserMigrate) MigrateUser(ctx context.Context) (err error) {
 	}
 	return
 }
+*/
