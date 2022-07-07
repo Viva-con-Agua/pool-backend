@@ -11,22 +11,25 @@ import (
 
 type (
 	CrewCreate struct {
-		Name   string `json:"name" bson:"name"`
-		Email  string `json:"email" bson:"email"`
-		Cities []City `json:"cities" bson:"cities"`
+		Name         string `json:"name" bson:"name"`
+		Email        string `json:"email" bson:"email"`
+		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Cities       []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdate struct {
-		ID     string `json:"id,omitempty" bson:"_id"`
-		Name   string `json:"name" bson:"name"`
-		Email  string `json:"email" bson:"email"`
-		Cities []City `json:"cities" bson:"cities"`
+		ID           string `json:"id,omitempty" bson:"_id"`
+		Name         string `json:"name" bson:"name"`
+		Email        string `json:"email" bson:"email"`
+		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Cities       []City `json:"cities" bson:"cities"`
 	}
 	Crew struct {
-		ID       string         `json:"id,omitempty" bson:"_id"`
-		Name     string         `json:"name" bson:"name"`
-		Email    string         `json:"email" bson:"email"`
-		Cities   []City         `json:"cities" bson:"cities"`
-		Modified vcago.Modified `json:"modified" bson:"modified"`
+		ID           string         `json:"id,omitempty" bson:"_id"`
+		Name         string         `json:"name" bson:"name"`
+		Email        string         `json:"email" bson:"email"`
+		Abbreviation string         `json:"abbreviation" bson:"abbreviation"`
+		Cities       []City         `json:"cities" bson:"cities"`
+		Modified     vcago.Modified `json:"modified" bson:"modified"`
 	}
 	City struct {
 		City        string         `json:"city" bson:"city"`
@@ -53,11 +56,12 @@ type (
 
 func (i *CrewCreate) Crew() *Crew {
 	return &Crew{
-		ID:       uuid.NewString(),
-		Name:     i.Name,
-		Email:    i.Email,
-		Cities:   i.Cities,
-		Modified: vcago.NewModified(),
+		ID:           uuid.NewString(),
+		Name:         i.Name,
+		Email:        i.Email,
+		Abbreviation: i.Abbreviation,
+		Cities:       i.Cities,
+		Modified:     vcago.NewModified(),
 	}
 }
 
