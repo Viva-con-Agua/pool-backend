@@ -9,7 +9,6 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type LoginHandler struct {
@@ -48,8 +47,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
-	if err == mongo.ErrNoDocuments {
-		err = nil
+	if vmdb.ErrNoDocuments(err) {
 		userDatabase := models.NewUserDatabase(tokenUser)
 		if err = dao.UserCollection.InsertOne(c.Ctx(), userDatabase); err != nil {
 			return
