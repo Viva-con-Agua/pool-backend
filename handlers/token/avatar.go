@@ -66,6 +66,9 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AvatarParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
 	token := new(vcapool.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return

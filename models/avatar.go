@@ -8,13 +8,15 @@ import (
 )
 
 type AvatarCreate struct {
-	URL  string `bson:"url" json:"url"`
-	Type string `bson:"type" json:"type"`
+	FileID string `bson:"file_id" json:"file_id"`
+	URL    string `bson:"url" json:"url"`
+	Type   string `bson:"type" json:"type"`
 }
 
 func (i *AvatarCreate) Avatar(userID string) *Avatar {
 	return &Avatar{
 		ID:       uuid.NewString(),
+		FileID:   i.FileID,
 		URL:      i.URL,
 		Type:     i.Type,
 		UserID:   userID,
@@ -23,16 +25,18 @@ func (i *AvatarCreate) Avatar(userID string) *Avatar {
 }
 
 type AvatarUpdate struct {
-	ID   string `bson:"_id" json:"id"`
-	URL  string `bson:"url" json:"url"`
-	Type string `bson:"type" json:"type"`
+	ID     string `bson:"_id" json:"id"`
+	FileID string `bson:"file_id" json:"file_id"`
+	URL    string `bson:"url" json:"url"`
+	Type   string `bson:"type" json:"type"`
 }
 type AvatarParam struct {
-	ID string `param:"_id"`
+	ID string `param:"id"`
 }
 
 type Avatar struct {
 	ID       string         `bson:"_id" json:"id"`
+	FileID   string         `bson:"file_id" json:"file_id"`
 	URL      string         `bson:"url" json:"url"`
 	Type     string         `bson:"type" json:"type"`
 	UserID   string         `bson:"user_id" json:"user_id"`

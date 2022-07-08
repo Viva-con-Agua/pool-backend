@@ -1,46 +1,71 @@
 package admin
 
-/*
 import (
 	"pool-user/dao"
+	"pool-user/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
-func UserCreateAdmin(c echo.Context) (err error) {
-	ctx := c.Request().Context()
+type UserHandler struct {
+	vcago.Handler
+}
+
+var User = &UserHandler{*vcago.NewHandler("user")}
+
+func (i *UserHandler) Routes(group *echo.Group) {
+	group.Use(i.Context)
+	group.GET("", i.Get)
+	group.GET("/:id", i.GetByID)
+	group.DELETE("/:id", i.Delete)
+}
+
+/*
+func (i *UserHandler) Create(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
 	body := new(dao.UserDatabase)
-	if err = vcago.BindAndValidate(c, body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new(vcapool.User)
-	if result, err = body.Create(ctx); err != nil {
-		return
-	}
-	return vcago.NewCreated("user", result)
-}
-
-func UserGetAdmin(c echo.Context) (err error) {
-	ctx := c.Request().Context()
 	result := new(models.User)
-	if err = result.Get(ctx, bson.M{"_id": c.Param("id")}); err != nil {
+	return vcago.NewCreated("user", result)
+}*/
+
+func (i *UserHandler) Delete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserParam)
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	return vcago.NewSelected("users", result)
+	if err = dao.UserCollection.DeleteOne(c.Ctx(), body.FilterAdmin()); err != nil {
+		return
+	}
+	return c.Deleted(body.ID)
 }
 
-func UserListAdmin(c echo.Context) (err error) {
-	ctx := c.Request().Context()
-	body := new(dao.UserQuery)
-	if err = vcago.BindAndValidate(c, body); err != nil {
+func (i *UserHandler) GetByID(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserParam)
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new(dao.UserList)
-	if result, err = body.List(ctx); err != nil {
+	result := new(models.User)
+	if err = dao.UserCollection.AggregateOne(c.Ctx(), body.Pipeline(), result); err != nil {
 		return
 	}
-	return vcago.NewSelected("user_list", result)
-}*/
+	return c.Selected(result)
+}
+
+func (i *UserHandler) Get(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	result := new([]models.User)
+	if err = dao.UserCollection.Aggregate(c.Ctx(), body.Pipeline(), result); err != nil {
+		return
+	}
+	return c.Selected(result)
+}

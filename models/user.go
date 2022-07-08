@@ -210,6 +210,11 @@ func (i *UserParam) Filter(token *vcapool.AccessToken) bson.D {
 	}
 }
 
+func (i *UserParam) FilterAdmin() bson.D {
+	return bson.D{{Key: "_id", Value: i.ID}}
+
+}
+
 func (i *UserQuery) Match() *vmdb.Match {
 	match := vmdb.NewMatch()
 	match.LikeString("first_name", i.FirstName)

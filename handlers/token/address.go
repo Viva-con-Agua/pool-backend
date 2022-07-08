@@ -37,8 +37,7 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	}
 	result := body.Address(token.ID)
 	if err = dao.AddressesCollection.InsertOne(c.Ctx(), result); err != nil {
-		c.Log(err)
-		return c.ErrorResponse(err)
+		return
 	}
 	return c.Created(result)
 }
@@ -55,7 +54,6 @@ func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 	}
 	result := new(models.Address)
 	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.Filter(token), result); err != nil {
-		c.Log(err)
 		return
 	}
 	return c.Selected(result)

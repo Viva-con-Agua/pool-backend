@@ -14,6 +14,7 @@ var Database = vmdb.NewDatabase(
 	vcago.Settings.String("DB_PORT", "w", "27017"),
 )
 
+
 //UserCollection represents the database collection of the User model.
 var UserCollection = Database.Collection("users").CreateIndex("email", true)
 
