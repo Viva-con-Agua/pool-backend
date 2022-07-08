@@ -24,7 +24,7 @@ func main() {
 	token.NVM.Routes(tokenUser.Group("/nvm"))
 	token.Address.Routes(tokenUser.Group("/address"))
 	token.Avatar.Routes(tokenUser.Group("/avatar"))
-
+	token.User.Routes(tokenUser)
 	//crew routes
 	crews := e.Group("/crews")
 	token.Crew.Routes(crews)
@@ -32,7 +32,8 @@ func main() {
 	key.Crew.Routes(e.Group("/apikey/crews"))
 
 	admin.Crew.Routes(e.Group("/admin/crews"))
-	admin.Role.Routes(e.Group("/admin/role"))
+	admin.Role.Routes(e.Group("/admin/users/role"))
+	admin.User.Routes(e.Group("/admin/users"))
 
 	//server
 	port := vcago.Config.GetEnvString("APP_PORT", "n", "1323")
