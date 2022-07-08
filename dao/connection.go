@@ -30,7 +30,7 @@ var NVMCollection = Database.Collection("nvm").CreateIndex("user_id", true)
 var AddressesCollection = Database.Collection("addresses").CreateIndex("user_id", true)
 
 //CrewsCollection represents the database collection of the Crew model.
-var CrewsCollection = Database.Collection("crews").CreateIndex("name", true)
+var CrewsCollection = Database.Collection("crews").CreateIndex("name", true).CreateIndex("abbreviation", true)
 
 //ProfilesCollection represents the database collection of the Profile model.
 var ProfilesCollection = Database.Collection("profiles").CreateIndex("user_id", true)
