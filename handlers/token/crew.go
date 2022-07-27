@@ -18,11 +18,11 @@ var Crew = &CrewHandler{*vcago.NewHandler("crew")}
 
 func (i *CrewHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
 	group.GET("", i.Get)
 	group.GET("/:id", i.GetByID)
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
-	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
+	group.PUT("", i.Update, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *CrewHandler) Create(cc echo.Context) (err error) {

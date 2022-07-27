@@ -24,10 +24,10 @@ var Active = &ActiveHandler{*vcago.NewHandler("active")}
 
 func (i *ActiveHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.GET("/request", i.Request, vcapool.AccessCookieConfig())
-	group.POST("/confirm", i.Confirm, vcapool.AccessCookieConfig())
-	group.POST("/reject", i.Reject, vcapool.AccessCookieConfig())
-	group.GET("/withdraw", i.Withdraw, vcapool.AccessCookieConfig())
+	group.GET("/request", i.Request, accessCookie)
+	group.POST("/confirm", i.Confirm, accessCookie)
+	group.POST("/reject", i.Reject, accessCookie)
+	group.GET("/withdraw", i.Withdraw, accessCookie)
 }
 
 //Request handles an active request call.

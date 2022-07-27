@@ -4,17 +4,18 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 )
 
 type (
 	NVM struct {
-		ID       string         `bson:"_id" json:"id"`
-		Status   string         `bson:"status" json:"status"`
-		Since    int64          `bson:"since" json:"since"`
-		UserID   string         `bson:"user_id" json:"user_id"`
-		Modified vcago.Modified `bson:"modified" json:"modified"`
+		ID       string        `bson:"_id" json:"id"`
+		Status   string        `bson:"status" json:"status"`
+		Since    int64         `bson:"since" json:"since"`
+		UserID   string        `bson:"user_id" json:"user_id"`
+		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	NVMUpdate struct {
 		Status string `bson:"status" json:"status"`
@@ -31,7 +32,7 @@ func NewNVM(userID string) *NVM {
 		Status:   "not_requested",
 		Since:    time.Now().Unix(),
 		UserID:   userID,
-		Modified: vcago.NewModified(),
+		Modified: vmod.NewModified(),
 	}
 }
 

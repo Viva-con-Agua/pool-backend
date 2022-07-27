@@ -36,6 +36,6 @@ func main() {
 	admin.User.Routes(e.Group("/admin/users"))
 
 	//server
-	port := vcago.Config.GetEnvString("APP_PORT", "n", "1323")
+	port := vcago.Settings.String("APP_PORT", "n", "1323")
 	e.Logger.Fatal(e.Start(":" + port))
 }

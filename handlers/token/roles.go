@@ -6,6 +6,7 @@ import (
 	"pool-user/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -18,8 +19,8 @@ var Role = &RoleHandler{*vcago.NewHandler("role")}
 
 func (i *RoleHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.DELETE("", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.DELETE("", i.Delete, accessCookie)
 }
 
 func (i *RoleHandler) Create(cc echo.Context) (err error) {
@@ -41,7 +42,7 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 		log.Print(err)
 		return
 	}
-	var result *vcago.Role
+	var result *vmod.Role
 	if result, err = body.New(); err != nil {
 		return
 	}
@@ -75,7 +76,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
-	result := new(vcago.Role)
+	result := new(vmod.Role)
 	if err = dao.PoolRoleCollection.FindOne(
 		c.Ctx(),
 		body.Filter(),
@@ -83,7 +84,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
-	if !token.Roles.CheckRoot((*vcago.Role)(result)) && !token.PoolRoles.CheckRoot((*vcago.Role)(result)) {
+	if !token.Roles.CheckRoot((*vmod.Role)(result)) && !token.PoolRoles.CheckRoot((*vmod.Role)(result)) {
 		return vcago.NewValidationError("no permission for delete this role")
 	}
 	if err = dao.PoolRoleCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {

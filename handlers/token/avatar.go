@@ -18,9 +18,9 @@ var Avatar = &AvatarHandler{*vcago.NewHandler("avatar")}
 
 func (i *AvatarHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
-	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.PUT("", i.Update, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *AvatarHandler) Create(cc echo.Context) (err error) {
@@ -50,7 +50,7 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vcapool.Avatar)
+	result := new(models.Avatar)
 	if err = dao.AvatarCollection.UpdateOne(
 		c.Ctx(),
 		body.Filter(token),

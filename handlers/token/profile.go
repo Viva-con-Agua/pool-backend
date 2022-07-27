@@ -18,8 +18,8 @@ var Profile = &ProfileHandler{*vcago.NewHandler("profile")}
 
 func (i *ProfileHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.PUT("", i.Update, accessCookie)
 }
 
 func (i *ProfileHandler) Create(cc echo.Context) (err error) {

@@ -18,11 +18,11 @@ var Address = &AddressHandler{*vcago.NewHandler("address")}
 
 func (i *AddressHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
-	group.GET("", i.Get, vcapool.AccessCookieConfig())
-	group.GET("/:id", i.GetByID, vcapool.AccessCookieConfig())
-	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.PUT("", i.Update, accessCookie)
+	group.GET("", i.Get, accessCookie)
+	group.GET("/:id", i.GetByID, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *AddressHandler) Create(cc echo.Context) (err error) {

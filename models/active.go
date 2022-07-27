@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +12,12 @@ import (
 
 type (
 	Active struct {
-		ID       string         `bson:"_id" json:"id"`
-		Status   string         `bson:"status" json:"status"`
-		Since    int64          `bson:"since" json:"since"`
-		UserID   string         `bson:"user_id" json:"user_id"`
-		CrewID   string         `bson:"crew_id" json:"crew_id"`
-		Modified vcago.Modified `bson:"modified" json:"modified"`
+		ID       string        `bson:"_id" json:"id"`
+		Status   string        `bson:"status" json:"status"`
+		Since    int64         `bson:"since" json:"since"`
+		UserID   string        `bson:"user_id" json:"user_id"`
+		CrewID   string        `bson:"crew_id" json:"crew_id"`
+		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	ActiveUpdate struct {
 		Status string `bson:"status" json:"status"`
@@ -34,7 +35,7 @@ func NewActive(userID string, crewID string) *Active {
 		Since:    time.Now().Unix(),
 		UserID:   userID,
 		CrewID:   crewID,
-		Modified: vcago.NewModified(),
+		Modified: vmod.NewModified(),
 	}
 }
 
