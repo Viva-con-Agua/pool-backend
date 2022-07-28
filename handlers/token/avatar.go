@@ -1,9 +1,11 @@
-package handlers
+package token
 
 import (
 	"pool-user/dao"
+	"pool-user/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -12,16 +14,18 @@ type AvatarHandler struct {
 	vcago.Handler
 }
 
-func NewAvatarHandler() *AvatarHandler {
-	handler := vcago.NewHandler("avatar")
-	return &AvatarHandler{
-		*handler,
-	}
+var Avatar = &AvatarHandler{*vcago.NewHandler("avatar")}
+
+func (i *AvatarHandler) Routes(group *echo.Group) {
+	group.Use(i.Context)
+	group.POST("", i.Create, vcapool.AccessCookieConfig())
+	group.PUT("", i.Update, vcapool.AccessCookieConfig())
+	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
 }
 
 func (i *AvatarHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AvatarCreate)
+	body := new(models.AvatarCreate)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -29,8 +33,8 @@ func (i *AvatarHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vcapool.Avatar)
-	if result, err = body.Create(c.Ctx(), token); err != nil {
+	result := body.Avatar(token.ID)
+	if err = dao.AvatarCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -38,7 +42,7 @@ func (i *AvatarHandler) Create(cc echo.Context) (err error) {
 
 func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AvatarUpdate)
+	body := new(models.AvatarUpdate)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -47,7 +51,12 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(vcapool.Avatar)
-	if result, err = body.Update(c.Ctx(), token); err != nil {
+	if err = dao.AvatarCollection.UpdateOne(
+		c.Ctx(),
+		body.Filter(token),
+		vmdb.NewUpdateSet(body),
+		result,
+	); err != nil {
 		return
 	}
 	return c.Updated(result)
@@ -56,12 +65,15 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 
 func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AvatarParam)
+	body := new(models.AvatarParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
 	token := new(vcapool.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = body.Delete(c.Ctx(), token); err != nil {
+	if err = dao.AvatarCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

@@ -34,10 +34,10 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Viva-con-Agua/vcago v1.2.11/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
-github.com/Viva-con-Agua/vcago v1.3.3 h1:tNHHI+x1/a+CTt8ou3wgPNv+SwGUoJcYUia/1gfUntk=
-github.com/Viva-con-Agua/vcago v1.3.3/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
-github.com/Viva-con-Agua/vcapool v0.2.0 h1:NjXad9thQ/I3tgdWTtgWzHD1YAJIFscMZR1TjSp1eBg=
-github.com/Viva-con-Agua/vcapool v0.2.0/go.mod h1:fmR1AYIbc9LuVQgbu3tPD1tnQkhPkqrsUKY3ZCJ6h4w=
+github.com/Viva-con-Agua/vcago v1.4.3 h1:objGaWrqM0VNZ93gyHP6RbpyR6BQTbXp3gGQi3tD7lY=
+github.com/Viva-con-Agua/vcago v1.4.3/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
+github.com/Viva-con-Agua/vcapool v0.3.0 h1:XYpouLFzVKfkHFeemnfTsYmTfTkEpQ8xp+Zj1noSMeY=
+github.com/Viva-con-Agua/vcapool v0.3.0/go.mod h1:fmR1AYIbc9LuVQgbu3tPD1tnQkhPkqrsUKY3ZCJ6h4w=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
@@ -168,7 +168,6 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
-github.com/sonh/qs v0.6.0 h1:MS9WlVLpqkePKgtFnkPR9xZE+DxE7nSraWiG1vxs8eo=
 github.com/sonh/qs v0.6.0/go.mod h1:ywKyX7vSo9R5dfgEQSCZ75tFzNkVUJZyK3/W6qGeHMQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=

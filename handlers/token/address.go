@@ -1,9 +1,11 @@
-package handlers
+package token
 
 import (
 	"pool-user/dao"
+	"pool-user/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -12,16 +14,20 @@ type AddressHandler struct {
 	vcago.Handler
 }
 
-func NewAddressHandler() *AddressHandler {
-	handler := vcago.NewHandler("address")
-	return &AddressHandler{
-		*handler,
-	}
+var Address = &AddressHandler{*vcago.NewHandler("address")}
+
+func (i *AddressHandler) Routes(group *echo.Group) {
+	group.Use(i.Context)
+	group.POST("", i.Create, vcapool.AccessCookieConfig())
+	group.PUT("", i.Update, vcapool.AccessCookieConfig())
+	group.GET("", i.Get, vcapool.AccessCookieConfig())
+	group.GET("/:id", i.GetByID, vcapool.AccessCookieConfig())
+	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
 }
 
 func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AddressCreate)
+	body := new(models.AddressCreate)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -29,16 +35,16 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vcapool.Address)
-	if result, err = body.Create(c.Ctx(), token); err != nil {
+	result := body.Address(token.ID)
+	if err = dao.AddressesCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
 	return c.Created(result)
 }
 
-func (i *AddressHandler) Get(cc echo.Context) (err error) {
+func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AddressParam)
+	body := new(models.AddressParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -46,8 +52,8 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vcapool.Address)
-	if result, err = body.Get(c.Ctx(), token); err != nil {
+	result := new(models.Address)
+	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.Filter(token), result); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -55,7 +61,7 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 
 func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AddressUpdate)
+	body := new(models.AddressUpdate)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -63,8 +69,8 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vcapool.Address)
-	if result, err = body.Update(c.Ctx(), token); err != nil {
+	result := new(models.Address)
+	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
 		return
 	}
 	return c.Updated(result)
@@ -72,7 +78,7 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 
 func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AddressParam)
+	body := new(models.AddressParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -80,16 +86,16 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = body.Delete(c.Ctx(), token); err != nil {
+	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
 }
 
 //TODO
-func (i *AddressHandler) List(cc echo.Context) (err error) {
+func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.AddressQuery)
+	body := new(models.AddressQuery)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -97,8 +103,8 @@ func (i *AddressHandler) List(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vcapool.AddressList)
-	if result, err = body.List(c.Ctx(), token); err != nil {
+	result := new([]models.Address)
+	if err = dao.AddressesCollection.Find(c.Ctx(), body.Filter(token), result); err != nil {
 		return
 	}
 	return c.Listed(result)
