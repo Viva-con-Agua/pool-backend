@@ -27,3 +27,6 @@ db:
 
 exec:
 	docker-compose -f docker-compose.dev.yml exec db mongo
+
+commit:
+	pre-commit run --show-diff-on-failure --color=always --all-files && git commit
