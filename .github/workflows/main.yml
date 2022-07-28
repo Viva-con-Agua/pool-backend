@@ -16,7 +16,7 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
       - run: pre-commit run --show-diff-on-failure --color=always --all-files
-    
+
   check-run:
     runs-on: ubuntu-latest
     steps:
