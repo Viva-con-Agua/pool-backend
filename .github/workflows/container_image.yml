@@ -10,7 +10,7 @@ jobs:
   build-container:
     uses: Viva-con-Agua/workflows/.github/workflows/build_image.yml@main
   deploy-storybook:
-    needs: [build-storybook-container]
+    needs: [build-container]
     uses: Viva-con-Agua/workflows/.github/workflows/deploy.yml@main
     secrets: inherit
     with:
