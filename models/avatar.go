@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,7 +20,7 @@ func (i *AvatarCreate) Avatar(userID string) *Avatar {
 		URL:      i.URL,
 		Type:     i.Type,
 		UserID:   userID,
-		Modified: vcago.NewModified(),
+		Modified: vmod.NewModified(),
 	}
 }
 
@@ -35,12 +35,12 @@ type AvatarParam struct {
 }
 
 type Avatar struct {
-	ID       string         `bson:"_id" json:"id"`
-	FileID   string         `bson:"file_id" json:"file_id"`
-	URL      string         `bson:"url" json:"url"`
-	Type     string         `bson:"type" json:"type"`
-	UserID   string         `bson:"user_id" json:"user_id"`
-	Modified vcago.Modified `bson:"modified" json:"modified"`
+	ID       string        `bson:"_id" json:"id"`
+	FileID   string        `bson:"file_id" json:"file_id"`
+	URL      string        `bson:"url" json:"url"`
+	Type     string        `bson:"type" json:"type"`
+	UserID   string        `bson:"user_id" json:"user_id"`
+	Modified vmod.Modified `bson:"modified" json:"modified"`
 }
 
 func (i *AvatarUpdate) Filter(token *vcapool.AccessToken) bson.D {

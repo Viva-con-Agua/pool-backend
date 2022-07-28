@@ -17,9 +17,9 @@ var User = &UserHandler{*vcago.NewHandler("user")}
 
 func (i *UserHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.GET("", i.Get, vcapool.AccessCookieConfig())
-	group.GET("/:id", i.GetByID, vcapool.AccessCookieConfig())
-	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
+	group.GET("", i.Get, accessCookie)
+	group.GET("/:id", i.GetByID, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *UserHandler) Delete(cc echo.Context) (err error) {

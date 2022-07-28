@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -31,16 +31,16 @@ type (
 		UserID      string `json:"user_id" bson:"user_id"`
 	}
 	Address struct {
-		ID          string         `json:"id" bson:"_id"`
-		Street      string         `json:"street" bson:"street"`
-		Number      string         `json:"number" bson:"number"`
-		Zip         string         `json:"zip" bson:"zip"`
-		City        string         `json:"city" bson:"city"`
-		Country     string         `json:"country" bson:"country"`
-		CountryCode string         `json:"country_code" bson:"country_code"`
-		Additionals string         `json:"additionals" bson:"additionals"`
-		UserID      string         `json:"user_id" bson:"user_id"`
-		Modified    vcago.Modified `json:"modified" bson:"modified"`
+		ID          string        `json:"id" bson:"_id"`
+		Street      string        `json:"street" bson:"street"`
+		Number      string        `json:"number" bson:"number"`
+		Zip         string        `json:"zip" bson:"zip"`
+		City        string        `json:"city" bson:"city"`
+		Country     string        `json:"country" bson:"country"`
+		CountryCode string        `json:"country_code" bson:"country_code"`
+		Additionals string        `json:"additionals" bson:"additionals"`
+		UserID      string        `json:"user_id" bson:"user_id"`
+		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
 	AddressQuery struct {
 		ID          []string `query:"id" qs:"id"`
@@ -71,12 +71,12 @@ func (i *AddressCreate) Address(userID string) (r *Address) {
 }
 
 func (i *AddressParam) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
-	match := vmdb.NewMatch()
+	match := vmdb.NewFilter()
 	match.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {
 		match.EqualString("user_id", token.ID)
 	}
-	return vmdb.NewPipeline().Match(match).Pipe
+	return vmdb.NewPipeline().Match(match.Bson()).Pipe
 }
 
 func (i *AddressQuery) Filter(token *vcapool.AccessToken) bson.D {
@@ -92,7 +92,7 @@ func (i *AddressQuery) Filter(token *vcapool.AccessToken) bson.D {
 	match.GteInt64("modified.created", i.CreatedFrom)
 	match.LteInt64("modified.updated", i.UpdatedTo)
 	match.LteInt64("modified.created", i.CreatedTo)
-	return bson.D(*match)
+	return match.Bson()
 }
 
 func (i *AddressUpdate) Filter(token *vcapool.AccessToken) bson.D {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,56 +18,56 @@ type (
 		Email string `json:"email"`
 	}
 	UserDatabase struct {
-		ID            string         `json:"id,omitempty" bson:"_id"`
-		Email         string         `json:"email" bson:"email" validate:"required,email"`
-		FirstName     string         `bson:"first_name" json:"first_name" validate:"required"`
-		LastName      string         `bson:"last_name" json:"last_name" validate:"required"`
-		FullName      string         `bson:"full_name" json:"full_name"`
-		DisplayName   string         `bson:"display_name" json:"display_name"`
-		Roles         vcago.RoleList `json:"system_roles" bson:"system_roles"`
-		Country       string         `bson:"country" json:"country"`
-		PrivacyPolicy bool           `bson:"privacy_policy" json:"privacy_policy"`
-		Confirmed     bool           `bson:"confirmed" json:"confirmed"`
-		DropsID       string         `bson:"drops_id" json:"drops_id"`
-		LastUpdate    string         `bson:"last_update" json:"last_update"`
-		Modified      vcago.Modified `json:"modified" bson:"modified"`
+		ID            string        `json:"id,omitempty" bson:"_id"`
+		Email         string        `json:"email" bson:"email" validate:"required,email"`
+		FirstName     string        `bson:"first_name" json:"first_name" validate:"required"`
+		LastName      string        `bson:"last_name" json:"last_name" validate:"required"`
+		FullName      string        `bson:"full_name" json:"full_name"`
+		DisplayName   string        `bson:"display_name" json:"display_name"`
+		Roles         vmod.RoleList `json:"system_roles" bson:"system_roles"`
+		Country       string        `bson:"country" json:"country"`
+		PrivacyPolicy bool          `bson:"privacy_policy" json:"privacy_policy"`
+		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
+		DropsID       string        `bson:"drops_id" json:"drops_id"`
+		LastUpdate    string        `bson:"last_update" json:"last_update"`
+		Modified      vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {
-		ID            string         `json:"id,omitempty" bson:"_id"`
-		Email         string         `json:"email" bson:"email" validate:"required,email"`
-		FirstName     string         `bson:"first_name" json:"first_name" validate:"required"`
-		LastName      string         `bson:"last_name" json:"last_name" validate:"required"`
-		FullName      string         `bson:"full_name" json:"full_name"`
-		DisplayName   string         `bson:"display_name" json:"display_name"`
-		Roles         vcago.RoleList `json:"system_roles" bson:"system_roles"`
-		Country       string         `bson:"country" json:"country"`
-		PrivacyPolicy bool           `bson:"privacy_policy" json:"privacy_policy"`
-		Confirmed     bool           `bson:"confirmed" json:"confirmed"`
-		DropsID       string         `bson:"drops_id" json:"drops_id"`
-		LastUpdate    string         `bson:"last_update" json:"last_update"`
+		ID            string        `json:"id,omitempty" bson:"_id"`
+		Email         string        `json:"email" bson:"email" validate:"required,email"`
+		FirstName     string        `bson:"first_name" json:"first_name" validate:"required"`
+		LastName      string        `bson:"last_name" json:"last_name" validate:"required"`
+		FullName      string        `bson:"full_name" json:"full_name"`
+		DisplayName   string        `bson:"display_name" json:"display_name"`
+		Roles         vmod.RoleList `json:"system_roles" bson:"system_roles"`
+		Country       string        `bson:"country" json:"country"`
+		PrivacyPolicy bool          `bson:"privacy_policy" json:"privacy_policy"`
+		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
+		DropsID       string        `bson:"drops_id" json:"drops_id"`
+		LastUpdate    string        `bson:"last_update" json:"last_update"`
 	}
 	User struct {
-		ID            string         `json:"id,omitempty" bson:"_id"`
-		Email         string         `json:"email" bson:"email" validate:"required,email"`
-		FirstName     string         `bson:"first_name" json:"first_name" validate:"required"`
-		LastName      string         `bson:"last_name" json:"last_name" validate:"required"`
-		FullName      string         `bson:"full_name" json:"full_name"`
-		DisplayName   string         `bson:"display_name" json:"display_name"`
-		Roles         vcago.RoleList `json:"system_roles" bson:"system_roles"`
-		Country       string         `bson:"country" json:"country"`
-		PrivacyPolicy bool           `bson:"privacy_policy" json:"privacy_policy"`
-		Confirmed     bool           `bson:"confirmed" json:"confirmed"`
-		LastUpdate    string         `bson:"last_update" json:"last_update"`
+		ID            string        `json:"id,omitempty" bson:"_id"`
+		Email         string        `json:"email" bson:"email" validate:"required,email"`
+		FirstName     string        `bson:"first_name" json:"first_name" validate:"required"`
+		LastName      string        `bson:"last_name" json:"last_name" validate:"required"`
+		FullName      string        `bson:"full_name" json:"full_name"`
+		DisplayName   string        `bson:"display_name" json:"display_name"`
+		Roles         vmod.RoleList `json:"system_roles" bson:"system_roles"`
+		Country       string        `bson:"country" json:"country"`
+		PrivacyPolicy bool          `bson:"privacy_policy" json:"privacy_policy"`
+		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
+		LastUpdate    string        `bson:"last_update" json:"last_update"`
 		//extends the vcago.User
-		DropsID   string         `bson:"drops_id" json:"drops_id"`
-		Profile   Profile        `json:"profile" bson:"profile,truncate"`
-		Crew      UserCrew       `json:"crew" bson:"crew,omitempty"`
-		Avatar    Avatar         `bson:"avatar,omitempty" json:"avatar"`
-		Address   Address        `json:"address" bson:"address,omitempty"`
-		PoolRoles vcago.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
-		Active    Active         `json:"active" bson:"active,omitempty"`
-		NVM       NVM            `json:"nvm" bson:"nvm,omitempty"`
-		Modified  vcago.Modified `json:"modified" bson:"modified"`
+		DropsID   string        `bson:"drops_id" json:"drops_id"`
+		Profile   Profile       `json:"profile" bson:"profile,truncate"`
+		Crew      UserCrew      `json:"crew" bson:"crew,omitempty"`
+		Avatar    Avatar        `bson:"avatar,omitempty" json:"avatar"`
+		Address   Address       `json:"address" bson:"address,omitempty"`
+		PoolRoles vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
+		Active    Active        `json:"active" bson:"active,omitempty"`
+		NVM       NVM           `json:"nvm" bson:"nvm,omitempty"`
+		Modified  vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserParam struct {
 		ID string `param:"id"`
@@ -92,7 +93,7 @@ type (
 	}
 )
 
-func NewUserDatabase(user *vcago.User) *UserDatabase {
+func NewUserDatabase(user *vmod.User) *UserDatabase {
 	return &UserDatabase{
 		ID:            user.ID,
 		Email:         user.Email,
@@ -105,11 +106,11 @@ func NewUserDatabase(user *vcago.User) *UserDatabase {
 		PrivacyPolicy: user.PrivacyPolicy,
 		Confirmed:     user.Confirmd,
 		LastUpdate:    user.LastUpdate,
-		Modified:      vcago.NewModified(),
+		Modified:      vmod.NewModified(),
 	}
 }
 
-func NewUserUpdate(user *vcago.User) *UserUpdate {
+func NewUserUpdate(user *vmod.User) *UserUpdate {
 	return &UserUpdate{
 		ID:            user.ID,
 		Email:         user.Email,
@@ -137,23 +138,23 @@ func UserPipeline() (pipe *vmdb.Pipeline) {
 	return
 }
 
-func UserMatch(userID string) (match *vmdb.Match) {
-	match = vmdb.NewMatch()
+func UserMatch(userID string) bson.D {
+	match := vmdb.NewFilter()
 	match.EqualString("_id", userID)
-	return
+	return match.Bson()
 }
 
-func UserMatchEmail(email string) (match *vmdb.Match) {
-	match = vmdb.NewMatch()
+func UserMatchEmail(email string) bson.D {
+	match := vmdb.NewFilter()
 	match.EqualString("email", email)
-	return
+	return match.Bson()
 }
 
 func (i *UserUpdate) Filter() bson.D {
 	return bson.D{{Key: "_id", Value: i.ID}}
 }
 
-func (i *User) AuthToken() (r *vcapool.AuthToken, err error) {
+func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 	accessToken := &vcapool.AccessToken{
 		ID:            i.ID,
 		Email:         i.Email,
@@ -182,24 +183,19 @@ func (i *User) AuthToken() (r *vcapool.AuthToken, err error) {
 			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
 		},
 	}
-	refreshToken := &vcapool.RefreshToken{
+	refreshToken := &vcago.RefreshToken{
 		UserID: i.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 		},
 	}
-	r = new(vcapool.AuthToken)
-	if r.AccessToken, err = accessToken.SignedString(vcapool.JWTSecret); err != nil {
-		return
-	}
-	r.RefreshToken, err = refreshToken.SignedString(vcapool.JWTSecret)
-	return
+	return vcago.NewAuthToken(accessToken, refreshToken)
 }
 
 func (i UserParam) Pipeline() mongo.Pipeline {
-	match := vmdb.NewMatch()
+	match := vmdb.NewFilter()
 	match.EqualString("_id", i.ID)
-	return UserPipeline().Match(match).Pipe
+	return UserPipeline().Match(match.Bson()).Pipe
 }
 
 func (i *UserParam) Filter(token *vcapool.AccessToken) bson.D {
@@ -215,8 +211,8 @@ func (i *UserParam) FilterAdmin() bson.D {
 
 }
 
-func (i *UserQuery) Match() *vmdb.Match {
-	match := vmdb.NewMatch()
+func (i *UserQuery) Match() bson.D {
+	match := vmdb.NewFilter()
 	match.LikeString("first_name", i.FirstName)
 	match.LikeString("last_name", i.LastName)
 	match.LikeString("full_name", i.FullName)
@@ -234,7 +230,7 @@ func (i *UserQuery) Match() *vmdb.Match {
 	match.GteInt64("modified.created", i.CreatedFrom)
 	match.LteInt64("modified.updated", i.UpdatedTo)
 	match.LteInt64("modified.created", i.CreatedTo)
-	return match
+	return match.Bson()
 }
 
 func (i *UserQuery) Pipeline() mongo.Pipeline {

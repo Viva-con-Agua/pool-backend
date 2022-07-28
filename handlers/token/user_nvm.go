@@ -20,9 +20,9 @@ var NVM = &NVMHandler{*vcago.NewHandler("nvm")}
 
 func (i *NVMHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.GET("/confirm", i.Confirm, vcapool.AccessCookieConfig())
-	group.POST("/reject", i.Reject, vcapool.AccessCookieConfig())
-	group.GET("/withdraw", i.Withdraw, vcapool.AccessCookieConfig())
+	group.GET("/confirm", i.Confirm, accessCookie)
+	group.POST("/reject", i.Reject, accessCookie)
+	group.GET("/withdraw", i.Withdraw, accessCookie)
 }
 
 func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
