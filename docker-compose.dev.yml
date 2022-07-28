@@ -35,4 +35,3 @@ networks:
   db_net:
     external: true
     name: db_net
-
