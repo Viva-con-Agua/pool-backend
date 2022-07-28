@@ -22,4 +22,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
-      - run: go run server.go
+      - run: go test
