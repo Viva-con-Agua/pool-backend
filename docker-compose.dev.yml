@@ -21,7 +21,7 @@ services:
   db:
     image: mongo
     restart: unless-stopped
-    volumes: 
+    volumes:
       - ${databases}/pool-user-db/:/data/db/
     ports:
       - 27017:27017
