@@ -13,7 +13,6 @@ services:
       api_net:
         ipv4_address: ${docker_ip}
       db_net:
-  
 
   db:
     image: mongo
