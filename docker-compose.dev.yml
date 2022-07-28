@@ -1,38 +1,38 @@
 version: '3'
 
 services:
-    app:
-        build:
-          context: .
-          dockerfile: Dockerfile.dev
-        image: vivaconagua/pool-user:stage
-        restart: unless-stopped
-        env_file:
-            - .env
-        volumes:
-          - .:/app
-        links:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: vivaconagua/pool-user:stage
+    restart: unless-stopped
+    env_file:
+        - .env
+    volumes:
+      - .:/app
+    links:
             - db:db
-        networks:
-            domain_net:
-              ipv4_address: ${docker_ip}
-            db_net:
-   
-    db:
-        image: mongo
-        restart: unless-stopped
-        volumes: 
-            - ${databases}/pool-user-db/:/data/db/
-        ports:
-          - 27017:27017
-        networks:
-            db_net:
+    networks:
+        domain_net:
+          ipv4_address: ${docker_ip}
+        db_net:
+
+db:
+    image: mongo
+    restart: unless-stopped
+    volumes: 
+        - ${databases}/pool-user-db/:/data/db/
+    ports:
+      - 27017:27017
+    networks:
+        db_net:
 
 networks:
-    domain_net:
-        external: true
-        name: domain_net
-    db_net:
-        external: true
-        name: db_net
+  domain_net:
+    external: true
+    name: domain_net
+  db_net:
+    external: true
+    name: db_net
 

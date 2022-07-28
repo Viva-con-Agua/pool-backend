@@ -1,22 +1,22 @@
 version: '3'
 
 services:
-    app:
-        image: vivaconagua/pool-user:${version}
-        networks:
-            pool_net:
-              ipv4_address: ${docker_ip}
+  app:
+    image: vivaconagua/pool-user:${version}
+    networks:
+      pool_net:
+        ipv4_address: ${docker_ip}
   
-    db:
-        volumes: 
-            - ${databases}/pool-user-db/:/data/db/
-        networks:
-            pool_net:
+  db:
+    volumes: 
+      - ${databases}/pool-user-db/:/data/db/
+    networks:
+      pool_net:
 
 networks:
-    pool_net:
-        external:
-            name: pool_net
-    db_net:
-        external:
-            name: db_net
+  pool_net:
+    external:
+      name: pool_net
+  db_net:
+    external:
+      name: db_net
