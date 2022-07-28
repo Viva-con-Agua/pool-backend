@@ -18,6 +18,7 @@ services:
         ipv4_address: ${docker_ip}
       db_net:
 
+
 db:
   image: mongo
   restart: unless-stopped
