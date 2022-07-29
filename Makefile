@@ -2,8 +2,11 @@
 
 repo=vivaconagua/pool-user
 
+pre-commit:
+	pre-commit run --show-diff-on-failure --color=always --all-files
 
-
+commit:
+	pre-commit run --show-diff-on-failure --color=always --all-files && git commit && git push
 up:
 	docker-compose -f docker-compose.dev.yml up -d
 

@@ -1,31 +1,31 @@
-version: '3'
+version: "3"
 
 services:
-    app:
-        build: .
-        image: vivaconagua/pool-user:${version}
-        restart: unless-stopped
-        env_file:
-            - .env
-        links:
-            - db:db
-        networks:
-            api_net:
-              ipv4_address: ${docker_ip}
-            db_net:
-   
-    db:
-        image: mongo
-        restart: unless-stopped
-        volumes:
-            - ${databases}/donation-db/:/data/db/
-        networks:
-            db_net:
+  app:
+    build: .
+    image: vivaconagua/pool-user:${version}
+    restart: unless-stopped
+    env_file:
+      - .env
+    links:
+      - db:db
+    networks:
+      api_net:
+        ipv4_address: ${docker_ip}
+      db_net:
+
+  db:
+    image: mongo
+    restart: unless-stopped
+    volumes:
+      - ${databases}/donation-db/:/data/db/
+    networks:
+      db_net:
 
 networks:
-    api_net:
-        external:
-            name: api_net
-    db_net:
-        external:
-            name: db_net
+  api_net:
+    external:
+      name: api_net
+  db_net:
+    external:
+      name: db_net
