@@ -16,3 +16,4 @@ jobs:
     with:
       image_name: ${{ needs.build-container.outputs.image_name }}
       new_digest: ${{ needs.build-container.outputs.image_digest }}
+      deploy_repo: Viva-con-Agua/pool-api-deploy
