@@ -1,0 +1,19 @@
+name: container_image
+on:
+  push:
+    branches:
+      - main
+      - stage
+      - develop
+
+jobs:
+  build-container:
+    uses: Viva-con-Agua/workflows/.github/workflows/build_image.yml@main
+  deploy:
+    needs: [build-container]
+    uses: Viva-con-Agua/workflows/.github/workflows/deploy.yml@main
+    secrets: inherit
+    with:
+      image_name: ${{ needs.build-container.outputs.image_name }}
+      new_digest: ${{ needs.build-container.outputs.image_digest }}
+      deploy_repo: Viva-con-Agua/pool-api-deploy
