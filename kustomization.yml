@@ -1,0 +1,13 @@
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+namespace: pool-user
+commonLabels:
+    app.kubernetes.io/part-of: pool-user
+
+resources:
+    - .k8s/namespace.yml
+    - .k8s/deployment.yml
+    - .k8s/service.yml
+    - .k8s/mongo_deployment.yml
+    - .k8s/mongo_service.yml
+    - ,k8s/mongo_volume.yml
