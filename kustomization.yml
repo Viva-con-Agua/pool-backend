@@ -7,6 +7,6 @@ resources:
     - .k8s/namespace.yml
     - .k8s/deployment.yml
     - .k8s/service.yml
-    - .k8s/mongo_deployment.yml
-    - .k8s/mongo_service.yml
-    - .k8s/mongo_volume.yml
+    - .k8s/mongodb_deployment.yml
+    - .k8s/mongodb_service.yml
+    - .k8s/mongodb_volume.yml
