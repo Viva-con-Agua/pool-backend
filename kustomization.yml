@@ -8,5 +8,5 @@ resources:
   - .k8s/deployment.yml
   - .k8s/service.yml
   - .k8s/mongodb_deployment.yml
-  #    - .k8s/mongodb_service.yml
+  - .k8s/mongodb_service.yml
   - .k8s/mongodb_volume.yml
