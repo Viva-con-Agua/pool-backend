@@ -15,6 +15,9 @@ spec:
         - name: pool-user
           image: ghcr.io/viva-con-agua/pool-user
           imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+              name: pool-user
           ports:
             - name: http
               containerPort: 1323

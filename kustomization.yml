@@ -10,3 +10,6 @@ resources:
   - .k8s/mongodb_deployment.yml
   - .k8s/mongodb_service.yml
   - .k8s/mongodb_volume.yml
+
+configMapGenerator:
+  - name: pool-user
