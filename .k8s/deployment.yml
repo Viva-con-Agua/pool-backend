@@ -21,12 +21,12 @@ spec:
           ports:
             - name: http
               containerPort: 1323
-          readinessProbe:
-            httpGet:
-              port: 1323
-          livenessProbe:
-            httpGet:
-              port: 1323
+          #readinessProbe:
+          #  httpGet:
+          #    port: 1323
+          #livenessProbe:
+          #  httpGet:
+          #    port: 1323
           resources:
             limits:
               memory: 100Mi
