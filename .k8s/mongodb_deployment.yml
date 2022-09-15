@@ -2,20 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
-  labels:
-    app: mongo
+  labels: &labels
+    app.kubernetes.io/name: pool-user-db
   name: pool-user-db
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: mongo
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: mongo
+  selector: &labels
     spec:
       containers:
         - image: mongo
