@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: mongo
-  name: mongo
+  name: pool-user-db
 spec:
   replicas: 1
   selector:
