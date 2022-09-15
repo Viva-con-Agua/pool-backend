@@ -17,7 +17,7 @@ spec:
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-              name: pool-api
+                name: pool-api
           ports:
             - name: http
               containerPort: 1323
