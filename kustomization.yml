@@ -12,4 +12,4 @@ resources:
   - .k8s/mongodb_volume.yml
 
 configMapGenerator:
-  - name: pool-user
+  - name: pool-api
