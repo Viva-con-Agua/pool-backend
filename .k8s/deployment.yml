@@ -23,10 +23,10 @@ spec:
               containerPort: 1323
           readinessProbe:
             httpGet:
-              port: http
+              port: 1323
           livenessProbe:
             httpGet:
-              port: http
+              port: 1323
           resources:
             limits:
               memory: 100Mi
