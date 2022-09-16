@@ -54,7 +54,7 @@ func (i *AvatarHandler) Update(cc echo.Context) (err error) {
 	if err = dao.AvatarCollection.UpdateOne(
 		c.Ctx(),
 		body.Filter(token),
-		vmdb.NewUpdateSet(body),
+		vmdb.UpdateSet(body),
 		result,
 	); err != nil {
 		return

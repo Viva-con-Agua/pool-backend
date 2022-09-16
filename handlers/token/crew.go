@@ -85,7 +85,7 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Crew)
-	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.NewUpdateSet(body), result); err != nil {
+	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
 	return vcago.NewUpdated("crew", body)

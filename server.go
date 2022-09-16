@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	e := vcago.NewEchoServer("pool-user")
+	e := vcago.NewServer()
 	vcago.Nats.Connect()
 	//login routes
 	token.Login.Routes(e.Group("/auth"))

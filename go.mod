@@ -3,11 +3,11 @@ module pool-user
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.4.5
+	github.com/Viva-con-Agua/vcago v1.4.9
 	github.com/Viva-con-Agua/vcapool v0.3.1
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
-	go.mongodb.org/mongo-driver v1.8.4
+	go.mongodb.org/mongo-driver v1.9.1
 )
 
 require (

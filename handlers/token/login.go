@@ -64,7 +64,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	}
 	if tokenUser.CheckUpdate(result.LastUpdate) {
 		userUpdate := models.NewUserUpdate(tokenUser)
-		if err = dao.UserCollection.UpdateOne(c.Ctx(), userUpdate.Filter(), vmdb.NewUpdateSet(userUpdate), result); err != nil {
+		if err = dao.UserCollection.UpdateOne(c.Ctx(), userUpdate.Filter(), vmdb.UpdateSet(userUpdate), result); err != nil {
 			return
 		}
 		vcago.Nats.Publish("user.updated", result)

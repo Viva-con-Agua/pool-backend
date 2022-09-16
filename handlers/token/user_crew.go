@@ -65,14 +65,14 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 		return vcago.NewPermissionDenied("crew")
 	}
 	result := new(models.UserCrew)
-	if err = dao.UserCrewCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
+	if err = dao.UserCrewCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
 	//reset active and nvm
 	if err = dao.ActiveCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.ActiveWithdraw()),
+		vmdb.UpdateSet(models.ActiveWithdraw()),
 		nil,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
@@ -81,7 +81,7 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.NVMWithdraw()),
+		vmdb.UpdateSet(models.NVMWithdraw()),
 		nil,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return

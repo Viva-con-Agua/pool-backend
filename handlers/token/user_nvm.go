@@ -38,7 +38,7 @@ func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.NVMConfirm()),
+		vmdb.UpdateSet(models.NVMConfirm()),
 		result,
 	); err != nil {
 		return
@@ -65,7 +65,7 @@ func (i *NVMHandler) Reject(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.NVMReject()),
+		vmdb.UpdateSet(models.NVMReject()),
 		result,
 	); err != nil {
 		return
@@ -83,7 +83,7 @@ func (i *NVMHandler) Withdraw(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.NVMWithdraw()),
+		vmdb.UpdateSet(models.NVMWithdraw()),
 		result,
 	); err != nil {
 		return

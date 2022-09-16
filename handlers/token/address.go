@@ -70,7 +70,7 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
+	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
 	return c.Updated(result)
@@ -92,7 +92,7 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	return c.Deleted(body.ID)
 }
 
-//TODO
+// TODO
 func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressQuery)

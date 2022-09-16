@@ -14,12 +14,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//ActiveHandler represents the vcago.Handler for the Active model.
+// ActiveHandler represents the vcago.Handler for the Active model.
 type ActiveHandler struct {
 	vcago.Handler
 }
 
-//Active is an ActiveHandler.
+// Active is an ActiveHandler.
 var Active = &ActiveHandler{*vcago.NewHandler("active")}
 
 func (i *ActiveHandler) Routes(group *echo.Group) {
@@ -30,7 +30,7 @@ func (i *ActiveHandler) Routes(group *echo.Group) {
 	group.GET("/withdraw", i.Withdraw, accessCookie)
 }
 
-//Request handles an active request call.
+// Request handles an active request call.
 func (i *ActiveHandler) Request(cc echo.Context) (err error) {
 	//load context
 	c := cc.(vcago.Context)
@@ -48,7 +48,7 @@ func (i *ActiveHandler) Request(cc echo.Context) (err error) {
 	if err = dao.ActiveCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.ActiveRequest()),
+		vmdb.UpdateSet(models.ActiveRequest()),
 		result,
 	); err != nil {
 		log.Print(err)
@@ -58,7 +58,7 @@ func (i *ActiveHandler) Request(cc echo.Context) (err error) {
 	return c.SuccessResponse(http.StatusOK, "successfully_requested", "active", result)
 }
 
-//Confirm handles an active confirm request.
+// Confirm handles an active confirm request.
 func (i *ActiveHandler) Confirm(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	//validate and bind body
@@ -80,7 +80,7 @@ func (i *ActiveHandler) Confirm(cc echo.Context) (err error) {
 	if err = dao.ActiveCollection.UpdateOne(
 		c.Ctx(),
 		body.Filter(token),
-		vmdb.NewUpdateSet(models.ActiveConfirm()),
+		vmdb.UpdateSet(models.ActiveConfirm()),
 		result,
 	); err != nil {
 		return
@@ -121,7 +121,7 @@ func (i *ActiveHandler) Reject(cc echo.Context) (err error) {
 	if err = dao.ActiveCollection.UpdateOne(
 		c.Ctx(),
 		body.Filter(token),
-		vmdb.NewUpdateSet(models.ActiveReject()),
+		vmdb.UpdateSet(models.ActiveReject()),
 		result,
 	); err != nil {
 		return
@@ -130,7 +130,7 @@ func (i *ActiveHandler) Reject(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.NVMReject()),
+		vmdb.UpdateSet(models.NVMReject()),
 		nil,
 	); err != nil && err != mongo.ErrNoDocuments {
 		return
@@ -155,7 +155,7 @@ func (i *ActiveHandler) Withdraw(cc echo.Context) (err error) {
 	if err = dao.ActiveCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.NVMWithdraw()),
+		vmdb.UpdateSet(models.NVMWithdraw()),
 		result,
 	); err != nil {
 		return
@@ -164,7 +164,7 @@ func (i *ActiveHandler) Withdraw(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.NewUpdateSet(models.NVMReject()),
+		vmdb.UpdateSet(models.NVMReject()),
 		nil,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
