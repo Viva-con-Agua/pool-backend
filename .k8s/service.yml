@@ -4,10 +4,10 @@ metadata:
   name: pool-user
   labels: &labels
     app.kubernetes.io/name: pool-user
-    app.kubernetes.io/component: api
+    app.kubernetes.io/component: component-explorer
 spec:
   selector: *labels
   ports:
     - name: http
       port: 80
-      targetPort: http
+      targetPort: 1323
