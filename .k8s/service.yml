@@ -4,7 +4,7 @@ metadata:
   name: pool-user
   labels: &labels
     app.kubernetes.io/name: pool-user
-    app.kubernetes.io/component: component-explorer
+    app.kubernetes.io/component: api
 spec:
   selector: *labels
   ports:

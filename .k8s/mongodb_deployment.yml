@@ -4,6 +4,7 @@ metadata:
   creationTimestamp: null
   labels: &labels
     app.kubernetes.io/name: pool-user-db
+    app.kubernetes.io/component: component-explorer
   name: pool-user-db
 spec:
   replicas: 1
