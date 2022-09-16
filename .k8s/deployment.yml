@@ -30,5 +30,5 @@ spec:
               port: 1323
           resources:
             limits:
-              memory: 100Mi
-              cpu: 10m # 10 milli-cores = 1% of a core
+              memory: 400Mi
+              cpu: 100m # 10 milli-cores = 1% of a core
