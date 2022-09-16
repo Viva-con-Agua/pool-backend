@@ -13,3 +13,4 @@ resources:
 
 configMapGenerator:
   - name: pool-api
+  - name: pool-user
