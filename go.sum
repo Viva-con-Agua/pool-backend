@@ -39,8 +39,8 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Viva-con-Agua/vcago v1.4.4/go.mod h1:bYSuInKj/c2HHXy6/jPLfoMLq/RR5hGRStndnHorswE=
-github.com/Viva-con-Agua/vcago v1.4.9 h1:3sgPK0+cW9ZUGJOL1tJBYIX9w3cm+LVs+N379QcpDuA=
-github.com/Viva-con-Agua/vcago v1.4.9/go.mod h1:kxaxW9VYWIaCdWoM+PLHNwXmtPj4FPYHPxmPK6JsA1U=
+github.com/Viva-con-Agua/vcago v1.4.10 h1:m1fZQU/o+aXUO5dPBJMyKlJkA4pVcPy7qEr4t80k7Sg=
+github.com/Viva-con-Agua/vcago v1.4.10/go.mod h1:kxaxW9VYWIaCdWoM+PLHNwXmtPj4FPYHPxmPK6JsA1U=
 github.com/Viva-con-Agua/vcapool v0.3.1 h1:gEJ2MfREJp0uNLaJ1Smz/7BArDbLX7tC4X/bOkt+dqM=
 github.com/Viva-con-Agua/vcapool v0.3.1/go.mod h1:trOZyP8TaYEeQeJk67+uotBiWjQf9lau3P3TWY1uW3I=
 github.com/acobaugh/osrelease v0.0.0-20181218015638-a93a0a55a249/go.mod h1:iU1PxQMQwoHZZWmMKrMkrNlY+3+p9vxIjpZOVyxWa0g=

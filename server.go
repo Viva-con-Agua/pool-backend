@@ -1,23 +1,17 @@
 package main
 
 import (
-	"net/http"
 	"pool-user/handlers/admin"
 	"pool-user/handlers/key"
 	"pool-user/handlers/token"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
 	e := vcago.NewServer()
 	vcago.Nats.Connect()
 	//login routes
-	e.GET("/healthz", func(c echo.Context) error {
-		return c.String(http.StatusOK, "healthz")
-	})
-
 	token.Login.Routes(e.Group("/auth"))
 
 	//user routes
