@@ -24,9 +24,11 @@ spec:
               containerPort: 1323
           readinessProbe:
             httpGet:
+              path: /healthz
               port: 1323
           livenessProbe:
             httpGet:
+              path: /healthz
               port: 1323
           resources:
             limits:
