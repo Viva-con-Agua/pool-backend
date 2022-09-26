@@ -18,8 +18,6 @@ spec:
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: pool-api
-            - configMapRef:
                 name: pool-user
           ports:
             - name: http
