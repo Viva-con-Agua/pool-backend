@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: pool-user
   name: pool-user
   labels: &labels
     app.kubernetes.io/name: pool-user
