@@ -49,6 +49,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		return
 	}
 	if vmdb.ErrNoDocuments(err) {
+		err = nil
 		userDatabase := models.NewUserDatabase(tokenUser)
 		if err = dao.UserCollection.InsertOne(c.Ctx(), userDatabase); err != nil {
 			return
