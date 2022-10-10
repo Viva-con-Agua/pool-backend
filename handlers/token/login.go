@@ -45,7 +45,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		c.Ctx(),
 		models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
 		result,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	); err != nil && !vmdb.ErrNoDocuments(err) {
 		return
 	}
 	if vmdb.ErrNoDocuments(err) {
