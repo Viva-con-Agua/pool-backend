@@ -18,6 +18,8 @@ type RoleAdminRequest struct {
 	Role  string `json:"role"`
 }
 
+var PoolRoleCollection = "pool_roles"
+
 func (i *RoleRequest) New() (r *vmod.Role, err error) {
 	switch i.Role {
 	case "asp":

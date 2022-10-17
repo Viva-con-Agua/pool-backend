@@ -1,7 +1,6 @@
 package models
 
 import (
-	"pool-user/dao"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -93,6 +92,8 @@ type (
 	}
 )
 
+var UserCollection = "users"
+
 func NewUserDatabase(user *vmod.User) *UserDatabase {
 	return &UserDatabase{
 		ID:            user.ID,
@@ -128,13 +129,13 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 
 func UserPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(dao.AddressesCollection.Name, "_id", "user_id", "address")
-	pipe.LookupUnwind(dao.ProfilesCollection.Name, "_id", "user_id", "profile")
-	pipe.LookupUnwind(dao.UserCrewCollection.Name, "_id", "user_id", "crew")
-	pipe.LookupUnwind(dao.ActiveCollection.Name, "_id", "user_id", "active")
-	pipe.LookupUnwind(dao.NVMCollection.Name, "_id", "user_id", "nvm")
-	pipe.Lookup(dao.PoolRoleCollection.Name, "_id", "user_id", "pool_roles")
-	pipe.LookupUnwind(dao.AvatarCollection.Name, "_id", "user_id", "avatar")
+	pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 	return
 }
 

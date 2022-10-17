@@ -56,6 +56,8 @@ type (
 	}
 )
 
+var AddressesCollection = "addresses"
+
 func (i *AddressCreate) Address(userID string) (r *Address) {
 	return &Address{
 		ID:          uuid.NewString(),

@@ -61,14 +61,14 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		); err != nil {
 			return
 		}
-		vcago.Nats.Publish("user.created", result)
+		vcago.Nats.Publish("pool.user.created", result)
 	}
 	if tokenUser.CheckUpdate(result.LastUpdate) {
 		userUpdate := models.NewUserUpdate(tokenUser)
 		if err = dao.UserCollection.UpdateOne(c.Ctx(), userUpdate.Filter(), vmdb.UpdateSet(userUpdate), result); err != nil {
 			return
 		}
-		vcago.Nats.Publish("user.updated", result)
+		vcago.Nats.Publish("pool.user.updated", result)
 	}
 	token := new(vcago.AuthToken)
 	if token, err = result.AuthToken(); err != nil {

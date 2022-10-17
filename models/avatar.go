@@ -13,6 +13,8 @@ type AvatarCreate struct {
 	Type   string `bson:"type" json:"type"`
 }
 
+var AvatarCollection = "avatar"
+
 func (i *AvatarCreate) Avatar(userID string) *Avatar {
 	return &Avatar{
 		ID:       uuid.NewString(),

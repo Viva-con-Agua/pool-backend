@@ -55,6 +55,8 @@ type (
 	}
 )
 
+var CrewCollection = "crews"
+
 func (i *CrewCreate) Crew() *Crew {
 	return &Crew{
 		ID:           uuid.NewString(),

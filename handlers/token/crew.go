@@ -42,6 +42,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
+	vcago.Nats.Publish("pool.crew.create", result)
 	return c.Created(result)
 }
 
@@ -88,6 +89,7 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
+	vcago.Nats.Publish("pool.crew.update", result)
 	return vcago.NewUpdated("crew", body)
 }
 

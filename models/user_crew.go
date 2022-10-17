@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+var UserCrewCollection = "user_crew"
+
 type (
 	UserCrewCreate struct {
 		CrewID string `json:"crew_id"`
