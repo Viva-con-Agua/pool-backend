@@ -1,6 +1,7 @@
 package main
 
 import (
+	"pool-user/dao"
 	"pool-user/handlers/admin"
 	"pool-user/handlers/key"
 	"pool-user/handlers/token"
@@ -10,7 +11,8 @@ import (
 
 func main() {
 	e := vcago.NewServer()
-	vcago.Nats.Connect()
+	dao.InitialDatabase()
+	dao.InitialNats()
 	//dao.ReloadDatabase()
 	//login routes
 	token.Login.Routes(e.Group("/auth"))
