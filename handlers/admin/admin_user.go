@@ -6,6 +6,7 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserHandler struct {
@@ -17,20 +18,30 @@ var User = &UserHandler{*vcago.NewHandler("user")}
 func (i *UserHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.GET("", i.Get)
+	group.POST("", i.Create)
 	group.GET("/:id", i.GetByID)
 	group.DELETE("/:id", i.Delete)
 }
 
-/*
 func (i *UserHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.UserDatabase)
+	body := new(models.UserDatabase)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	if err = dao.UserCollection.InsertOne(c.Ctx(), body); err != nil {
+		return
+	}
 	result := new(models.User)
-	return vcago.NewCreated("user", result)
-}*/
+	if err = dao.UserCollection.FindOne(
+		c.Ctx(),
+		bson.D{{Key: "_id", Value: body.ID}},
+		result,
+	); err != nil {
+		return
+	}
+	return c.Created(result)
+}
 
 func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
