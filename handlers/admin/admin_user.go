@@ -40,7 +40,7 @@ func (i *UserHandler) Create(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
-	vcago.Nats.Publish("pool.user.creatd", result)
+	vcago.Nats.Publish("pool.user.created", result)
 	return c.Created(result)
 }
 
