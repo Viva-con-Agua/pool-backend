@@ -9,6 +9,7 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type RoleHandler struct {
@@ -71,7 +72,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.FindOne(
 		c.Ctx(),
-		body.Filter(),
+		bson.D{{Key: "_id", Value: body.UserID}},
 		user,
 	); err != nil {
 		return
