@@ -106,7 +106,7 @@ func (i *CrewHandler) Delete(cc echo.Context) (err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}
-	if err = dao.CrewsCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+	if err = dao.CrewDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

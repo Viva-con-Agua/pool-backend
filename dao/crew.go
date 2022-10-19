@@ -3,6 +3,8 @@ package dao
 import (
 	"context"
 	"pool-user/models"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func CrewInsert(ctx context.Context, i *models.Crew) (r *models.Crew, err error) {
@@ -20,5 +22,22 @@ func CrewInsert(ctx context.Context, i *models.Crew) (r *models.Crew, err error)
 	// initial r.
 	r = i
 	//select user from database
+	return
+}
+
+func CrewDelete(ctx context.Context, id string) (err error) {
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}, crew); err != nil {
+		return
+	}
+	if err = MailboxCollection.TryDeleteOne(ctx, bson.D{{Key: "_id", Value: crew.MailboxID}}); err != nil {
+		return
+	}
+	if err = MessageCollection.TryDeleteMany(ctx, bson.D{{Key: "mailbox_id", Value: crew.MailboxID}}); err != nil {
+		return
+	}
+	if err = CrewsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
+		return
+	}
 	return
 }

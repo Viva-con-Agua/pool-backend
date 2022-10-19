@@ -42,7 +42,7 @@ func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.UserCollection.DeleteOne(c.Ctx(), body.FilterAdmin()); err != nil {
+	if err = dao.UserDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
