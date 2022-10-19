@@ -42,6 +42,13 @@ var PoolRoleCollection *vmdb.Collection
 var MailboxCollection *vmdb.Collection
 var MessageCollection *vmdb.Collection
 
+var ArtistCollection *vmdb.Collection
+var ParticipationCollection *vmdb.Collection
+var OrganizerCollection *vmdb.Collection
+var EventCollection *vmdb.Collection
+var SourceCollection *vmdb.Collection
+var TakingCollection *vmdb.Collection
+
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-user").Connect()
 
@@ -76,6 +83,16 @@ func InitialDatabase() {
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection)
+	ArtistCollection = Database.Collection("artists").CreateIndex("name", true)
+	ParticipationCollection = Database.Collection("participations").CreateMultiIndex(
+		bson.D{
+			{Key: "user_id", Value: 1},
+			{Key: "event_id", Value: 1},
+		}, true)
+	OrganizerCollection = Database.Collection("organizers").CreateIndex("name", true)
+	EventCollection = Database.Collection("events")
+	SourceCollection = Database.Collection("sources")
+	TakingCollection = Database.Collection("takings").CreateIndex("event_id", true)
 }
 
 func ReloadDatabase() {

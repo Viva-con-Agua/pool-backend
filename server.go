@@ -36,6 +36,12 @@ func main() {
 	token.Mailbox.Routes(mails.Group("/mailbox"))
 	token.Message.Routes(mails.Group("/message"))
 
+	events := e.Group("/events")
+	token.Event.Routes(events.Group("/event"))
+	token.Artist.Routes(events.Group("/artist"))
+	token.Organizer.Routes(events.Group("/organizer"))
+	token.Participation.Routes(events.Group("/participation"))
+
 	key.Crew.Routes(e.Group("/apikey/crews"))
 
 	admin.Crew.Routes(e.Group("/admin/crews"))
