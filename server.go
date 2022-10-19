@@ -1,10 +1,10 @@
 package main
 
 import (
-	"pool-user/dao"
-	"pool-user/handlers/admin"
-	"pool-user/handlers/key"
-	"pool-user/handlers/token"
+	"pool-backend/dao"
+	"pool-backend/handlers/admin"
+	"pool-backend/handlers/key"
+	"pool-backend/handlers/token"
 
 	"github.com/Viva-con-Agua/vcago"
 )

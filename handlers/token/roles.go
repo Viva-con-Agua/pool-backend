@@ -2,8 +2,8 @@ package token
 
 import (
 	"log"
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmod"

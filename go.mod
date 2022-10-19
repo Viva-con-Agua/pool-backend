@@ -1,4 +1,4 @@
-module pool-user
+module pool-backend
 
 go 1.17
 

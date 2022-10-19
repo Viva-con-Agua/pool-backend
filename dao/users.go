@@ -2,7 +2,7 @@ package dao
 
 import (
 	"context"
-	"pool-user/models"
+	"pool-backend/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 )

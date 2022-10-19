@@ -3,8 +3,8 @@ package token
 import (
 	"log"
 	"net/http"
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
