@@ -6,7 +6,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserHandler struct {
@@ -29,15 +28,8 @@ func (i *UserHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.UserCollection.InsertOne(c.Ctx(), body); err != nil {
-		return
-	}
 	result := new(models.User)
-	if err = dao.UserCollection.FindOne(
-		c.Ctx(),
-		bson.D{{Key: "_id", Value: body.ID}},
-		result,
-	); err != nil {
+	if result, err = dao.UserInsert(c.Ctx(), body); err != nil {
 		return
 	}
 	vcago.Nats.Publish("pool.user.created", result)

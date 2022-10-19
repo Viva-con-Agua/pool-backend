@@ -29,6 +29,7 @@ type (
 		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
 		DropsID       string        `bson:"drops_id" json:"drops_id"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
+		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
 		Modified      vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {
@@ -57,6 +58,7 @@ type (
 		PrivacyPolicy bool          `bson:"privacy_policy" json:"privacy_policy"`
 		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
+		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
 		//extends the vcago.User
 		DropsID   string        `bson:"drops_id" json:"drops_id"`
 		Profile   Profile       `json:"profile" bson:"profile,truncate"`

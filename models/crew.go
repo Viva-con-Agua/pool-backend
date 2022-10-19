@@ -29,6 +29,7 @@ type (
 		Name         string        `json:"name" bson:"name"`
 		Email        string        `json:"email" bson:"email"`
 		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
+		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities       []City        `json:"cities" bson:"cities"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}

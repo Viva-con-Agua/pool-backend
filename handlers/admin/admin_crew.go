@@ -16,7 +16,21 @@ var Crew = &CrewHandler{*vcago.NewHandler("crew")}
 
 func (i *CrewHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
+	group.POST("", i.Create)
 	group.GET("", i.Get)
+}
+
+func (i *CrewHandler) Create(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.Crew)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	result := new(models.Crew)
+	if result, err = dao.CrewInsert(c.Ctx(), body); err != nil {
+		return
+	}
+	return c.Created(result)
 }
 
 func (i *CrewHandler) Get(cc echo.Context) (err error) {

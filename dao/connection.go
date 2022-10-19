@@ -39,6 +39,9 @@ var AvatarCollection *vmdb.Collection
 // PoolRoleCollection represents the database collection of the PoolRole Collection.
 var PoolRoleCollection *vmdb.Collection
 
+var MailboxCollection *vmdb.Collection
+var MessageCollection *vmdb.Collection
+
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-user").Connect()
 
@@ -69,6 +72,10 @@ func InitialDatabase() {
 	// PoolRoleCollection represents the database collection of the PoolRole Collection.
 	PoolRoleCollection = Database.Collection(models.PoolRoleCollection).CreateMultiIndex(bson.D{{Key: "name", Value: 1}, {Key: "user_id", Value: 1}}, true)
 
+	//
+	MailboxCollection = Database.Collection(models.MailboxCollection)
+
+	MessageCollection = Database.Collection(models.MessageCollection)
 }
 
 func ReloadDatabase() {

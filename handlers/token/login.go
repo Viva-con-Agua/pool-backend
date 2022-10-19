@@ -51,14 +51,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	if vmdb.ErrNoDocuments(err) {
 		err = nil
 		userDatabase := models.NewUserDatabase(tokenUser)
-		if err = dao.UserCollection.InsertOne(c.Ctx(), userDatabase); err != nil {
-			return
-		}
-		if err = dao.UserCollection.AggregateOne(
-			c.Ctx(),
-			models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
-			result,
-		); err != nil {
+		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
 			return
 		}
 		vcago.Nats.Publish("pool.user.created", result)
