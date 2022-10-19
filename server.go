@@ -32,6 +32,10 @@ func main() {
 	crews := e.Group("/crews")
 	token.Crew.Routes(crews)
 
+	mails := e.Group("/mails")
+	token.Mailbox.Routes(mails.Group("/mailbox"))
+	token.Message.Routes(mails.Group("/message"))
+
 	key.Crew.Routes(e.Group("/apikey/crews"))
 
 	admin.Crew.Routes(e.Group("/admin/crews"))
