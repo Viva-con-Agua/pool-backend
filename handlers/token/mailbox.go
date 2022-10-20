@@ -30,11 +30,8 @@ func (i *MailboxHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = body.Permission(token); err != nil {
-		return
-	}
 	result := new(models.Mailbox)
-	if err = dao.MailboxCollection.AggregateOne(c.Ctx(), body.Pipeline(), result); err != nil {
+	if result, err = dao.MailboxGetByID(c.Ctx(), body.ID, token); err != nil {
 		return
 	}
 	return c.Selected(result)

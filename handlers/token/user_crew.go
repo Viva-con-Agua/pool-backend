@@ -38,7 +38,7 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.FindOne(c.Ctx(), body.CrewFilter(), crew); err != nil {
 		return
 	}
-	result := models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email)
+	result := models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
 	if err = dao.UserCrewCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
@@ -95,30 +95,9 @@ func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.UserCrewCollection.DeleteOne(c.Ctx(), bson.D{{Key: "user_id", Value: token.ID}}); err != nil {
+	if err = dao.UserCrewDelete(c.Ctx(), token.ID); err != nil {
 		return
 	}
-	//reset active and nvm
-	if err = dao.ActiveCollection.DeleteOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	//reject nvm state
-	if err = dao.NVMCollection.DeleteOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	if err = dao.PoolRoleCollection.DeleteMany(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	err = nil
 	return c.Deleted(token.ID)
 
 }

@@ -46,10 +46,10 @@ func MailboxPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
-func (i *MailboxParam) Permission(token *vcapool.AccessToken) (err error) {
-	if token.ID == i.ID {
+func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) (err error) {
+	if token.MailboxID == mailbox.ID {
 		return
-	} else if token.CrewID == i.ID {
+	} else if token.CrewID == mailbox.ID {
 		return
 	}
 	return vcago.NewPermissionDenied("mailbox", i)

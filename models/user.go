@@ -181,6 +181,7 @@ func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 		ActiveState:   i.Active.Status,
 		NVMState:      i.NVM.Status,
 		AvatarID:      i.Avatar.ID,
+		MailboxID:     i.MailboxID,
 		Modified:      i.Modified,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),

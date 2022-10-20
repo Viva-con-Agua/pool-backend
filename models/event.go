@@ -22,8 +22,8 @@ type (
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		Crew                  CrewSimple       `json:"crew" bson:"crew"`
-		EventASP              User             `json:"event_asp" bson:"event_asp"`
-		InternalASP           User             `json:"internal_asp" bson:"internal_asp"`
+		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
@@ -104,8 +104,8 @@ type (
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		Crew                  CrewSimple       `json:"crew" bson:"crew"`
-		EventASP              User             `json:"event_asp" bson:"event_asp"`
-		InternalASP           User             `json:"internal_asp" bson:"internal_asp"`
+		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
@@ -160,8 +160,8 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		StartAt:               i.StartAt,
 		EndAt:                 i.EndAt,
 		Crew:                  i.Crew,
-		EventASPID:            i.EventASP.ID,
-		InteralASPID:          i.EventASP.ID,
+		EventASPID:            i.EventASPID,
+		InteralASPID:          i.EventASPID,
 		ExternalASP:           i.ExternalASP,
 		Application:           i.Application,
 		EventTools:            i.EventTools,

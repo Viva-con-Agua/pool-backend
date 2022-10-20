@@ -15,13 +15,14 @@ type (
 		CrewID string `json:"crew_id"`
 	}
 	UserCrew struct {
-		ID       string        `bson:"_id" json:"id"`
-		UserID   string        `bson:"user_id" json:"user_id"`
-		Name     string        `bson:"name" json:"name"`
-		Email    string        `bson:"email" json:"email"`
-		Roles    []vmod.Role   `bson:"roles" json:"roles"`
-		CrewID   string        `bson:"crew_id" json:"crew_id"`
-		Modified vmod.Modified `bson:"modified" json:"modified"`
+		ID        string        `bson:"_id" json:"id"`
+		UserID    string        `bson:"user_id" json:"user_id"`
+		Name      string        `bson:"name" json:"name"`
+		Email     string        `bson:"email" json:"email"`
+		Roles     []vmod.Role   `bson:"roles" json:"roles"`
+		CrewID    string        `bson:"crew_id" json:"crew_id"`
+		MailboxID string        `bson:"mailbox_id" json:"mailbox_id"`
+		Modified  vmod.Modified `bson:"modified" json:"modified"`
 	}
 	UserCrewUpdate struct {
 		ID     string `bson:"_id" json:"id"`
@@ -35,14 +36,15 @@ type (
 	}
 )
 
-func NewUserCrew(userID string, crewID string, name string, email string) *UserCrew {
+func NewUserCrew(userID string, crewID string, name string, email string, mailboxID string) *UserCrew {
 	return &UserCrew{
-		ID:       uuid.NewString(),
-		UserID:   userID,
-		Name:     name,
-		Email:    email,
-		CrewID:   crewID,
-		Modified: vmod.NewModified(),
+		ID:        uuid.NewString(),
+		UserID:    userID,
+		Name:      name,
+		Email:     email,
+		CrewID:    crewID,
+		MailboxID: mailboxID,
+		Modified:  vmod.NewModified(),
 	}
 }
 
