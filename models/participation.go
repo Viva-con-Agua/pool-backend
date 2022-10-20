@@ -21,24 +21,25 @@ type (
 		//Confirmer UserInternal `json:"confirmer" bson:"confirmer"`
 	}
 	ParticipationDatabase struct {
-		ID      string     `json:"id" bson:"_id"`
-		UserID  string     `json:"user_id" bson:"user_id"`
-		EventID string     `json:"event_id" bson:"event_id"`
-		Comment string     `json:"comment" bson:"comment"`
-		Status  string     `json:"status" bson:"status"`
-		Crew    CrewSimple `json:"crew" bson:"crew"`
+		ID      string `json:"id" bson:"_id"`
+		UserID  string `json:"user_id" bson:"user_id"`
+		EventID string `json:"event_id" bson:"event_id"`
+		Comment string `json:"comment" bson:"comment"`
+		Status  string `json:"status" bson:"status"`
+		CrewID  string `json:"crew_id" bson:"crew_id"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Participation struct {
-		ID      string     `json:"id" bson:"_id"`
-		UserID  string     `json:"user_id" bson:"user_id"`
-		User    User       `json:"user" bson:"user"`
-		EventID string     `json:"event_id" bson:"event_id"`
-		Comment string     `json:"comment" bson:"comment"`
-		Status  string     `json:"status" bson:"status"`
-		Event   Event      `json:"event" bson:"event"`
-		Crew    CrewSimple `json:"crew" bson:"crew"`
+		ID      string `json:"id" bson:"_id"`
+		UserID  string `json:"user_id" bson:"user_id"`
+		User    User   `json:"user" bson:"user"`
+		EventID string `json:"event_id" bson:"event_id"`
+		Comment string `json:"comment" bson:"comment"`
+		Status  string `json:"status" bson:"status"`
+		Event   Event  `json:"event" bson:"event"`
+		CrewID  string `json:"crew_id" bson:"crew_id"`
+		Crew    Crew   `json:"crew" bson:"crew"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -69,7 +70,7 @@ func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) 
 		EventID:  i.EventID,
 		Comment:  i.Comment,
 		Status:   "requested",
-		Crew:     CrewSimple(*token.CrewSimple()),
+		CrewID:   token.CrewID,
 		Modified: vmod.NewModified(),
 	}
 }
@@ -79,6 +80,7 @@ func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("users", "user_id", "_id", "user")
 	pipe.LookupUnwind("profiles", "user_id", "user_id", "user.profile")
 	pipe.LookupUnwind("events", "event_id", "_id", "event")
+	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return
 }
 
