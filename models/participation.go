@@ -22,7 +22,7 @@ type (
 	}
 	ParticipationDatabase struct {
 		ID      string     `json:"id" bson:"_id"`
-		UserID  string     `json:"user" bson:"user"`
+		UserID  string     `json:"user_id" bson:"user_id"`
 		EventID string     `json:"event_id" bson:"event_id"`
 		Comment string     `json:"comment" bson:"comment"`
 		Status  string     `json:"status" bson:"status"`
@@ -32,6 +32,7 @@ type (
 	}
 	Participation struct {
 		ID      string     `json:"id" bson:"_id"`
+		UserID  string     `json:"user_id" bson:"user_id"`
 		User    User       `json:"user" bson:"user"`
 		EventID string     `json:"event_id" bson:"event_id"`
 		Comment string     `json:"comment" bson:"comment"`
@@ -76,6 +77,7 @@ func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) 
 func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind("users", "user_id", "_id", "user")
+	pipe.LookupUnwind("profiles", "user_id", "user_id", "user.profile")
 	pipe.LookupUnwind("events", "event_id", "_id", "event")
 	return
 }
