@@ -52,7 +52,7 @@ var FSChunkCollection *vmdb.Collection
 var FSFilesCollection *vmdb.Collection
 
 func InitialDatabase() {
-	Database = vmdb.NewDatabase("pool-user").Connect()
+	Database = vmdb.NewDatabase("pool-backend").Connect()
 
 	// UserCollection represents the database collection of the User model.
 	UserCollection = Database.Collection(models.UserCollection).CreateIndex("email", true)
