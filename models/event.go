@@ -18,7 +18,7 @@ type (
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
-		Organizer             Organizer        `json:"organizer" bson:"organizer"`
+		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		Crew                  CrewSimple       `json:"crew" bson:"crew"`
@@ -37,7 +37,7 @@ type (
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
-		Organizer             string           `json:"organizer" bson:"organizer"`
+		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		Crew                  CrewSimple       `json:"crew" bson:"crew"`
@@ -78,10 +78,13 @@ type (
 		Location              Location         `json:"location" bson:"location"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
 		Artists               []Artist         `json:"artists" bson:"artists"`
+		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		Organizer             Organizer        `json:"organizer" bson:"organizer"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		Crew                  CrewSimple       `json:"crew" bson:"crew"`
+		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
+		InteralASPID          string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		EventASP              User             `json:"event_asp" bson:"event_asp"`
 		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
@@ -100,7 +103,7 @@ type (
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
-		Organizer             Organizer        `json:"organizer" bson:"organizer"`
+		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		Crew                  CrewSimple       `json:"crew" bson:"crew"`
@@ -156,7 +159,7 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		Website:               i.Website,
 		Location:              i.Location,
 		ArtistIDs:             i.ArtistIDs,
-		Organizer:             i.Organizer.ID,
+		OrganizerID:           i.OrganizerID,
 		StartAt:               i.StartAt,
 		EndAt:                 i.EndAt,
 		Crew:                  i.Crew,
@@ -176,9 +179,12 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 func EventPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
+	pipe.LookupUnwind("profiles", "event_asp_id", "user_id", "event_asp.profile")
 	pipe.LookupUnwind("users", "internal_asp_id", "_id", "internal_asp")
+	pipe.LookupUnwind("profiles", "internal_asp_id", "user_id", "internal_asp.profile")
 	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
-	pipe.LookupUnwind("organizers", "organizer", "_id", "organizer")
+	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
+	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
 	return
 }
