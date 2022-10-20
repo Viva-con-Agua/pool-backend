@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 commonLabels:
-  app.kubernetes.io/part-of: pool-user
+  app.kubernetes.io/part-of: pool-backend
 
 resources:
   - .k8s/namespace.yml
@@ -11,4 +11,4 @@ resources:
   - .k8s/mongodb_volume.yml
 
 configMapGenerator:
-  - name: pool-user
+  - name: pool-backend

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pool-user-db-storage
+  name: pool-backend-db-storage
 spec:
   storageClassName: local-path
   accessModes:

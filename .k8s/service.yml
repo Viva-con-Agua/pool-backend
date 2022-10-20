@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: pool-user
-  name: pool-user
+  namespace: pool-backend
+  name: pool-backend
   labels: &labels
-    app.kubernetes.io/name: pool-user
+    app.kubernetes.io/name: pool-backend
     app.kubernetes.io/component: component-explorer
 spec:
   selector: *labels

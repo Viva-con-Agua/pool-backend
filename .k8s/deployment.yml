@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pool-user
+  name: pool-backend
   labels: &labels
-    app.kubernetes.io/name: pool-user
+    app.kubernetes.io/name: pool-backend
     app.kubernetes.io/component: component-explorer
 spec:
   selector:
@@ -13,12 +13,12 @@ spec:
       labels: *labels
     spec:
       containers:
-        - name: pool-user
-          image: ghcr.io/viva-con-agua/pool-user
+        - name: pool-backend
+          image: ghcr.io/viva-con-agua/pool-backend
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: pool-user
+                name: pool-backend
           ports:
             - name: http
               containerPort: 1323
