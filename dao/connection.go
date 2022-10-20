@@ -48,6 +48,8 @@ var OrganizerCollection *vmdb.Collection
 var EventCollection *vmdb.Collection
 var SourceCollection *vmdb.Collection
 var TakingCollection *vmdb.Collection
+var FSChunkCollection *vmdb.Collection
+var FSFilesCollection *vmdb.Collection
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-user").Connect()
@@ -93,6 +95,8 @@ func InitialDatabase() {
 	EventCollection = Database.Collection("events")
 	SourceCollection = Database.Collection("sources")
 	TakingCollection = Database.Collection("takings").CreateIndex("event_id", true)
+	FSChunkCollection = Database.Collection("fs.chunks")
+	FSFilesCollection = Database.Collection("fs.files")
 }
 
 func ReloadDatabase() {
