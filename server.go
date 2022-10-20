@@ -15,10 +15,11 @@ func main() {
 	dao.InitialNats()
 	//dao.ReloadDatabase()
 	//login routes
-	token.Login.Routes(e.Group("/auth"))
+	api := e.Group("/v1")
 
+	token.Login.Routes(api.Group("/auth"))
 	//user routes
-	tokenUser := e.Group("/users")
+	tokenUser := api.Group("/users")
 	token.User.Routes(tokenUser)
 	token.Profile.Routes(tokenUser.Group("/profile"))
 	token.UserCrew.Routes(tokenUser.Group("/crew"))
@@ -29,14 +30,14 @@ func main() {
 	token.Avatar.Routes(tokenUser.Group("/avatar"))
 	token.User.Routes(tokenUser)
 	//crew routes
-	crews := e.Group("/crews")
+	crews := api.Group("/crews")
 	token.Crew.Routes(crews)
 
-	mails := e.Group("/mails")
+	mails := api.Group("/mails")
 	token.Mailbox.Routes(mails.Group("/mailbox"))
 	token.Message.Routes(mails.Group("/message"))
 
-	events := e.Group("/events")
+	events := api.Group("/events")
 	token.Event.Routes(events.Group("/event"))
 	token.Artist.Routes(events.Group("/artist"))
 	token.Organizer.Routes(events.Group("/organizer"))
