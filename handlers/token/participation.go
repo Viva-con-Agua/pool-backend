@@ -154,5 +154,5 @@ func (i *ParticipationHandler) Status(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
-	return
+	return c.Selected(result)
 }

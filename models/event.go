@@ -9,6 +9,7 @@ import (
 )
 
 type (
+	//EventCreate represents the model for creating an event.
 	EventCreate struct {
 		Name                  string           `json:"name" bson:"name"`
 		TypeOfEvent           string           `json:"type_of_event" bson:"type_of_event"`

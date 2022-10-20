@@ -37,15 +37,8 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	database := body.EventDatabase(token)
-	if err = dao.EventCollection.InsertOne(c.Ctx(), database); err != nil {
-		return
-	}
 	result := new(models.Event)
-	if err = dao.EventCollection.AggregateOne(
-		c.Ctx(),
-		models.EventPipeline().Match(database.Match()).Pipe,
-		result,
-	); err != nil {
+	if result, err = dao.EventInsert(c.Ctx(), database); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -110,7 +103,7 @@ func (i *EventHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.EventCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+	if err = dao.EventDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
