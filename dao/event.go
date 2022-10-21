@@ -4,11 +4,22 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event, err error) {
+	taking := models.TakingDatabase{
+		ID:       uuid.NewString(),
+		Status:   "blocked",
+		Modified: vmod.NewModified(),
+	}
+	i.TakingID = taking.ID
 	if err = EventCollection.InsertOne(ctx, i); err != nil {
+		return
+	}
+	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
 	}
 	r = new(models.Event)

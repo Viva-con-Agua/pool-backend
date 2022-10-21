@@ -13,6 +13,7 @@ func main() {
 	e := vcago.NewServer()
 	dao.InitialDatabase()
 	dao.InitialNats()
+	dao.FixDatabase()
 	//dao.ReloadDatabase()
 	//login routes
 	api := e.Group("/v1")
@@ -42,6 +43,10 @@ func main() {
 	token.Artist.Routes(events.Group("/artist"))
 	token.Organizer.Routes(events.Group("/organizer"))
 	token.Participation.Routes(events.Group("/participation"))
+
+	finances := api.Group("/finances")
+	token.Source.Routes(finances.Group("/source"))
+	token.Taking.Routes(finances.Group("/taking"))
 
 	key.Crew.Routes(e.Group("/apikey/crews"))
 

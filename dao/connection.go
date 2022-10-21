@@ -7,6 +7,8 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -94,9 +96,46 @@ func InitialDatabase() {
 	OrganizerCollection = Database.Collection("organizers").CreateIndex("name", true)
 	EventCollection = Database.Collection("events")
 	SourceCollection = Database.Collection("sources")
-	TakingCollection = Database.Collection("takings").CreateIndex("event_id", true)
+	TakingCollection = Database.Collection("takings")
 	FSChunkCollection = Database.Collection("fs.chunks")
 	FSFilesCollection = Database.Collection("fs.files")
+}
+
+func FixDatabase() {
+	eventList := new([]models.EventDatabase)
+	var err error
+	if err = EventCollection.Find(
+		context.Background(),
+		bson.D{{Key: "$or", Value: bson.A{
+			bson.D{{Key: "taking_id", Value: ""}},
+			bson.D{{Key: "taking_id", Value: bson.D{{Key: "$exists", Value: false}}}},
+		}}},
+		eventList,
+	); err != nil {
+		log.Print(err)
+	}
+	log.Print(*eventList)
+	for i := range *eventList {
+		taking := models.TakingDatabase{
+			ID:       uuid.NewString(),
+			Status:   "blocked",
+			Modified: vmod.NewModified(),
+		}
+		event := (*eventList)[i]
+		event.TakingID = taking.ID
+		event.Modified.Update()
+		if err = EventCollection.UpdateOne(
+			context.Background(),
+			bson.D{{Key: "_id", Value: event.ID}},
+			bson.D{{Key: "$set", Value: event}},
+			nil,
+		); err != nil {
+			log.Print(err)
+		}
+		if err = TakingCollection.InsertOne(context.Background(), taking); err != nil {
+			log.Print(err)
+		}
+	}
 }
 
 func ReloadDatabase() {

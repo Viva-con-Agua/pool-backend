@@ -21,7 +21,7 @@ type (
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
-		Crew                  CrewSimple       `json:"crew" bson:"crew"`
+		CrewID                string           `json:"crew_id" bson:"crew_id"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
@@ -40,7 +40,8 @@ type (
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
-		Crew                  CrewSimple       `json:"crew" bson:"crew"`
+		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		TakingID              string           `json:"taking_id" bson:"taking_id"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InteralASPID          string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
@@ -82,7 +83,8 @@ type (
 		Organizer             Organizer        `json:"organizer" bson:"organizer"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
-		Crew                  CrewSimple       `json:"crew" bson:"crew"`
+		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew             `json:"crew" bson:"crew"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InteralASPID          string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		EventASP              User             `json:"event_asp" bson:"event_asp"`
@@ -106,7 +108,8 @@ type (
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
-		Crew                  CrewSimple       `json:"crew" bson:"crew"`
+		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew             `json:"crew" bson:"crew"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
@@ -162,7 +165,7 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		OrganizerID:           i.OrganizerID,
 		StartAt:               i.StartAt,
 		EndAt:                 i.EndAt,
-		Crew:                  i.Crew,
+		CrewID:                i.CrewID,
 		EventASPID:            i.EventASPID,
 		InteralASPID:          i.EventASPID,
 		ExternalASP:           i.ExternalASP,
@@ -186,6 +189,7 @@ func EventPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
+	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return
 }
 func (i *EventDatabase) Match() bson.D {
