@@ -9,12 +9,14 @@ import (
 
 type (
 	TakingCreate struct {
+		Name     string         `json:"name" bson:"name"`
 		External External       `json:"external" bson:"external"`
 		Source   []SourceCreate `json:"sources"`
 		Comment  string         `json:"comment"`
 	}
 	TakingUpdate struct {
 		ID       string         `json:"id" bson:"_id"`
+		Name     string         `json:"name" bson:"name"`
 		External External       `json:"external" bson:"external"`
 		Source   []SourceCreate `json:"sources"`
 		Comment  string         `json:"comment"`
@@ -29,6 +31,8 @@ type (
 	}
 	TakingDatabase struct {
 		ID       string        `json:"id" bson:"_id"`
+		Name     string        `json:"name" bson:"name"`
+		Type     string        `json:"type" bson:"type"`
 		External External      `json:"external" bson:"external"`
 		Comment  string        `json:"comment" bson:"comment"`
 		Status   string        `json:"status" bson:"status"`
@@ -37,12 +41,15 @@ type (
 	}
 	Taking struct {
 		ID       string      `json:"id" bson:"_id"`
+		Name     string      `json:"name" bson:"name"`
+		Type     string      `json:"type" bson:"type"`
 		Event    Event       `json:"event" bson:"event"`
 		External External    `json:"external" bson:"external"`
 		Source   []Source    `json:"sources" bson:"sources"`
 		Status   string      `json:"status" bson:"status"`
 		State    TakingState `json:"state" bson:"state"`
 		Comment  string      `json:"comment" bson:"comment"`
+		Activity []Activity  `json:"activity" bson:"activity"`
 	}
 	TakingState struct {
 		Confirmed vmod.Money `json:"confirmed" bson:"confirmed"`
@@ -67,8 +74,11 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 	takingState.Confirmed.Amount = 0
 	return &TakingDatabase{
 		ID:       uuid.NewString(),
+		Name:     i.Name,
+		Type:     "manually",
 		External: i.External,
 		Comment:  i.Comment,
+		Status:   "open",
 		State:    *takingState,
 		Modified: vmod.NewModified(),
 	}

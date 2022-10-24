@@ -53,6 +53,8 @@ var TakingCollection *vmdb.Collection
 var FSChunkCollection *vmdb.Collection
 var FSFilesCollection *vmdb.Collection
 
+var ActivityCollection *vmdb.Collection
+
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
 
@@ -99,6 +101,7 @@ func InitialDatabase() {
 	TakingCollection = Database.Collection("takings")
 	FSChunkCollection = Database.Collection("fs.chunks")
 	FSFilesCollection = Database.Collection("fs.files")
+	ActivityCollection = Database.Collection("activities")
 }
 
 func FixDatabase() {

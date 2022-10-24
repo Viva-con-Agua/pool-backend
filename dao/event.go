@@ -12,6 +12,8 @@ import (
 func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event, err error) {
 	taking := models.TakingDatabase{
 		ID:       uuid.NewString(),
+		Name:     i.Name,
+		Type:     "automatically",
 		Status:   "blocked",
 		Modified: vmod.NewModified(),
 	}
@@ -20,6 +22,14 @@ func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event,
 		return
 	}
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
+		return
+	}
+	eventActivity := models.NewActivityDB(i.CreatorID, "event", i.ID, "Event created")
+	if err = ActivityCollection.InsertOne(ctx, eventActivity); err != nil {
+		return
+	}
+	takingActivity := models.NewActivityDB(i.CreatorID, "taking", taking.ID, "Taking automatically created for Event")
+	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
 	r = new(models.Event)

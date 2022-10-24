@@ -38,8 +38,9 @@ cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3f
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/Viva-con-Agua/vcago v1.4.16 h1:wJmjxo/1goGFRxBaeqIskAlvbdDWQTURnO2fSRaG1Fw=
 github.com/Viva-con-Agua/vcago v1.4.16/go.mod h1:kxaxW9VYWIaCdWoM+PLHNwXmtPj4FPYHPxmPK6JsA1U=
+github.com/Viva-con-Agua/vcago v1.4.17 h1:Dprk7tbif4T3Ixiyqq192CsadakhyqPNOatcxYZca1g=
+github.com/Viva-con-Agua/vcago v1.4.17/go.mod h1:kxaxW9VYWIaCdWoM+PLHNwXmtPj4FPYHPxmPK6JsA1U=
 github.com/Viva-con-Agua/vcapool v0.3.4 h1:I1IGg7BTfXihMkTwLu+qYygcvfX9zZVMZw9+0B9ZJMs=
 github.com/Viva-con-Agua/vcapool v0.3.4/go.mod h1:yTwmyj5DbsDduM23aEbK48BW0ONg9092hbmm1HhMso4=
 github.com/acobaugh/osrelease v0.0.0-20181218015638-a93a0a55a249/go.mod h1:iU1PxQMQwoHZZWmMKrMkrNlY+3+p9vxIjpZOVyxWa0g=
