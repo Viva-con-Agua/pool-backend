@@ -10,6 +10,7 @@ import (
 type (
 	TakingCreate struct {
 		Name      string         `json:"name" bson:"name"`
+		CrewID    string         `json:"crew_id" bson:"crew_id"`
 		External  External       `json:"external" bson:"external"`
 		NewSource []SourceCreate `json:"new_sources"`
 		Comment   string         `json:"comment"`

@@ -35,7 +35,7 @@ func (i *TakingHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	var result *models.Taking
-	if result, err = dao.TakingInsert(c.Ctx(), body); err != nil {
+	if result, err = dao.TakingInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Created(result)

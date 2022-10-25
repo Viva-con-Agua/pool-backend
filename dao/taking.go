@@ -3,18 +3,37 @@ package dao
 import (
 	"context"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func TakingInsert(ctx context.Context, i *models.TakingCreate) (r *models.Taking, err error) {
+func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
 	taking := i.TakingDatabase()
+	event := models.EventDatabase{
+		Name:         i.Name,
+		CrewID:       i.CrewID,
+		TypeOfEvent:  "automatically",
+		StartAt:      time.Now().Unix(),
+		EndAt:        time.Now().Unix(),
+		TakingID:     taking.ID,
+		EventASPID:   token.ID,
+		InteralASPID: token.ID,
+		CreatorID:    token.ID,
+	}
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
 	}
-	sources := i.SourceList(taking.ID)
-	if err = SourceCollection.InsertMany(ctx, sources.InsertMany()); err != nil {
+
+	if i.NewSource != nil {
+		sources := i.SourceList(taking.ID)
+		if err = SourceCollection.InsertMany(ctx, sources.InsertMany()); err != nil {
+			return
+		}
+	}
+	if err = EventCollection.InsertOne(ctx, event); err != nil {
 		return
 	}
 	r = new(models.Taking)
