@@ -3,17 +3,15 @@ package dao
 import (
 	"context"
 	"pool-backend/models"
-	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
 	taking := i.TakingDatabase()
-	event := models.EventDatabase{
+	/*event := models.EventDatabase{
 		ID:           uuid.NewString(),
 		Name:         i.Name,
 		CrewID:       i.CrewID,
@@ -25,7 +23,8 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 		InteralASPID: token.ID,
 		CreatorID:    token.ID,
 		ArtistIDs:    []string{},
-	}
+		EventTools:   models.EventTools{},
+	}*/
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
 	}
@@ -36,9 +35,10 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 			return
 		}
 	}
-	if err = EventCollection.InsertOne(ctx, event); err != nil {
-		return
-	}
+	/*
+		if err = EventCollection.InsertOne(ctx, event); err != nil {
+			return
+		}*/
 	r = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
