@@ -22,6 +22,7 @@ type (
 		HasExternal bool          `json:"has_external" bson:"has_external"`
 		Money       vmod.Money    `json:"money" bson:"money"`
 		TakingID    string        `json:"taking_id" bson:"taking_id"`
+		Status      string        `json:"status" bson:"status"`
 		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
 	SourceUpdate struct {
@@ -61,6 +62,7 @@ func (i *SourceCreate) Source() *Source {
 		Description: i.Description,
 		HasExternal: i.HasExternal,
 		TakingID:    i.TakingID,
+		Status:      "open",
 		Money:       i.Money,
 	}
 }

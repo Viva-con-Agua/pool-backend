@@ -34,12 +34,8 @@ func (i *TakingHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := body.TakingDatabase()
-	if err = dao.TakingCollection.InsertOne(c.Ctx(), result); err != nil {
-		return
-	}
-	sources := body.SourceList(result.ID)
-	if err = dao.SourceCollection.InsertMany(c.Ctx(), sources.InsertMany()); err != nil {
+	var result *models.Taking
+	if result, err = dao.TakingInsert(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -56,13 +52,7 @@ func (i TakingHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Taking)
-	if err = dao.TakingCollection.UpdateOneAggregate(
-		c.Ctx(),
-		body.Filter(),
-		body.Update(),
-		result,
-		models.NewTakingsPipeline().Match(body.Filter()).Pipe,
-	); err != nil {
+	if result, err = dao.TakingUpdate(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Updated(result)

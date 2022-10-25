@@ -9,17 +9,20 @@ import (
 
 type (
 	TakingCreate struct {
-		Name     string         `json:"name" bson:"name"`
-		External External       `json:"external" bson:"external"`
-		Source   []SourceCreate `json:"sources"`
-		Comment  string         `json:"comment"`
+		Name      string         `json:"name" bson:"name"`
+		External  External       `json:"external" bson:"external"`
+		NewSource []SourceCreate `json:"new_sources"`
+		Comment   string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID       string         `json:"id" bson:"_id"`
-		Name     string         `json:"name" bson:"name"`
-		External External       `json:"external" bson:"external"`
-		Source   []SourceCreate `json:"sources"`
-		Comment  string         `json:"comment"`
+		ID            string         `json:"id" bson:"_id"`
+		Name          string         `json:"name" bson:"name"`
+		External      External       `json:"external" bson:"external"`
+		NewSources    []SourceCreate `json:"new_sources" bson:"-"`
+		UpdateSource  []SourceUpdate `json:"update_sources" bson:"-"`
+		DeleteSources []string       `json:"delete_sources" bson:"-"`
+		State         TakingState    `json:"-" bson:"state"`
+		Comment       string         `json:"comment"`
 	}
 	External struct {
 		Organisation string `json:"organisation" bson:"organisation"`
@@ -67,8 +70,8 @@ type (
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 	takingState := new(TakingState)
 	takingState.Open.Amount = 0
-	for n := range i.Source {
-		takingState.Open.Amount += i.Source[n].Money.Amount
+	for n := range i.NewSource {
+		takingState.Open.Amount += i.NewSource[n].Money.Amount
 	}
 	takingState.Wait.Amount = 0
 	takingState.Confirmed.Amount = 0
@@ -86,8 +89,17 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 
 func (i *TakingCreate) SourceList(id string) *SourceList {
 	r := new(SourceList)
-	for n := range i.Source {
-		source := i.Source[n].Source()
+	for n := range i.NewSource {
+		source := i.NewSource[n].Source()
+		source.TakingID = id
+		*r = append(*r, *source)
+	}
+	return r
+}
+func (i *TakingUpdate) SourceList(id string) *SourceList {
+	r := new(SourceList)
+	for n := range i.NewSources {
+		source := i.NewSources[n].Source()
 		source.TakingID = id
 		*r = append(*r, *source)
 	}
