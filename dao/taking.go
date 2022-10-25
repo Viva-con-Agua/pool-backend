@@ -7,12 +7,14 @@ import (
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
 	taking := i.TakingDatabase()
 	event := models.EventDatabase{
+		ID:           uuid.NewString(),
 		Name:         i.Name,
 		CrewID:       i.CrewID,
 		TypeOfEvent:  "automatically",
@@ -22,6 +24,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 		EventASPID:   token.ID,
 		InteralASPID: token.ID,
 		CreatorID:    token.ID,
+		ArtistIDs:    []string{},
 	}
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
