@@ -88,7 +88,6 @@ func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("users", "event.creator_id", "_id", "event.creator")
 	pipe.LookupUnwind("profiles", "event.creator_id", "user_id", "event.creator.profile")
 	pipe.LookupUnwind("organizers", "event.organizer_id", "_id", "event.organizer")
-	pipe.LookupList("artists", "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind("crews", "event.crew_id", "_id", "event.crew")
 	return
 }
