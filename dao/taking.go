@@ -55,13 +55,15 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 	if err = TakingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, takingDatabase); err != nil {
 		return
 	}
-	i.State = takingDatabase.State
+	i.State = &takingDatabase.State
 	for n := range i.NewSources {
 		i.State.Open.Amount += i.NewSources[n].Money.Amount
 	}
-	sources := i.SourceList(takingDatabase.ID)
-	if err = SourceCollection.InsertMany(ctx, sources.InsertMany()); err != nil {
-		return
+	if i.NewSources != nil {
+		sources := i.SourceList(takingDatabase.ID)
+		if err = SourceCollection.InsertMany(ctx, sources.InsertMany()); err != nil {
+			return
+		}
 	}
 	for m := range i.DeleteSources {
 		deleteSource := new(models.Source)

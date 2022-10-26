@@ -18,11 +18,12 @@ type (
 	TakingUpdate struct {
 		ID            string         `json:"id" bson:"_id"`
 		Name          string         `json:"name" bson:"name"`
+		CrewID        string         `json:"crew_id" bson:"crew_id"`
 		External      External       `json:"external" bson:"external"`
-		NewSources    []SourceCreate `json:"new_sources" bson:"-"`
-		UpdateSource  []SourceUpdate `json:"update_sources" bson:"-"`
+		NewSources    []SourceCreate `json:"new_sources;omitempty" bson:"-"`
+		UpdateSource  []SourceUpdate `json:"update_sources;omitempty" bson:"-"`
 		DeleteSources []string       `json:"delete_sources" bson:"-"`
-		State         TakingState    `json:"-" bson:"state"`
+		State         *TakingState   `json:"-;omitempty" bson:"state"`
 		Comment       string         `json:"comment"`
 	}
 	External struct {
@@ -36,6 +37,7 @@ type (
 	TakingDatabase struct {
 		ID       string        `json:"id" bson:"_id"`
 		Name     string        `json:"name" bson:"name"`
+		CrewID   string        `json:"crew_id" bson:"crew_id"`
 		Type     string        `json:"type" bson:"type"`
 		External External      `json:"external" bson:"external"`
 		Comment  string        `json:"comment" bson:"comment"`
@@ -47,6 +49,8 @@ type (
 		ID       string      `json:"id" bson:"_id"`
 		Name     string      `json:"name" bson:"name"`
 		Type     string      `json:"type" bson:"type"`
+		CrewID   string      `json:"crew_id" bson:"crew_id"`
+		Crew     Crew        `json:"crew" bson:"crew"`
 		Event    Event       `json:"event" bson:"event"`
 		External External    `json:"external" bson:"external"`
 		Source   []Source    `json:"sources" bson:"sources"`
@@ -79,6 +83,7 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
 		ID:       uuid.NewString(),
 		Name:     i.Name,
+		CrewID:   i.CrewID,
 		Type:     "manually",
 		External: i.External,
 		Comment:  i.Comment,
@@ -110,6 +115,7 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 func NewTakingsPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.Lookup("sources", "_id", "taking_id", "sources")
+	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	pipe.LookupUnwind("events", "_id", "taking_id", "event")
 	return pipe
 }
