@@ -91,6 +91,7 @@ type (
 		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication `json:"application" bson:"application"`
+		Participation         []Participation  `json:"participations" bson:"participations"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
 		Creator               User             `json:"creator" bson:"creator"`
 		EventState            EventState       `json:"event_state" bson:"event_state"`
@@ -188,6 +189,7 @@ func EventPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
 	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
+	pipe.Lookup("paticipations", "_id", "event_id", "participations")
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return
