@@ -26,13 +26,13 @@ type (
 		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
 	SourceUpdate struct {
-		ID          string        `json:"id" bson:"_id"`
-		Value       string        `json:"value" bson:"value"`
-		Description string        `json:"description" bson:"description"`
-		HasExternal bool          `json:"has_external" bson:"has_external"`
-		Money       vmod.Money    `json:"money" bson:"money"`
-		TakingID    string        `json:"taking_id" bson:"taking_id"`
-		Modified    vmod.Modified `json:"modified" bson:"modified"`
+		ID          string     `json:"id" bson:"_id"`
+		Value       string     `json:"value" bson:"value"`
+		Description string     `json:"description" bson:"description"`
+		HasExternal bool       `json:"has_external" bson:"has_external"`
+		Money       vmod.Money `json:"money" bson:"money"`
+		TakingID    string     `json:"taking_id" bson:"taking_id"`
+		UpdateState string     `json:"update_state" bson:"-"`
 	}
 	SourceQuery struct {
 		Value       string `query:"value"`
@@ -64,6 +64,19 @@ func (i *SourceCreate) Source() *Source {
 		TakingID:    i.TakingID,
 		Status:      "open",
 		Money:       i.Money,
+		Modified:    vmod.NewModified(),
+	}
+}
+func (i *SourceUpdate) Source() *Source {
+	return &Source{
+		ID:          uuid.NewString(),
+		Value:       i.Value,
+		Description: i.Description,
+		HasExternal: i.HasExternal,
+		TakingID:    i.TakingID,
+		Status:      "open",
+		Money:       i.Money,
+		Modified:    vmod.NewModified(),
 	}
 }
 

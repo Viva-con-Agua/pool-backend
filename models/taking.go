@@ -16,15 +16,13 @@ type (
 		Comment   string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID            string         `json:"id" bson:"_id"`
-		Name          string         `json:"name" bson:"name"`
-		CrewID        string         `json:"crew_id" bson:"crew_id"`
-		External      External       `json:"external" bson:"external"`
-		NewSources    []SourceCreate `json:"new_sources;omitempty" bson:"-"`
-		UpdateSource  []SourceUpdate `json:"update_sources;omitempty" bson:"-"`
-		DeleteSources []string       `json:"delete_sources" bson:"-"`
-		State         *TakingState   `json:"-;omitempty" bson:"state"`
-		Comment       string         `json:"comment"`
+		ID       string         `json:"id" bson:"_id"`
+		Name     string         `json:"name" bson:"name"`
+		CrewID   string         `json:"crew_id" bson:"crew_id"`
+		External External       `json:"external" bson:"external"`
+		Sources  []SourceUpdate `json:"sources" bson:"-"`
+		State    *TakingState   `json:"-;omitempty" bson:"state"`
+		Comment  string         `json:"comment"`
 	}
 	External struct {
 		Organisation string `json:"organisation" bson:"organisation"`
@@ -104,10 +102,12 @@ func (i *TakingCreate) SourceList(id string) *SourceList {
 }
 func (i *TakingUpdate) SourceList(id string) *SourceList {
 	r := new(SourceList)
-	for n := range i.NewSources {
-		source := i.NewSources[n].Source()
-		source.TakingID = id
-		*r = append(*r, *source)
+	for _, v := range i.Sources {
+		if v.ID == "" {
+			source := v.Source()
+			source.TakingID = id
+			*r = append(*r, *source)
+		}
 	}
 	return r
 }

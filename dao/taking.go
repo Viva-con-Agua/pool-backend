@@ -56,51 +56,51 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 		return
 	}
 	i.State = &takingDatabase.State
-	for n := range i.NewSources {
-		i.State.Open.Amount += i.NewSources[n].Money.Amount
-	}
-	if i.NewSources != nil {
-		sources := i.SourceList(takingDatabase.ID)
-		if err = SourceCollection.InsertMany(ctx, sources.InsertMany()); err != nil {
-			return
-		}
-	}
-	for m := range i.DeleteSources {
-		deleteSource := new(models.Source)
-		if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.DeleteSources[m]}}, deleteSource); err != nil {
-			return
-		}
-		if deleteSource.Status == "open" {
-			takingDatabase.State.Open.Amount -= deleteSource.Money.Amount
-			if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: deleteSource.ID}}); err != nil {
+	for _, v := range i.Sources {
+		//create new sources
+		if v.ID == "" {
+			i.State.Open.Amount += v.Money.Amount
+			v.TakingID = i.ID
+			newSource := v.Source()
+			if err = SourceCollection.InsertOne(ctx, newSource); err != nil {
 				return
 			}
-		} else {
-			continue
 		}
-	}
-	for _, updateSource := range i.UpdateSource {
-		databaseSource := new(models.Source)
-		if err = SourceCollection.FindOne(
-			ctx,
-			bson.D{{Key: "_id", Value: updateSource.ID}},
-			databaseSource,
-		); err != nil {
-			return
-		}
-		if databaseSource.Status == "open" {
-			if updateSource.Money.Amount != databaseSource.Money.Amount {
-				i.State.Open.Amount -= databaseSource.Money.Amount
-				i.State.Open.Amount += updateSource.Money.Amount
+		if v.UpdateState == "deleted" {
+			deleteSource := new(models.Source)
+			if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: v.ID}}, deleteSource); err != nil {
+				return
+			}
+			if deleteSource.Status == "open" {
+				takingDatabase.State.Open.Amount -= deleteSource.Money.Amount
+				if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: deleteSource.ID}}); err != nil {
+					return
+				}
 			}
 		}
-		if err = SourceCollection.UpdateOne(
-			ctx,
-			bson.D{{Key: "_id", Value: updateSource.ID}},
-			vmdb.UpdateSet(updateSource),
-			nil,
-		); err != nil {
-			return
+		if v.UpdateState == "updated" {
+			databaseSource := new(models.Source)
+			if err = SourceCollection.FindOne(
+				ctx,
+				bson.D{{Key: "_id", Value: v.ID}},
+				databaseSource,
+			); err != nil {
+				return
+			}
+			if databaseSource.Status == "open" {
+				if v.Money.Amount != databaseSource.Money.Amount {
+					i.State.Open.Amount -= databaseSource.Money.Amount
+					i.State.Open.Amount += v.Money.Amount
+				}
+			}
+			if err = SourceCollection.UpdateOne(
+				ctx,
+				bson.D{{Key: "_id", Value: v.ID}},
+				vmdb.UpdateSet(v),
+				nil,
+			); err != nil {
+				return
+			}
 		}
 	}
 	r = new(models.Taking)
