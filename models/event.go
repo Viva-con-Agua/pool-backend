@@ -189,7 +189,7 @@ func EventPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
 	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
-	pipe.Lookup("paticipations", "_id", "event_id", "participations")
+	pipe.Lookup("participations", "_id", "event_id", "participations")
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return
