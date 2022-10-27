@@ -6,39 +6,48 @@ import (
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
+	//create taking model form i.
 	taking := i.TakingDatabase()
-	/*event := models.EventDatabase{
-		ID:           uuid.NewString(),
-		Name:         i.Name,
-		CrewID:       i.CrewID,
-		TypeOfEvent:  "automatically",
-		StartAt:      time.Now().Unix(),
-		EndAt:        time.Now().Unix(),
-		TakingID:     taking.ID,
-		EventASPID:   token.ID,
-		InteralASPID: token.ID,
-		CreatorID:    token.ID,
-		ArtistIDs:    []string{},
-		EventTools:   models.EventTools{},
-	}*/
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
 	}
+	//create sources
+	for _, source := range i.NewSource {
+		if source.HasExternal {
+			source.External.ReasonForPayment, _ = GetNewReasonForPayment(ctx, i.CrewID)
+			deposit := &models.DepositDatabase{
+				ID:               uuid.NewString(),
+				ReasonForPayment: source.External.ReasonForPayment,
+				Status:           "wait",
+				Money:            source.Money,
+			}
+			depositUnit := &models.DepositUnit{
+				ID:        uuid.NewString(),
+				TakingID:  taking.ID,
+				Money:     source.Money,
+				DepositID: deposit.ID,
+				Status:    "wait",
+			}
+			if err = DepositCollection.InsertOne(ctx, deposit); err != nil {
+				return
+			}
+			if err = DepositUnitCollection.InsertOne(ctx, depositUnit); err != nil {
+				return
+			}
 
+		}
+	}
 	if i.NewSource != nil {
 		sources := i.SourceList(taking.ID)
 		if err = SourceCollection.InsertMany(ctx, sources.InsertMany()); err != nil {
 			return
 		}
 	}
-	/*
-		if err = EventCollection.InsertOne(ctx, event); err != nil {
-			return
-		}*/
 	r = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
@@ -71,11 +80,9 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 			if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: v.ID}}, deleteSource); err != nil {
 				return
 			}
-			if deleteSource.Status == "open" {
-				takingDatabase.State.Open.Amount -= deleteSource.Money.Amount
-				if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: deleteSource.ID}}); err != nil {
-					return
-				}
+			takingDatabase.State.Open.Amount -= deleteSource.Money.Amount
+			if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: deleteSource.ID}}); err != nil {
+				return
 			}
 		}
 		if v.UpdateState == "updated" {
@@ -87,11 +94,9 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 			); err != nil {
 				return
 			}
-			if databaseSource.Status == "open" {
-				if v.Money.Amount != databaseSource.Money.Amount {
-					i.State.Open.Amount -= databaseSource.Money.Amount
-					i.State.Open.Amount += v.Money.Amount
-				}
+			if v.Money.Amount != databaseSource.Money.Amount {
+				i.State.Open.Amount -= databaseSource.Money.Amount
+				i.State.Open.Amount += v.Money.Amount
 			}
 			if err = SourceCollection.UpdateOne(
 				ctx,

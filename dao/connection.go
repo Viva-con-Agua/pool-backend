@@ -48,12 +48,18 @@ var ArtistCollection *vmdb.Collection
 var ParticipationCollection *vmdb.Collection
 var OrganizerCollection *vmdb.Collection
 var EventCollection *vmdb.Collection
+
 var SourceCollection *vmdb.Collection
 var TakingCollection *vmdb.Collection
+var DepositCollection *vmdb.Collection
+var DepositUnitCollection *vmdb.Collection
+
 var FSChunkCollection *vmdb.Collection
 var FSFilesCollection *vmdb.Collection
 
 var ActivityCollection *vmdb.Collection
+
+var ReasonForPaymentCollection *vmdb.Collection
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
@@ -99,9 +105,14 @@ func InitialDatabase() {
 	EventCollection = Database.Collection("events")
 	SourceCollection = Database.Collection("sources")
 	TakingCollection = Database.Collection("takings")
+	DepositCollection = Database.Collection("deposits")
+	DepositUnitCollection = Database.Collection("deposit_units")
+
 	FSChunkCollection = Database.Collection("fs.chunks")
 	FSFilesCollection = Database.Collection("fs.files")
 	ActivityCollection = Database.Collection("activities")
+
+	ReasonForPaymentCollection = Database.Collection("reason_for_payment")
 }
 
 func FixDatabase() {

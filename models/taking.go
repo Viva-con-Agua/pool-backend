@@ -11,33 +11,23 @@ type (
 	TakingCreate struct {
 		Name      string         `json:"name" bson:"name"`
 		CrewID    string         `json:"crew_id" bson:"crew_id"`
-		External  External       `json:"external" bson:"external"`
 		NewSource []SourceCreate `json:"new_sources"`
 		Comment   string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID       string         `json:"id" bson:"_id"`
-		Name     string         `json:"name" bson:"name"`
-		CrewID   string         `json:"crew_id" bson:"crew_id"`
-		External External       `json:"external" bson:"external"`
-		Sources  []SourceUpdate `json:"sources" bson:"-"`
-		State    *TakingState   `json:"-;omitempty" bson:"state"`
-		Comment  string         `json:"comment"`
+		ID      string         `json:"id" bson:"_id"`
+		Name    string         `json:"name" bson:"name"`
+		CrewID  string         `json:"crew_id" bson:"crew_id"`
+		Sources []SourceUpdate `json:"sources" bson:"-"`
+		State   *TakingState   `json:"-;omitempty" bson:"state"`
+		Comment string         `json:"comment"`
 	}
-	External struct {
-		Organisation string `json:"organisation" bson:"organisation"`
-		ASP          string `json:"asp" bson:"asp"`
-		Email        string `json:"email" bson:"email"`
-		Address      string `json:"address" bson:"address"`
-		Reciept      bool   `json:"reciept" bson:"reciept"`
-		Purpose      string `json:"purpose" bson:"purpose"`
-	}
+
 	TakingDatabase struct {
 		ID       string        `json:"id" bson:"_id"`
 		Name     string        `json:"name" bson:"name"`
 		CrewID   string        `json:"crew_id" bson:"crew_id"`
 		Type     string        `json:"type" bson:"type"`
-		External External      `json:"external" bson:"external"`
 		Comment  string        `json:"comment" bson:"comment"`
 		Status   string        `json:"status" bson:"status"`
 		State    TakingState   `json:"state" bson:"state"`
@@ -50,7 +40,6 @@ type (
 		CrewID   string      `json:"crew_id" bson:"crew_id"`
 		Crew     Crew        `json:"crew" bson:"crew"`
 		Event    Event       `json:"event" bson:"event"`
-		External External    `json:"external" bson:"external"`
 		Source   []Source    `json:"sources" bson:"sources"`
 		Status   string      `json:"status" bson:"status"`
 		State    TakingState `json:"state" bson:"state"`
@@ -83,7 +72,6 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 		Name:     i.Name,
 		CrewID:   i.CrewID,
 		Type:     "manually",
-		External: i.External,
 		Comment:  i.Comment,
 		Status:   "open",
 		State:    *takingState,

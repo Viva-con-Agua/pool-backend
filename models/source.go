@@ -13,6 +13,8 @@ type (
 		Description string     `json:"description" bson:"description"`
 		HasExternal bool       `json:"has_external" bson:"has_external"`
 		TakingID    string     `json:"taking_id" bson:"taking_id"`
+		External    External   `json:"external" bson:"external"`
+		PaymentType string     `json:"payment_type" bson:"payment_type"`
 		Money       vmod.Money `json:"money" bson:"money"`
 	}
 	Source struct {
@@ -22,7 +24,8 @@ type (
 		HasExternal bool          `json:"has_external" bson:"has_external"`
 		Money       vmod.Money    `json:"money" bson:"money"`
 		TakingID    string        `json:"taking_id" bson:"taking_id"`
-		Status      string        `json:"status" bson:"status"`
+		External    External      `json:"external" bson:"external"`
+		PaymentType string        `json:"payment_type" bson:"payment_type"`
 		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
 	SourceUpdate struct {
@@ -32,6 +35,8 @@ type (
 		HasExternal bool       `json:"has_external" bson:"has_external"`
 		Money       vmod.Money `json:"money" bson:"money"`
 		TakingID    string     `json:"taking_id" bson:"taking_id"`
+		External    External   `json:"external" bson:"external"`
+		PaymentType string     `json:"payment_type" bson:"payment_type"`
 		UpdateState string     `json:"update_state" bson:"-"`
 	}
 	SourceQuery struct {
@@ -45,6 +50,15 @@ type (
 		ID string `param:"id"`
 	}
 	SourceList []Source
+	External   struct {
+		Organisation     string `json:"organisation" bson:"organisation"`
+		ASP              string `json:"asp" bson:"asp"`
+		Email            string `json:"email" bson:"email"`
+		Address          string `json:"address" bson:"address"`
+		Reciept          bool   `json:"reciept" bson:"reciept"`
+		Purpose          string `json:"purpose" bson:"purpose"`
+		ReasonForPayment string `json:"reason_for_payment" bson:"reason_for_payment"`
+	}
 )
 
 func (i *SourceList) InsertMany() []interface{} {
@@ -61,8 +75,9 @@ func (i *SourceCreate) Source() *Source {
 		Value:       i.Value,
 		Description: i.Description,
 		HasExternal: i.HasExternal,
+		External:    i.External,
 		TakingID:    i.TakingID,
-		Status:      "open",
+		PaymentType: i.PaymentType,
 		Money:       i.Money,
 		Modified:    vmod.NewModified(),
 	}
@@ -73,8 +88,9 @@ func (i *SourceUpdate) Source() *Source {
 		Value:       i.Value,
 		Description: i.Description,
 		HasExternal: i.HasExternal,
+		External:    i.External,
+		PaymentType: i.PaymentType,
 		TakingID:    i.TakingID,
-		Status:      "open",
 		Money:       i.Money,
 		Modified:    vmod.NewModified(),
 	}
