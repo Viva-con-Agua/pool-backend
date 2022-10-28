@@ -1,31 +1,94 @@
 package models
 
-import "github.com/Viva-con-Agua/vcago/vmod"
+import (
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 type (
+	DepositCreate struct {
+		DepositUnit []DepositUnitCreate `json:"deposit_units"`
+		CrewID      string              `json:"crew_id"`
+	}
+	DepositUnitCreate struct {
+		TakingID string     `json:"taking_id" bson:"taking_id"`
+		Money    vmod.Money `json:"money" bson:"money"`
+	}
 	DepositUnit struct {
-		ID        string        `json:"id" bson:"_id" bson:"sources_ids"`
-		TakingID  string        `json:"taking_id" bson:"taking_id"`
-		Money     vmod.Money    `json:"money" bson:"money"`
-		DepositID string        `json:"deposit_id" bson:"deposit_id"`
-		Status    string        `json:"status" bson:"status"`
-		Modified  vmod.Modified `json:"modified" bson:"modified"`
+		ID        string         `json:"id" bson:"_id"`
+		TakingID  string         `json:"taking_id" bson:"taking_id"`
+		Taking    TakingDatabase `json:"taking" bson:"taking"`
+		Money     vmod.Money     `json:"money" bson:"money"`
+		DepositID string         `json:"deposit_id" bson:"deposit_id"`
+		Status    string         `json:"status" bson:"status"`
+		Modified  vmod.Modified  `json:"modified" bson:"modified"`
 	}
 	DepositDatabase struct {
-		ID               string        `json:"id" bson:"_id" bson:"sources_ids"`
-		ReasonForPayment string        `json:"reason_for_payment" bson:"sources_ids"`
+		ID               string        `json:"id" bson:"_id"`
+		ReasonForPayment string        `json:"reason_for_payment" bson:"reason_for_payment"`
 		Status           string        `json:"status" bson:"status"`
-		DepositUnitID    []string      `json:"deposit_unit_ids" bson:"deposit_unit_ids"`
 		Money            vmod.Money    `json:"money" bson:"money"`
+		CrewID           string        `json:"crew_id" bson:"crew_id"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Deposit struct {
-		ID               string        `json:"id" bson:"_id" bson:"sources_ids"`
-		ReasonForPayment string        `json:"reason_for_payment" bson:"sources_ids"`
+		ID               string        `json:"id" bson:"_id" `
+		ReasonForPayment string        `json:"reason_for_payment" bson:"reason_for_payment"`
 		Status           string        `json:"status" bson:"status"`
-		DepositUnitID    []string      `json:"deposit_unit_ids" bson:"deposit_unit_ids"`
 		DepositUnit      []DepositUnit `json:"deposit_units" bson:"deposit_units"`
+		CrewID           string        `json:"crew_id" bson:"crew_id"`
+		Crew             Crew          `json:"crew" bson:"crew"`
 		Money            vmod.Money    `json:"money" bson:"money"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
+	DepositQuery struct {
+		ID          []string `query:"id"`
+		UpdatedTo   string   `query:"updated_to" qs:"updated_to"`
+		UpdatedFrom string   `query:"updated_from" qs:"updated_from"`
+		CreatedTo   string   `query:"created_to" qs:"created_to"`
+		CreatedFrom string   `query:"created_from" qs:"created_from"`
+	}
 )
+
+func (i *DepositCreate) DepositDatabase() (r *DepositDatabase, d []DepositUnit) {
+	dIDs := []string{}
+	d = []DepositUnit{}
+	var amount int64 = 0
+	id := uuid.NewString()
+	for _, value := range i.DepositUnit {
+		depositUnit := &DepositUnit{
+			ID:        uuid.NewString(),
+			TakingID:  value.TakingID,
+			Money:     value.Money,
+			DepositID: id,
+			Status:    "open",
+			Modified:  vmod.NewModified(),
+		}
+		dIDs = append(dIDs, depositUnit.ID)
+		d = append(d, *depositUnit)
+		amount += depositUnit.Money.Amount
+	}
+	currency := "EUR"
+	if d != nil {
+		currency = d[0].Money.Currency
+	}
+	r = &DepositDatabase{
+		ID:     id,
+		Status: "open",
+		Money: vmod.Money{
+			Amount:   amount,
+			Currency: currency,
+		},
+		CrewID:   i.CrewID,
+		Modified: vmod.NewModified(),
+	}
+	return
+}
+
+func (i *DepositQuery) Filter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("_id", i.ID)
+	return filter.Bson()
+}

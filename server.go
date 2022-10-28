@@ -47,6 +47,7 @@ func main() {
 	finances := api.Group("/finances")
 	token.Source.Routes(finances.Group("/source"))
 	token.Taking.Routes(finances.Group("/taking"))
+	token.Deposit.Routes(finances.Group("/deposit"))
 
 	key.Crew.Routes(e.Group("/apikey/crews"))
 
