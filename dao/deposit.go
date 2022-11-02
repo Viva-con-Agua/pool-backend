@@ -51,7 +51,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 			return
 		}
 	}
-	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, taking.CrewID)
+	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID)
 	if err != nil {
 		log.Print(err)
 		err = nil
