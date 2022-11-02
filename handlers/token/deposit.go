@@ -5,6 +5,7 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,8 +27,12 @@ func (i *DepositHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
 	var result *models.Deposit
-	if result, err = dao.DepositInsert(c.Ctx(), body); err != nil {
+	if result, err = dao.DepositInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -40,7 +45,11 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	var result *[]models.Deposit
-	if result, err = dao.DepositGet(c.Ctx(), body); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if result, err = dao.DepositGet(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

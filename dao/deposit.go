@@ -6,6 +6,7 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -37,8 +38,8 @@ func depositPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
-func DepositInsert(ctx context.Context, i *models.DepositCreate) (r *models.Deposit, err error) {
-	deposit, depositUnits := i.DepositDatabase()
+func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.AccessToken) (r *models.Deposit, err error) {
+	deposit, depositUnits := i.DepositDatabase(token)
 	taking := new(models.TakingDatabase)
 	for _, unit := range depositUnits {
 		if err = TakingCollection.FindOne(ctx, filterID(unit.TakingID), taking); err != nil {
@@ -68,7 +69,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate) (r *models.Depo
 	return
 }
 
-func DepositGet(ctx context.Context, i *models.DepositQuery) (result *[]models.Deposit, err error) {
+func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.AccessToken) (result *[]models.Deposit, err error) {
 	result = new([]models.Deposit)
 	if err = DepositCollection.Aggregate(
 		ctx,

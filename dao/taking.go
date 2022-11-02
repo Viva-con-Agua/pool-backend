@@ -10,6 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func newTakingsPipeline() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.Lookup("sources", "_id", "taking_id", "sources")
+	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	pipe.LookupUnwind("events", "_id", "taking_id", "event")
+	return pipe
+}
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
 	//create taking model form i.
 	taking := i.TakingDatabase()
@@ -25,6 +32,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 				ReasonForPayment: source.External.ReasonForPayment,
 				Status:           "wait",
 				Money:            source.Money,
+				CreatorID:        token.ID,
 			}
 			depositUnit := &models.DepositUnit{
 				ID:        uuid.NewString(),
@@ -51,7 +59,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	r = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		models.NewTakingsPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
+		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
 		r,
 	); err != nil {
 		return
@@ -114,9 +122,38 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 		bson.D{{Key: "_id", Value: i.ID}},
 		vmdb.UpdateSet(i),
 		r,
-		models.NewTakingsPipeline().Match(bson.D{{Key: "_id", Value: i.ID}}).Pipe,
+		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: i.ID}}).Pipe,
 	); err != nil {
 		return
 	}
+	return
+}
+
+func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models.Taking, err error) {
+	result = new([]models.Taking)
+	if err = TakingCollection.Aggregate(
+		ctx,
+		newTakingsPipeline().Match(query.Filter()).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *models.Taking, err error) {
+	result = new(models.Taking)
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		newTakingsPipeline().Match(param.Filter()).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func TakingDeletetByID(ctx context.Context, param *models.TakingParam) (err error) {
+	err = TakingCollection.DeleteOne(ctx, param.Filter())
 	return
 }

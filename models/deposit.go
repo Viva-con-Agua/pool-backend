@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -31,6 +32,8 @@ type (
 		Status           string        `json:"status" bson:"status"`
 		Money            vmod.Money    `json:"money" bson:"money"`
 		CrewID           string        `json:"crew_id" bson:"crew_id"`
+		CreatorID        string        `json:"creator_id" bson:"creator_id"`
+		ConfirmerID      string        `json:"confirmer_id" bson:"confirmer_id"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Deposit struct {
@@ -41,10 +44,13 @@ type (
 		CrewID           string        `json:"crew_id" bson:"crew_id"`
 		Crew             Crew          `json:"crew" bson:"crew"`
 		Money            vmod.Money    `json:"money" bson:"money"`
+		Creator          User          `json:"creator" bson:"creator"`
+		Confirmer        User          `json:"confirmer" bson:"confirmer"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	DepositQuery struct {
 		ID          []string `query:"id"`
+		CrewID      string   `query:"crew_id"`
 		UpdatedTo   string   `query:"updated_to" qs:"updated_to"`
 		UpdatedFrom string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo   string   `query:"created_to" qs:"created_to"`
@@ -52,7 +58,7 @@ type (
 	}
 )
 
-func (i *DepositCreate) DepositDatabase() (r *DepositDatabase, d []DepositUnit) {
+func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositDatabase, d []DepositUnit) {
 	dIDs := []string{}
 	d = []DepositUnit{}
 	var amount int64 = 0
@@ -81,8 +87,9 @@ func (i *DepositCreate) DepositDatabase() (r *DepositDatabase, d []DepositUnit) 
 			Amount:   amount,
 			Currency: currency,
 		},
-		CrewID:   i.CrewID,
-		Modified: vmod.NewModified(),
+		CrewID:    i.CrewID,
+		CreatorID: token.ID,
+		Modified:  vmod.NewModified(),
 	}
 	return
 }
@@ -90,5 +97,6 @@ func (i *DepositCreate) DepositDatabase() (r *DepositDatabase, d []DepositUnit) 
 func (i *DepositQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
+	filter.EqualString("crew_id", i.CrewID)
 	return filter.Bson()
 }
