@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"log"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -50,7 +51,12 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 			return
 		}
 	}
-	deposit.ReasonForPayment, _ = GetNewReasonForPayment(ctx, taking.CrewID)
+	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, taking.CrewID)
+	if err != nil {
+		log.Print(err)
+		err = nil
+	}
+
 	for _, unit := range depositUnits {
 		if err = DepositUnitCollection.InsertOne(ctx, unit); err != nil {
 			return
