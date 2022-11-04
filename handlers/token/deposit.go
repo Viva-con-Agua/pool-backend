@@ -54,3 +54,33 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	}
 	return c.Selected(result)
 }
+
+func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.DepositParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	var result *models.Deposit
+	return c.Selected(result)
+}
+
+func (i *DepositHandler) Update(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.DepositUpdate)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	var result *models.Deposit
+	return c.Updated(result)
+}
+
+func (i *DepositHandler) Delete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.DepositParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	return c.Deleted(body.ID)
+
+}

@@ -100,13 +100,7 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 	return r
 }
 
-func NewTakingsPipeline() *vmdb.Pipeline {
-	pipe := vmdb.NewPipeline()
-	pipe.Lookup("sources", "_id", "taking_id", "sources")
-	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
-	pipe.LookupUnwind("events", "_id", "taking_id", "event")
-	return pipe
-}
+
 
 func (i *TakingQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
@@ -129,10 +123,3 @@ func (i *TakingParam) Filter() bson.D {
 	return filter.Bson()
 }
 
-func (i *TakingQuery) Pipeline() *vmdb.Pipeline {
-	return NewTakingsPipeline().Match(i.Filter())
-}
-
-func (i *TakingParam) Pipeline() *vmdb.Pipeline {
-	return NewTakingsPipeline().Match(i.Filter())
-}

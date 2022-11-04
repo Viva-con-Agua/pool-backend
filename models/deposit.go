@@ -26,6 +26,9 @@ type (
 		Status    string         `json:"status" bson:"status"`
 		Modified  vmod.Modified  `json:"modified" bson:"modified"`
 	}
+	DepositUpdate struct {
+		ID string `json:"id" bson:"_id"`
+	}
 	DepositDatabase struct {
 		ID               string        `json:"id" bson:"_id"`
 		ReasonForPayment string        `json:"reason_for_payment" bson:"reason_for_payment"`
@@ -55,6 +58,9 @@ type (
 		UpdatedFrom string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo   string   `query:"created_to" qs:"created_to"`
 		CreatedFrom string   `query:"created_from" qs:"created_from"`
+	}
+	DepositParam struct {
+		ID string `param:"id"`
 	}
 )
 
