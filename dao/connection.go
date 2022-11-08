@@ -61,6 +61,8 @@ var ActivityCollection *vmdb.Collection
 
 var ReasonForPaymentCollection *vmdb.Collection
 
+var DepositUnitTakingPipe = vmdb.NewPipeline()
+
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
 
@@ -113,6 +115,13 @@ func InitialDatabase() {
 	ActivityCollection = Database.Collection("activities")
 
 	ReasonForPaymentCollection = Database.Collection("reason_for_payment")
+	DepositUnitTakingPipe.LookupUnwind("deposits", "deposit_id", "_id", "deposit")
+	Database.Database.CreateView(
+		context.Background(),
+		"deposit_unit_taking",
+		"deposit_units",
+		DepositUnitTakingPipe.Pipe,
+	)
 }
 
 func FixDatabase() {
@@ -128,7 +137,6 @@ func FixDatabase() {
 	); err != nil {
 		log.Print(err)
 	}
-	log.Print(*eventList)
 	for i := range *eventList {
 		taking := models.TakingDatabase{
 			ID:       uuid.NewString(),

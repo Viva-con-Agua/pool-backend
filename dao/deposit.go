@@ -5,7 +5,6 @@ import (
 	"log"
 	"pool-backend/models"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
@@ -46,10 +45,6 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 		if err = TakingCollection.FindOne(ctx, filterID(unit.TakingID), taking); err != nil {
 			return
 		}
-		if taking.State.Open.Amount < unit.Money.Amount {
-			err = vcago.NewValidationError("amount to high")
-			return
-		}
 	}
 	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID)
 	if err != nil {
@@ -70,6 +65,26 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 	}
 	r = new(models.Deposit)
 	if err = DepositCollection.AggregateOne(ctx, depositPipeline().Match(bson.D{{Key: "_id", Value: deposit.ID}}).Pipe, r); err != nil {
+		return
+	}
+	return
+}
+
+func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+	depositDatabase := new(models.DepositDatabase)
+	if err = DepositCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, depositDatabase); err != nil {
+		return
+	}
+	i.Money = depositDatabase.Money
+	if err = DepositCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, vmdb.UpdateSet(i), nil); err != nil {
+		return
+	}
+	result = new(models.Deposit)
+	if err = DepositCollection.AggregateOne(
+		ctx,
+		depositPipeline().Match(bson.D{{Key: "_id", Value: i.ID}}).Pipe,
+		result,
+	); err != nil {
 		return
 	}
 	return

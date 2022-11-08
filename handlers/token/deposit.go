@@ -18,6 +18,7 @@ var Deposit = &DepositHandler{*vcago.NewHandler("deposit")}
 func (i *DepositHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
+	group.PUT("", i.Update, accessCookie)
 	group.GET("", i.Get, accessCookie)
 }
 
@@ -71,7 +72,14 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
 	var result *models.Deposit
+	if result, err = dao.DepositUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
 	return c.Updated(result)
 }
 

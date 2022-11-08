@@ -12,9 +12,34 @@ import (
 
 func newTakingsPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
+	pipe.Lookup("deposit_unit_taking", "_id", "taking_id", "deposit_units")
+	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
+	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "confirmed", bson.D{{Key: "deposit.status", Value: "confirmed"}})
+	//pipe.Append(bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$deposit_units"}}}})
+	//pipe.LookupUnwind(DepositCollection.Name, "deposit_units.deposit_id", "_id", "deposit_units.deposit")
+	//pipe.Append(bson.D{
+	/*	{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
+					{Key: "$push", Value: "$deposit_units"},
+				}},
+			}},
+		})
+		pipe.LookupUnwind(TakingCollection.Name, "_id", "_id", "takings")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "takings.deposit_units", Value: "$deposit_units"}}}})
+		pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$takings"}}}})*/
 	pipe.Lookup("sources", "_id", "taking_id", "sources")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	pipe.LookupUnwind("events", "_id", "taking_id", "event")
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.confirmed.amount", Value: bson.D{{Key: "$sum", Value: "$confirmed.money.amount"}}},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.amount", Value: bson.D{{Key: "$sum", Value: "$sources.money.amount"}}}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.amount", Value: bson.D{
+		{Key: "$subtract", Value: bson.A{"$money.amount", bson.D{{Key: "$add", Value: bson.A{"$state.wait.amount", "$state.confirmed.amount"}}}}},
+	}}}}})
 	return pipe
 }
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
@@ -76,7 +101,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 	for _, v := range i.Sources {
 		//create new sources
 		if v.ID == "" {
-			i.State.Open.Amount += v.Money.Amount
 			v.TakingID = i.ID
 			newSource := v.Source()
 			if err = SourceCollection.InsertOne(ctx, newSource); err != nil {
@@ -88,10 +112,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 			if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: v.ID}}, deleteSource); err != nil {
 				return
 			}
-			takingDatabase.State.Open.Amount -= deleteSource.Money.Amount
-			if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: deleteSource.ID}}); err != nil {
-				return
-			}
 		}
 		if v.UpdateState == "updated" {
 			databaseSource := new(models.Source)
@@ -101,10 +121,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 				databaseSource,
 			); err != nil {
 				return
-			}
-			if v.Money.Amount != databaseSource.Money.Amount {
-				i.State.Open.Amount -= databaseSource.Money.Amount
-				i.State.Open.Amount += v.Money.Amount
 			}
 			if err = SourceCollection.UpdateOne(
 				ctx,

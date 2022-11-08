@@ -34,21 +34,23 @@ type (
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Taking struct {
-		ID       string      `json:"id" bson:"_id"`
-		Name     string      `json:"name" bson:"name"`
-		Type     string      `json:"type" bson:"type"`
-		CrewID   string      `json:"crew_id" bson:"crew_id"`
-		Crew     Crew        `json:"crew" bson:"crew"`
-		Event    Event       `json:"event" bson:"event"`
-		Source   []Source    `json:"sources" bson:"sources"`
-		Status   string      `json:"status" bson:"status"`
-		State    TakingState `json:"state" bson:"state"`
-		Comment  string      `json:"comment" bson:"comment"`
-		Activity []Activity  `json:"activity" bson:"activity"`
+		ID           string              `json:"id" bson:"_id"`
+		Name         string              `json:"name" bson:"name"`
+		Type         string              `json:"type" bson:"type"`
+		CrewID       string              `json:"crew_id" bson:"crew_id"`
+		Crew         Crew                `json:"crew" bson:"crew"`
+		Event        Event               `json:"event" bson:"event"`
+		Source       []Source            `json:"sources" bson:"sources"`
+		Status       string              `json:"status" bson:"status"`
+		State        TakingState         `json:"state" bson:"state"`
+		Comment      string              `json:"comment" bson:"comment"`
+		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
+		Activity     []Activity          `json:"activity" bson:"activity"`
+		Money        vmod.Money          `json:"money" bson:"money"`
 	}
 	TakingState struct {
-		Confirmed vmod.Money `json:"confirmed" bson:"confirmed"`
 		Open      vmod.Money `json:"open" bson:"open"`
+		Confirmed vmod.Money `json:"confirmed" bson:"confirmed"`
 		Wait      vmod.Money `json:"wait" bson:"wait"`
 	}
 	TakingParam struct {
@@ -60,13 +62,6 @@ type (
 )
 
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
-	takingState := new(TakingState)
-	takingState.Open.Amount = 0
-	for n := range i.NewSource {
-		takingState.Open.Amount += i.NewSource[n].Money.Amount
-	}
-	takingState.Wait.Amount = 0
-	takingState.Confirmed.Amount = 0
 	return &TakingDatabase{
 		ID:       uuid.NewString(),
 		Name:     i.Name,
@@ -74,7 +69,6 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 		Type:     "manually",
 		Comment:  i.Comment,
 		Status:   "open",
-		State:    *takingState,
 		Modified: vmod.NewModified(),
 	}
 }
@@ -100,8 +94,6 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 	return r
 }
 
-
-
 func (i *TakingQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
@@ -122,4 +114,3 @@ func (i *TakingParam) Filter() bson.D {
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
-
