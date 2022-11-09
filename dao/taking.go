@@ -15,18 +15,6 @@ func newTakingsPipeline() *vmdb.Pipeline {
 	pipe.Lookup("deposit_unit_taking", "_id", "taking_id", "deposit_units")
 	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
 	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "confirmed", bson.D{{Key: "deposit.status", Value: "confirmed"}})
-	//pipe.Append(bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$deposit_units"}}}})
-	//pipe.LookupUnwind(DepositCollection.Name, "deposit_units.deposit_id", "_id", "deposit_units.deposit")
-	//pipe.Append(bson.D{
-	/*	{Key: "$group", Value: bson.D{
-				{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
-					{Key: "$push", Value: "$deposit_units"},
-				}},
-			}},
-		})
-		pipe.LookupUnwind(TakingCollection.Name, "_id", "_id", "takings")
-		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "takings.deposit_units", Value: "$deposit_units"}}}})
-		pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$takings"}}}})*/
 	pipe.Lookup("sources", "_id", "taking_id", "sources")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	pipe.LookupUnwind("events", "_id", "taking_id", "event")
