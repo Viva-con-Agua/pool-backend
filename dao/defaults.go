@@ -23,4 +23,3 @@ func (i *Check) ASP(token *vcapool.AccessToken) *Check {
 	}
 	return i
 }
-

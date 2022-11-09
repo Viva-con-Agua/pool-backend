@@ -21,9 +21,7 @@ func updateWaitTaking(amount int64) bson.D {
 func depositPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(DepositUnitCollection.Name, "_id", "deposit_id", "deposit_units")
-	//pipe.Append(bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$deposit_units"}}}})
 	pipe.LookupUnwind(TakingCollection.Name, "deposit_units.taking_id", "_id", "deposit_units.taking")
-
 	pipe.Append(bson.D{
 		{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
