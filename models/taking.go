@@ -11,16 +11,18 @@ type (
 	TakingCreate struct {
 		Name      string         `json:"name" bson:"name"`
 		CrewID    string         `json:"crew_id" bson:"crew_id"`
+		Currency  string         `json:"currency"`
 		NewSource []SourceCreate `json:"new_sources"`
 		Comment   string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID      string         `json:"id" bson:"_id"`
-		Name    string         `json:"name" bson:"name"`
-		CrewID  string         `json:"crew_id" bson:"crew_id"`
-		Sources []SourceUpdate `json:"sources" bson:"-"`
-		State   *TakingState   `json:"-;omitempty" bson:"state"`
-		Comment string         `json:"comment"`
+		ID       string         `json:"id" bson:"_id"`
+		Name     string         `json:"name" bson:"name"`
+		CrewID   string         `json:"crew_id" bson:"crew_id"`
+		Currency string         `json:"currency" bson:"currency"`
+		Sources  []SourceUpdate `json:"sources" bson:"-"`
+		State    *TakingState   `json:"-;omitempty" bson:"state"`
+		Comment  string         `json:"comment"`
 	}
 
 	TakingDatabase struct {
@@ -29,7 +31,7 @@ type (
 		CrewID   string        `json:"crew_id" bson:"crew_id"`
 		Type     string        `json:"type" bson:"type"`
 		Comment  string        `json:"comment" bson:"comment"`
-		Status   string        `json:"status" bson:"status"`
+		Currency string        `json:"currency" bson:"currency"`
 		State    TakingState   `json:"state" bson:"state"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -41,9 +43,9 @@ type (
 		Crew         Crew                `json:"crew" bson:"crew"`
 		Event        Event               `json:"event" bson:"event"`
 		Source       []Source            `json:"sources" bson:"sources"`
-		Status       string              `json:"status" bson:"status"`
 		State        TakingState         `json:"state" bson:"state"`
 		Comment      string              `json:"comment" bson:"comment"`
+		Currency     string              `json:"currency" bson:"currency"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
 		Activity     []Activity          `json:"activity" bson:"activity"`
 		Money        vmod.Money          `json:"money" bson:"money"`
@@ -68,7 +70,6 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 		CrewID:   i.CrewID,
 		Type:     "manually",
 		Comment:  i.Comment,
-		Status:   "open",
 		Modified: vmod.NewModified(),
 	}
 }

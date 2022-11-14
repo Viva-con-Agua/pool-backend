@@ -108,7 +108,7 @@ func InitialDatabase() {
 	SourceCollection = Database.Collection("sources")
 	TakingCollection = Database.Collection("takings")
 	DepositCollection = Database.Collection("deposits")
-	DepositUnitCollection = Database.Collection("deposit_units")
+	DepositUnitCollection = Database.Collection("deposit_units").CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true)
 
 	FSChunkCollection = Database.Collection("fs.chunks")
 	FSFilesCollection = Database.Collection("fs.files")
@@ -140,7 +140,6 @@ func FixDatabase() {
 	for i := range *eventList {
 		taking := models.TakingDatabase{
 			ID:       uuid.NewString(),
-			Status:   "blocked",
 			Modified: vmod.NewModified(),
 		}
 		event := (*eventList)[i]

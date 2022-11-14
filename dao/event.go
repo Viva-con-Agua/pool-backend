@@ -15,7 +15,6 @@ func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event,
 		Name:     i.Name,
 		CrewID:   i.CrewID,
 		Type:     "automatically",
-		Status:   "blocked",
 		Modified: vmod.NewModified(),
 	}
 	i.TakingID = taking.ID

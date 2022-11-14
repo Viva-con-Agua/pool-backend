@@ -37,13 +37,12 @@ type (
 		Modified  vmod.Modified   `json:"modified" bson:"modified"`
 	}
 	DepositUnitUpdate struct {
-		ID          string         `json:"id" bson:"_id"`
-		TakingID    string         `json:"taking_id" bson:"taking_id"`
-		Taking      TakingDatabase `json:"taking" bson:"taking"`
-		Money       vmod.Money     `json:"money" bson:"money"`
-		DepositID   string         `json:"deposit_id" bson:"deposit_id"`
-		Status      string         `json:"status" bson:"status"`
-		UpdateState string         `json:"update_state" bson:"-"`
+		ID          string     `json:"id" bson:"_id"`
+		TakingID    string     `json:"taking_id" bson:"taking_id"`
+		Money       vmod.Money `json:"money" bson:"money"`
+		DepositID   string     `json:"deposit_id" bson:"deposit_id"`
+		Status      string     `json:"status" bson:"status"`
+		UpdateState string     `json:"update_state" bson:"-"`
 	}
 	DepositUpdate struct {
 		ID          string              `json:"id" bson:"_id"`

@@ -28,6 +28,14 @@ func newTakingsPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.amount", Value: bson.D{
 		{Key: "$subtract", Value: bson.A{"$money.amount", bson.D{{Key: "$add", Value: bson.A{"$state.wait.amount", "$state.confirmed.amount"}}}}},
 	}}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.wait.currency", Value: "$currency"},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.confirmed.currency", Value: "$currency"},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
 	return pipe
 }
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {

@@ -54,9 +54,6 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 		if err = DepositUnitCollection.InsertOne(ctx, unit); err != nil {
 			return
 		}
-		if err = TakingCollection.UpdateOne(ctx, filterID(unit.TakingID), updateWaitTaking(unit.Money.Amount), nil); err != nil {
-			return
-		}
 	}
 	if err = DepositCollection.InsertOne(ctx, deposit); err != nil {
 		return
