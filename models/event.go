@@ -27,6 +27,7 @@ type (
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
+		EventState            EventState       `json:"event_state" bson:"event_state"`
 	}
 	EventDatabase struct {
 		ID                    string           `json:"id" bson:"_id"`
@@ -168,15 +169,13 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		EndAt:                 i.EndAt,
 		CrewID:                i.CrewID,
 		EventASPID:            i.EventASPID,
-		InteralASPID:          i.EventASPID,
+		InteralASPID:          i.InternalASPID,
 		ExternalASP:           i.ExternalASP,
 		Application:           i.Application,
 		EventTools:            i.EventTools,
 		CreatorID:             token.ID,
-		EventState: EventState{
-			State: "created",
-		},
-		Modified: vmod.NewModified(),
+		EventState:            i.EventState,
+		Modified:              vmod.NewModified(),
 	}
 }
 
