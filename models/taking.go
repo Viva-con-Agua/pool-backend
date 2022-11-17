@@ -59,7 +59,14 @@ type (
 		ID string `param:"id"`
 	}
 	TakingQuery struct {
-		ID []string `query:"id"`
+		ID              []string `query:"id"`
+		Name            string   `query:"name"`
+		EventName       string   `query:"event_name"`
+		Status          []string `query:"status"`
+		StatusOpen      bool     `query:"status_open"`
+		StatusConfirmed bool     `query:"status_confirmed"`
+		StatusNone      bool     `query:"status_none"`
+		StatusWait      bool     `query:"status_wait"`
 	}
 )
 
@@ -98,6 +105,28 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 func (i *TakingQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
+	filter.LikeString("name", i.Name)
+	filter.LikeString("event.name", i.EventName)
+	status := bson.A{}
+	if i.StatusOpen || i.StatusConfirmed || i.StatusWait || i.StatusNone {
+		if i.StatusOpen {
+			status = append(status, bson.D{{Key: "state.open.amount", Value: bson.D{{Key: "$gte", Value: 1}}}})
+		}
+		if i.StatusConfirmed {
+			status = append(status, bson.D{{Key: "state.confirmed.amount", Value: bson.D{{Key: "$gte", Value: 1}}}})
+		}
+		if i.StatusWait {
+			status = append(status, bson.D{{Key: "state.wait.amount", Value: bson.D{{Key: "$gte", Value: 1}}}})
+		}
+		if i.StatusNone {
+			status = append(status, bson.D{
+				{Key: "state.wait.amount", Value: 0},
+				{Key: "state.confirmed.amount", Value: 0},
+				{Key: "state.open.amount", Value: 0},
+			})
+		}
+		filter.Append(bson.E{Key: "$or", Value: status})
+	}
 	return filter.Bson()
 }
 
