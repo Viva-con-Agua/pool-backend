@@ -3,7 +3,7 @@ module pool-backend
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.4.18
+	github.com/Viva-con-Agua/vcago v1.4.19
 	github.com/Viva-con-Agua/vcapool v0.3.4
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
@@ -49,4 +49,4 @@ require (
 
 //replace github.com/Viva-con-Agua/vcapool => /home/dls/Projects/pkg/vcapool
 
-replace github.com/Viva-con-Agua/vcago => /home/dls/Projects/Viva-con-Agua/vcago
+//replace github.com/Viva-con-Agua/vcago => /home/dls/Projects/Viva-con-Agua/vcago
