@@ -29,6 +29,7 @@ func main() {
 	token.NVM.Routes(tokenUser.Group("/nvm"))
 	token.Address.Routes(tokenUser.Group("/address"))
 	token.Avatar.Routes(tokenUser.Group("/avatar"))
+	token.Newsletter.Routes(tokenUser.Group("/newsletter"))
 	token.User.Routes(tokenUser)
 	//crew routes
 	crews := api.Group("/crews")

@@ -61,6 +61,8 @@ var ActivityCollection *vmdb.Collection
 
 var ReasonForPaymentCollection *vmdb.Collection
 
+var NewsletterCollection *vmdb.Collection
+
 var DepositUnitTakingPipe = vmdb.NewPipeline()
 
 func InitialDatabase() {
@@ -113,6 +115,11 @@ func InitialDatabase() {
 	FSChunkCollection = Database.Collection("fs.chunks")
 	FSFilesCollection = Database.Collection("fs.files")
 	ActivityCollection = Database.Collection("activities")
+
+	NewsletterCollection = Database.Collection("newsletters").CreateMultiIndex(
+		bson.D{{Key: "user_id", Value: 1}, {Key: "value", Value: 1}},
+		true,
+	)
 
 	ReasonForPaymentCollection = Database.Collection("reason_for_payment")
 	DepositUnitTakingPipe.LookupUnwind("deposits", "deposit_id", "_id", "deposit")

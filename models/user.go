@@ -60,15 +60,16 @@ type (
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
 		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
 		//extends the vcago.User
-		DropsID   string        `bson:"drops_id" json:"drops_id"`
-		Profile   Profile       `json:"profile" bson:"profile,truncate"`
-		Crew      UserCrew      `json:"crew" bson:"crew,omitempty"`
-		Avatar    Avatar        `bson:"avatar,omitempty" json:"avatar"`
-		Address   Address       `json:"address" bson:"address,omitempty"`
-		PoolRoles vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
-		Active    Active        `json:"active" bson:"active,omitempty"`
-		NVM       NVM           `json:"nvm" bson:"nvm,omitempty"`
-		Modified  vmod.Modified `json:"modified" bson:"modified"`
+		DropsID    string        `bson:"drops_id" json:"drops_id"`
+		Profile    Profile       `json:"profile" bson:"profile,truncate"`
+		Crew       UserCrew      `json:"crew" bson:"crew,omitempty"`
+		Avatar     Avatar        `bson:"avatar,omitempty" json:"avatar"`
+		Address    Address       `json:"address" bson:"address,omitempty"`
+		PoolRoles  vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
+		Active     Active        `json:"active" bson:"active,omitempty"`
+		NVM        NVM           `json:"nvm" bson:"nvm,omitempty"`
+		Newsletter []Newsletter  `json:"newsletter" bson:"newsletter"`
+		Modified   vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserParam struct {
 		ID string `param:"id"`
@@ -137,7 +138,9 @@ func UserPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.Lookup("newsletters", "_id", "user_id", "newsletter")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+
 	return
 }
 

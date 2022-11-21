@@ -15,6 +15,7 @@ type (
 		TakingID    string     `json:"taking_id" bson:"taking_id"`
 		External    External   `json:"external" bson:"external"`
 		PaymentType string     `json:"payment_type" bson:"payment_type"`
+		Norms       string     `json:"norms" bson:"norms"`
 		Money       vmod.Money `json:"money" bson:"money"`
 	}
 	Source struct {
@@ -26,6 +27,7 @@ type (
 		TakingID    string        `json:"taking_id" bson:"taking_id"`
 		External    External      `json:"external" bson:"external"`
 		PaymentType string        `json:"payment_type" bson:"payment_type"`
+		Norms       string        `json:"norms" bson:"norms"`
 		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
 	SourceUpdate struct {
@@ -37,6 +39,7 @@ type (
 		TakingID    string     `json:"taking_id" bson:"taking_id"`
 		External    External   `json:"external" bson:"external"`
 		PaymentType string     `json:"payment_type" bson:"payment_type"`
+		Norms       string     `json:"norms" bson:"norms"`
 		UpdateState string     `json:"update_state" bson:"-"`
 	}
 	SourceQuery struct {
