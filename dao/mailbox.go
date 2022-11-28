@@ -10,7 +10,6 @@ import (
 )
 
 func MailboxGetByID(ctx context.Context, id string, token *vcapool.AccessToken) (r *models.Mailbox, err error) {
-
 	r = new(models.Mailbox)
 	if err = MailboxCollection.AggregateOne(
 		ctx,

@@ -12,6 +12,7 @@ type (
 	DepositCreate struct {
 		DepositUnit []DepositUnitCreate `json:"deposit_units"`
 		CrewID      string              `json:"crew_id"`
+		External    External            `json:"external"`
 	}
 	DepositUnitCreate struct {
 		TakingID string     `json:"taking_id" bson:"taking_id"`
@@ -48,6 +49,7 @@ type (
 		ID          string              `json:"id" bson:"_id"`
 		Status      string              `json:"status" bson:"status"`
 		DepositUnit []DepositUnitUpdate `json:"deposit_units" bson:"-"`
+		External    External            `json:"external" bson:"external"`
 		Money       vmod.Money          `json:"money" bson:"money"`
 	}
 	DepositDatabase struct {
@@ -58,6 +60,7 @@ type (
 		CrewID           string        `json:"crew_id" bson:"crew_id"`
 		CreatorID        string        `json:"creator_id" bson:"creator_id"`
 		ConfirmerID      string        `json:"confirmer_id" bson:"confirmer_id"`
+		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Deposit struct {
@@ -70,6 +73,7 @@ type (
 		Money            vmod.Money    `json:"money" bson:"money"`
 		Creator          User          `json:"creator" bson:"creator"`
 		Confirmer        User          `json:"confirmer" bson:"confirmer"`
+		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	DepositQuery struct {
@@ -116,6 +120,7 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 		},
 		CrewID:    i.CrewID,
 		CreatorID: token.ID,
+		External:  i.External,
 		Modified:  vmod.NewModified(),
 	}
 	return

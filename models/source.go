@@ -11,9 +11,7 @@ type (
 	SourceCreate struct {
 		Value       string     `json:"value" bson:"value"`
 		Description string     `json:"description" bson:"description"`
-		HasExternal bool       `json:"has_external" bson:"has_external"`
 		TakingID    string     `json:"taking_id" bson:"taking_id"`
-		External    External   `json:"external" bson:"external"`
 		PaymentType string     `json:"payment_type" bson:"payment_type"`
 		Norms       string     `json:"norms" bson:"norms"`
 		Money       vmod.Money `json:"money" bson:"money"`
@@ -22,10 +20,8 @@ type (
 		ID          string        `json:"id" bson:"_id"`
 		Value       string        `json:"value" bson:"value"`
 		Description string        `json:"description" bson:"description"`
-		HasExternal bool          `json:"has_external" bson:"has_external"`
 		Money       vmod.Money    `json:"money" bson:"money"`
 		TakingID    string        `json:"taking_id" bson:"taking_id"`
-		External    External      `json:"external" bson:"external"`
 		PaymentType string        `json:"payment_type" bson:"payment_type"`
 		Norms       string        `json:"norms" bson:"norms"`
 		Modified    vmod.Modified `json:"modified" bson:"modified"`
@@ -34,10 +30,8 @@ type (
 		ID          string     `json:"id" bson:"_id"`
 		Value       string     `json:"value" bson:"value"`
 		Description string     `json:"description" bson:"description"`
-		HasExternal bool       `json:"has_external" bson:"has_external"`
 		Money       vmod.Money `json:"money" bson:"money"`
 		TakingID    string     `json:"taking_id" bson:"taking_id"`
-		External    External   `json:"external" bson:"external"`
 		PaymentType string     `json:"payment_type" bson:"payment_type"`
 		Norms       string     `json:"norms" bson:"norms"`
 		UpdateState string     `json:"update_state" bson:"-"`
@@ -77,8 +71,6 @@ func (i *SourceCreate) Source() *Source {
 		ID:          uuid.NewString(),
 		Value:       i.Value,
 		Description: i.Description,
-		HasExternal: i.HasExternal,
-		External:    i.External,
 		TakingID:    i.TakingID,
 		PaymentType: i.PaymentType,
 		Money:       i.Money,
@@ -90,8 +82,6 @@ func (i *SourceUpdate) Source() *Source {
 		ID:          uuid.NewString(),
 		Value:       i.Value,
 		Description: i.Description,
-		HasExternal: i.HasExternal,
-		External:    i.External,
 		PaymentType: i.PaymentType,
 		TakingID:    i.TakingID,
 		Money:       i.Money,

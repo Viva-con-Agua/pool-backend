@@ -6,7 +6,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -43,33 +42,6 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	taking := i.TakingDatabase()
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
-	}
-	//create sources
-	for _, source := range i.NewSource {
-		if source.HasExternal {
-			source.External.ReasonForPayment, _ = GetNewReasonForPayment(ctx, i.CrewID)
-			deposit := &models.DepositDatabase{
-				ID:               uuid.NewString(),
-				ReasonForPayment: source.External.ReasonForPayment,
-				Status:           "wait",
-				Money:            source.Money,
-				CreatorID:        token.ID,
-			}
-			depositUnit := &models.DepositUnit{
-				ID:        uuid.NewString(),
-				TakingID:  taking.ID,
-				Money:     source.Money,
-				DepositID: deposit.ID,
-				Status:    "wait",
-			}
-			if err = DepositCollection.InsertOne(ctx, deposit); err != nil {
-				return
-			}
-			if err = DepositUnitCollection.InsertOne(ctx, depositUnit); err != nil {
-				return
-			}
-
-		}
 	}
 	if i.NewSource != nil {
 		sources := i.SourceList(taking.ID)
