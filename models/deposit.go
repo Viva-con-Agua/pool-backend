@@ -12,6 +12,7 @@ type (
 	DepositCreate struct {
 		DepositUnit []DepositUnitCreate `json:"deposit_units"`
 		CrewID      string              `json:"crew_id"`
+		HasExternal bool                `json:"has_external"`
 		External    External            `json:"external"`
 	}
 	DepositUnitCreate struct {
@@ -49,6 +50,7 @@ type (
 		ID          string              `json:"id" bson:"_id"`
 		Status      string              `json:"status" bson:"status"`
 		DepositUnit []DepositUnitUpdate `json:"deposit_units" bson:"-"`
+		HasExternal bool                `json:"has_external" bson:"has_external"`
 		External    External            `json:"external" bson:"external"`
 		Money       vmod.Money          `json:"money" bson:"money"`
 	}
@@ -60,6 +62,7 @@ type (
 		CrewID           string        `json:"crew_id" bson:"crew_id"`
 		CreatorID        string        `json:"creator_id" bson:"creator_id"`
 		ConfirmerID      string        `json:"confirmer_id" bson:"confirmer_id"`
+		HasExternal      bool          `json:"has_external" bson:"has_external"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -73,6 +76,7 @@ type (
 		Money            vmod.Money    `json:"money" bson:"money"`
 		Creator          User          `json:"creator" bson:"creator"`
 		Confirmer        User          `json:"confirmer" bson:"confirmer"`
+		HasExternal      bool          `json:"has_external" bson:"has_external"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -118,10 +122,11 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 			Amount:   amount,
 			Currency: currency,
 		},
-		CrewID:    i.CrewID,
-		CreatorID: token.ID,
-		External:  i.External,
-		Modified:  vmod.NewModified(),
+		CrewID:      i.CrewID,
+		CreatorID:   token.ID,
+		HasExternal: i.HasExternal,
+		External:    i.External,
+		Modified:    vmod.NewModified(),
 	}
 	return
 }
