@@ -6,10 +6,8 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type NVMHandler struct {
@@ -31,16 +29,8 @@ func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = models.NVMConfirmedPermission(token); err != nil {
-		return
-	}
-	result := new(models.NVM)
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMConfirm()),
-		result,
-	); err != nil {
+	var result *models.NVM
+	if result, err = dao.NVMConfirm(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "nvm", result)
@@ -57,17 +47,8 @@ func (i *NVMHandler) Reject(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	//check if requested user has the network or operation permission
-	if err = models.NVMRejectPermission(token); err != nil {
-		return
-	}
-	result := new(models.NVM)
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.UpdateSet(models.NVMReject()),
-		result,
-	); err != nil {
+	var result *models.NVM
+	if result, err = dao.NVMReject(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "nvm", result)
@@ -79,13 +60,8 @@ func (i *NVMHandler) Withdraw(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(models.NVM)
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		result,
-	); err != nil {
+	var result *models.NVM
+	if result, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
 		return
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_withdrawed", "nvm", result)
