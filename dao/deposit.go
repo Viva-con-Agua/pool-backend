@@ -96,3 +96,15 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.Acce
 	}
 	return
 }
+
+func DepositGetByID(ctx context.Context, param *models.DepositParam) (result *models.Deposit, err error) {
+	result = new(models.Deposit)
+	if err = DepositCollection.AggregateOne(
+		ctx,
+		depositPipeline().Match(bson.D{{Key: "_id", Value: param.ID}}).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	return
+}

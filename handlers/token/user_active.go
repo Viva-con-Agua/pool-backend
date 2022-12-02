@@ -1,17 +1,13 @@
 package token
 
 import (
-	"log"
 	"net/http"
 	"pool-backend/dao"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // ActiveHandler represents the vcago.Handler for the Active model.
@@ -39,19 +35,8 @@ func (i *ActiveHandler) Request(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	//check permissions for active request
-	if err = models.ActiveRequestPermission(token); err != nil {
-		return
-	}
-	//update active model into database. For filter the user_id key it the value ot the access token ID.
-	result := new(models.Active)
-	if err = dao.ActiveCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.ActiveRequest()),
-		result,
-	); err != nil {
-		log.Print(err)
+	var result *models.Active
+	if result, err = dao.ActiveRequest(c.Ctx(), token); err != nil {
 		return
 	}
 	//return "successfully requested."
@@ -71,33 +56,10 @@ func (i *ActiveHandler) Confirm(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	//check permissions for update an other users active model.
-	if err = models.ActivePermission(token); err != nil {
+	var result *models.Active
+	if result, err = dao.ActiveConfirm(c.Ctx(), body, token); err != nil {
 		return
 	}
-	//update active model.
-	result := new(models.Active)
-	if err = dao.ActiveCollection.UpdateOne(
-		c.Ctx(),
-		body.Filter(token),
-		vmdb.UpdateSet(models.ActiveConfirm()),
-		result,
-	); err != nil {
-		return
-	}
-	//confirm active state
-	/*result := new(vcapool.UserActive)
-	if result, err = body.Confirm(ctx, body.UserID); err != nil {
-		return
-	}
-	mailData := new(vcago.MailData)
-	if mailData, err = dao.GetSendMail(ctx, userReq.ID, result.UserID, "active_confirmed"); err != nil {
-		return
-	}
-	vcago.Nats.Publish("mail.send", mailData)
-	dao.MailSend.Send(mailData)
-	//response the result as vcago.Response
-	*/
 	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "active", result)
 }
 
@@ -112,35 +74,10 @@ func (i *ActiveHandler) Reject(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	//check permissions for update an other users active model.
-	if err = models.ActivePermission(token); err != nil {
+	var result *models.Active
+	if result, err = dao.ActiveReject(c.Ctx(), body, token); err != nil {
 		return
 	}
-	//update active model.
-	result := new(models.Active)
-	if err = dao.ActiveCollection.UpdateOne(
-		c.Ctx(),
-		body.Filter(token),
-		vmdb.UpdateSet(models.ActiveReject()),
-		result,
-	); err != nil {
-		return
-	}
-	//reject nvm state
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.UpdateSet(models.NVMReject()),
-		nil,
-	); err != nil && err != mongo.ErrNoDocuments {
-		return
-	}
-	/*
-		mailData := new(vcago.MailData)
-		if mailData, err = dao.GetSendMail(ctx, userReq.ID, result.UserID, "active_rejected"); err != nil {
-			return
-		}
-		dao.MailSend.Send(mailData)*/
 	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "active", result)
 }
 
@@ -151,29 +88,9 @@ func (i *ActiveHandler) Withdraw(cc echo.Context) (err error) {
 		return
 	}
 	//reject nvm state
-	result := new(models.Active)
-	if err = dao.ActiveCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		result,
-	); err != nil {
+	var result *models.Active
+	if result, err = dao.ActiveWithdraw(c.Ctx(), token); err != nil {
 		return
 	}
-	//reject nvm state
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMReject()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	/*
-		mailData := new(vcago.MailData)
-		if mailData, err = dao.GetSendMail(ctx, userReq.ID, result.UserID, "active_rejected"); err != nil {
-			return
-		}
-		dao.MailSend.Send(mailData)*/
 	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "active", result)
 }

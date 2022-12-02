@@ -20,6 +20,7 @@ func (i *DepositHandler) Routes(group *echo.Group) {
 	group.POST("", i.Create, accessCookie)
 	group.PUT("", i.Update, accessCookie)
 	group.GET("", i.Get, accessCookie)
+	group.GET("/:id", i.GetByID, accessCookie)
 }
 
 func (i *DepositHandler) Create(cc echo.Context) (err error) {
@@ -63,6 +64,9 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	var result *models.Deposit
+	if result, err = dao.DepositGetByID(c.Ctx(), body); err != nil {
+		return
+	}
 	return c.Selected(result)
 }
 
