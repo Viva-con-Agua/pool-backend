@@ -11,7 +11,6 @@ type (
 	TakingCreate struct {
 		Name      string         `json:"name" bson:"name"`
 		CrewID    string         `json:"crew_id" bson:"crew_id"`
-		Currency  string         `json:"currency"`
 		NewSource []SourceCreate `json:"new_sources"`
 		Comment   string         `json:"comment"`
 	}
@@ -19,7 +18,6 @@ type (
 		ID       string         `json:"id" bson:"_id"`
 		Name     string         `json:"name" bson:"name"`
 		CrewID   string         `json:"crew_id" bson:"crew_id"`
-		Currency string         `json:"currency" bson:"currency"`
 		Sources  []SourceUpdate `json:"sources" bson:"-"`
 		State    *TakingState   `json:"-;omitempty" bson:"state"`
 		Comment  string         `json:"comment"`
@@ -31,7 +29,6 @@ type (
 		CrewID   string        `json:"crew_id" bson:"crew_id"`
 		Type     string        `json:"type" bson:"type"`
 		Comment  string        `json:"comment" bson:"comment"`
-		Currency string        `json:"currency" bson:"currency"`
 		State    TakingState   `json:"state" bson:"state"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -45,7 +42,6 @@ type (
 		Source       []Source            `json:"sources" bson:"sources"`
 		State        TakingState         `json:"state" bson:"state"`
 		Comment      string              `json:"comment" bson:"comment"`
-		Currency     string              `json:"currency" bson:"currency"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
 		Activity     []Activity          `json:"activity" bson:"activity"`
 		Money        vmod.Money          `json:"money" bson:"money"`
