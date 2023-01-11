@@ -57,6 +57,7 @@ type (
 	TakingQuery struct {
 		ID              []string `query:"id"`
 		Name            string   `query:"name"`
+		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
 		Status          []string `query:"status"`
 		StatusOpen      bool     `query:"status_open"`
@@ -101,6 +102,7 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 func (i *TakingQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
+	filter.EqualStringList("crew_id", i.CrewID)
 	filter.LikeString("name", i.Name)
 	filter.LikeString("event.name", i.EventName)
 	status := bson.A{}
