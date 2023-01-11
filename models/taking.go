@@ -101,6 +101,7 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 func (i *TakingQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
+	filter.EqualStringList("crew_id", i.CrewID)
 	filter.LikeString("name", i.Name)
 	filter.LikeString("event.name", i.EventName)
 	status := bson.A{}
