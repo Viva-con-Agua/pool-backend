@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func newTakingsPipeline() *vmdb.Pipeline {
+func TakingsPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.Lookup("deposit_unit_taking", "_id", "taking_id", "deposit_units")
 	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
@@ -52,7 +52,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	r = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
+		TakingsPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
 		r,
 	); err != nil {
 		return
@@ -61,53 +61,50 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 }
 
 func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking, err error) {
-	takingDatabase := new(models.TakingDatabase)
-	if err = TakingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, takingDatabase); err != nil {
+	taking := new(models.Taking)
+	filter := bson.D{{Key: "_id", Value: i.ID}}
+	pipeline := TakingsPipeline().Match(filter).Pipe
+	if err = TakingCollection.AggregateOne(ctx, pipeline, taking); err != nil {
 		return
 	}
-	i.State = &takingDatabase.State
-	for _, v := range i.Sources {
-		//create new sources
-		if v.ID == "" {
-			v.TakingID = i.ID
-			newSource := v.Source()
-			if err = SourceCollection.InsertOne(ctx, newSource); err != nil {
-				return
+	if !(taking.State.Open.Amount == 0 && taking.State.Wait.Amount == 0) {
+		for _, v := range i.Sources {
+			//create new sources
+			if v.ID == "" {
+				v.TakingID = i.ID
+				newSource := v.Source()
+				if err = SourceCollection.InsertOne(ctx, newSource); err != nil {
+					return
+				}
 			}
-		}
-		if v.UpdateState == "deleted" {
-			deleteSource := new(models.Source)
-			if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: v.ID}}, deleteSource); err != nil {
-				return
+			if v.UpdateState == "deleted" {
+				if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: v.ID}}); err != nil {
+					return
+				}
 			}
-		}
-		if v.UpdateState == "updated" {
-			databaseSource := new(models.Source)
-			if err = SourceCollection.FindOne(
-				ctx,
-				bson.D{{Key: "_id", Value: v.ID}},
-				databaseSource,
-			); err != nil {
-				return
-			}
-			if err = SourceCollection.UpdateOne(
-				ctx,
-				bson.D{{Key: "_id", Value: v.ID}},
-				vmdb.UpdateSet(v),
-				nil,
-			); err != nil {
-				return
+			if v.UpdateState == "updated" {
+				databaseSource := new(models.Source)
+				if err = SourceCollection.FindOne(
+					ctx,
+					bson.D{{Key: "_id", Value: v.ID}},
+					databaseSource,
+				); err != nil {
+					return
+				}
+				if err = SourceCollection.UpdateOne(
+					ctx,
+					bson.D{{Key: "_id", Value: v.ID}},
+					vmdb.UpdateSet(v),
+					nil,
+				); err != nil {
+					return
+				}
 			}
 		}
 	}
 	r = new(models.Taking)
-	if err = TakingCollection.UpdateOneAggregate(
-		ctx,
-		bson.D{{Key: "_id", Value: i.ID}},
-		vmdb.UpdateSet(i),
-		r,
-		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: i.ID}}).Pipe,
-	); err != nil {
+	update := vmdb.UpdateSet(i)
+	if err = TakingCollection.UpdateOneAggregate(ctx, filter, update, r, pipeline); err != nil {
 		return
 	}
 	return
@@ -117,7 +114,7 @@ func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models
 	result = new([]models.Taking)
 	if err = TakingCollection.Aggregate(
 		ctx,
-		newTakingsPipeline().Match(query.Filter()).Pipe,
+		TakingsPipeline().Match(query.Filter()).Pipe,
 		result,
 	); err != nil {
 		return
@@ -129,7 +126,7 @@ func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *mode
 	result = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		newTakingsPipeline().Match(param.Filter()).Pipe,
+		TakingsPipeline().Match(param.Filter()).Pipe,
 		result,
 	); err != nil {
 		return
