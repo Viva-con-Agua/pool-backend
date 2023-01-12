@@ -5,6 +5,7 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -60,14 +61,23 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	return
 }
 
-func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking, err error) {
+func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.AccessToken) (r *models.Taking, err error) {
 	taking := new(models.Taking)
-	filter := bson.D{{Key: "_id", Value: i.ID}}
+
+	//permission
+	filter := bson.D{{Key: "_id", Value: "cant find"}}
+	if token.Roles.Validate("employee;admin") {
+		filter = bson.D{{Key: "_id", Value: i.ID}}
+	}
+	if token.PoolRoles.Validate("finance") {
+		filter = bson.D{{Key: "_id", Value: i.ID}, {Key: "crew_id", Value: token.CrewID}}
+	}
 	pipeline := TakingsPipeline().Match(filter).Pipe
 	if err = TakingCollection.AggregateOne(ctx, pipeline, taking); err != nil {
 		return
 	}
-	if !(taking.State.Open.Amount == 0 && taking.State.Wait.Amount == 0) {
+	//update
+	if !(taking.State.Open.Amount == 0 && taking.State.Wait.Amount == 0) || true {
 		for _, v := range i.Sources {
 			//create new sources
 			if v.ID == "" {
@@ -110,31 +120,47 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 	return
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models.Taking, err error) {
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, err error) {
+	filter := bson.D{{Key: "_id", Value: "cant find"}}
+	if token.Roles.Validate("employee") {
+		filter = query.Filter()
+	} else if token.PoolRoles.Validate("finance") {
+		query.CrewID = []string{token.CrewID}
+		filter = query.Filter()
+	}
+	pipeline := TakingsPipeline().Match(filter).Pipe
 	result = new([]models.Taking)
-	if err = TakingCollection.Aggregate(
-		ctx,
-		TakingsPipeline().Match(query.Filter()).Pipe,
-		result,
-	); err != nil {
+	if err = TakingCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
 	return
 }
 
-func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *models.Taking, err error) {
+func TakingGetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
+	filter := bson.D{{Key: "_id", Value: "cant find"}}
+	if token.Roles.Validate("employee;admin") {
+		filter = bson.D{{Key: "_id", Value: param.ID}}
+	}
+	if token.PoolRoles.Validate("finance") {
+		filter = bson.D{{Key: "_id", Value: param.ID}, {Key: "crew_id", Value: token.CrewID}}
+	}
+	pipeline := TakingsPipeline().Match(filter).Pipe
 	result = new(models.Taking)
-	if err = TakingCollection.AggregateOne(
-		ctx,
-		TakingsPipeline().Match(param.Filter()).Pipe,
-		result,
-	); err != nil {
+	if err = TakingCollection.AggregateOne(ctx, pipeline, result); err != nil {
 		return
 	}
 	return
 }
 
-func TakingDeletetByID(ctx context.Context, param *models.TakingParam) (err error) {
-	err = TakingCollection.DeleteOne(ctx, param.Filter())
+func TakingDeletetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.AccessToken) (result *vmod.DeletedResponse, err error) {
+	filter := bson.D{{Key: "_id", Value: "cant find"}}
+	if token.Roles.Validate("employee;admin") {
+		filter = bson.D{{Key: "_id", Value: param.ID}}
+	}
+	if token.PoolRoles.Validate("finance") {
+		filter = bson.D{{Key: "_id", Value: param.ID}, {Key: "crew_id", Value: token.CrewID}}
+	}
+
+	err = TakingCollection.DeleteOne(ctx, filter)
 	return
 }
