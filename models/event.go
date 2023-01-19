@@ -124,13 +124,15 @@ type (
 	}
 
 	EventQuery struct {
-		ID          []string `query:"id" qs:"id"`
-		Name        string   `query:"name" qs:"name"`
-		CrewID      string   `query:"crew_id" qs:"crew_id"`
-		UpdatedTo   string   `query:"updated_to" qs:"updated_to"`
-		UpdatedFrom string   `query:"updated_from" qs:"updated_from"`
-		CreatedTo   string   `query:"created_to" qs:"created_to"`
-		CreatedFrom string   `query:"created_from" qs:"created_from"`
+		ID            []string `query:"id" qs:"id"`
+		Name          string   `query:"name" qs:"name"`
+		CrewID        string   `query:"crew_id" qs:"crew_id"`
+		EventASPID    string   `query:"event_asp_id" qs:"event_asp_id"`
+		InteralASPID  string   `query:"internal_asp_id" qs:"internal_asp_id"`
+		UpdatedTo     string   `query:"updated_to" qs:"updated_to"`
+		UpdatedFrom   string   `query:"updated_from" qs:"updated_from"`
+		CreatedTo     string   `query:"created_to" qs:"created_to"`
+		CreatedFrom   string   `query:"created_from" qs:"created_from"`
 	}
 	UserExternal struct {
 		FullName    string `json:"full_name" bson:"full_name"`
@@ -221,6 +223,8 @@ func (i *EventQuery) Match() bson.D {
 	match := vmdb.NewFilter()
 	match.EqualStringList("_id", i.ID)
 	match.LikeString("name", i.Name)
+	match.EqualString("internal_asp_id", i.InternalASPID)
+	match.EqualString("event_asp_id", i.EventASPID)
 	match.GteInt64("modified.updated", i.UpdatedFrom)
 	match.GteInt64("modified.created", i.CreatedFrom)
 	match.LteInt64("modified.updated", i.UpdatedTo)
