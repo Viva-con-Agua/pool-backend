@@ -44,7 +44,7 @@ type (
 		CrewID                string           `json:"crew_id" bson:"crew_id"`
 		TakingID              string           `json:"taking_id" bson:"taking_id"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
-		InteralASPID          string           `json:"internal_asp_id" bson:"internal_asp_id"`
+		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
@@ -87,7 +87,7 @@ type (
 		CrewID                string           `json:"crew_id" bson:"crew_id"`
 		Crew                  Crew             `json:"crew" bson:"crew"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
-		InteralASPID          string           `json:"internal_asp_id" bson:"internal_asp_id"`
+		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		EventASP              User             `json:"event_asp" bson:"event_asp"`
 		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
@@ -128,7 +128,7 @@ type (
 		Name          string   `query:"name" qs:"name"`
 		CrewID        string   `query:"crew_id" qs:"crew_id"`
 		EventASPID    string   `query:"event_asp_id" qs:"event_asp_id"`
-		InteralASPID  string   `query:"internal_asp_id" qs:"internal_asp_id"`
+		InternalASPID string   `query:"internal_asp_id" qs:"internal_asp_id"`
 		UpdatedTo     string   `query:"updated_to" qs:"updated_to"`
 		UpdatedFrom   string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo     string   `query:"created_to" qs:"created_to"`
@@ -171,7 +171,7 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		EndAt:                 i.EndAt,
 		CrewID:                i.CrewID,
 		EventASPID:            i.EventASPID,
-		InteralASPID:          i.InternalASPID,
+		InternalASPID:         i.InternalASPID,
 		ExternalASP:           i.ExternalASP,
 		Application:           i.Application,
 		EventTools:            i.EventTools,
