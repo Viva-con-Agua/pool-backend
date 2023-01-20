@@ -28,6 +28,8 @@ type (
 	}
 )
 
+var ActiveCollection = "active"
+
 func NewActive(userID string, crewID string) *Active {
 	return &Active{
 		ID:       uuid.NewString(),

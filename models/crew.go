@@ -15,6 +15,7 @@ type (
 		Name         string `json:"name" bson:"name"`
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdate struct {
@@ -22,6 +23,7 @@ type (
 		Name         string `json:"name" bson:"name"`
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
 	Crew struct {
@@ -29,6 +31,8 @@ type (
 		Name         string        `json:"name" bson:"name"`
 		Email        string        `json:"email" bson:"email"`
 		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
+		Additional   string        `json:"additional" bson:"additional"`
+		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities       []City        `json:"cities" bson:"cities"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -55,12 +59,15 @@ type (
 	}
 )
 
+var CrewCollection = "crews"
+
 func (i *CrewCreate) Crew() *Crew {
 	return &Crew{
 		ID:           uuid.NewString(),
 		Name:         i.Name,
 		Email:        i.Email,
 		Abbreviation: i.Abbreviation,
+		Additional:   i.Additional,
 		Cities:       i.Cities,
 		Modified:     vmod.NewModified(),
 	}

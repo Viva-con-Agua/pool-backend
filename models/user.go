@@ -1,7 +1,6 @@
 package models
 
 import (
-	"pool-user/dao"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -30,6 +29,7 @@ type (
 		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
 		DropsID       string        `bson:"drops_id" json:"drops_id"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
+		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
 		Modified      vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {
@@ -58,16 +58,18 @@ type (
 		PrivacyPolicy bool          `bson:"privacy_policy" json:"privacy_policy"`
 		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
+		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
 		//extends the vcago.User
-		DropsID   string        `bson:"drops_id" json:"drops_id"`
-		Profile   Profile       `json:"profile" bson:"profile,truncate"`
-		Crew      UserCrew      `json:"crew" bson:"crew,omitempty"`
-		Avatar    Avatar        `bson:"avatar,omitempty" json:"avatar"`
-		Address   Address       `json:"address" bson:"address,omitempty"`
-		PoolRoles vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
-		Active    Active        `json:"active" bson:"active,omitempty"`
-		NVM       NVM           `json:"nvm" bson:"nvm,omitempty"`
-		Modified  vmod.Modified `json:"modified" bson:"modified"`
+		DropsID    string        `bson:"drops_id" json:"drops_id"`
+		Profile    Profile       `json:"profile" bson:"profile,truncate"`
+		Crew       UserCrew      `json:"crew" bson:"crew,omitempty"`
+		Avatar     Avatar        `bson:"avatar,omitempty" json:"avatar"`
+		Address    Address       `json:"address" bson:"address,omitempty"`
+		PoolRoles  vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
+		Active     Active        `json:"active" bson:"active,omitempty"`
+		NVM        NVM           `json:"nvm" bson:"nvm,omitempty"`
+		Newsletter []Newsletter  `json:"newsletter" bson:"newsletter"`
+		Modified   vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserParam struct {
 		ID string `param:"id"`
@@ -92,6 +94,8 @@ type (
 		CreatedFrom   string   `query:"created_from" qs:"created_from"`
 	}
 )
+
+var UserCollection = "users"
 
 func NewUserDatabase(user *vmod.User) *UserDatabase {
 	return &UserDatabase{
@@ -128,13 +132,15 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 
 func UserPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(dao.AddressesCollection.Name, "_id", "user_id", "address")
-	pipe.LookupUnwind(dao.ProfilesCollection.Name, "_id", "user_id", "profile")
-	pipe.LookupUnwind(dao.UserCrewCollection.Name, "_id", "user_id", "crew")
-	pipe.LookupUnwind(dao.ActiveCollection.Name, "_id", "user_id", "active")
-	pipe.LookupUnwind(dao.NVMCollection.Name, "_id", "user_id", "nvm")
-	pipe.Lookup(dao.PoolRoleCollection.Name, "_id", "user_id", "pool_roles")
-	pipe.LookupUnwind(dao.AvatarCollection.Name, "_id", "user_id", "avatar")
+	pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.Lookup("newsletters", "_id", "user_id", "newsletter")
+	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+
 	return
 }
 
@@ -178,6 +184,7 @@ func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 		ActiveState:   i.Active.Status,
 		NVMState:      i.NVM.Status,
 		AvatarID:      i.Avatar.ID,
+		MailboxID:     i.MailboxID,
 		Modified:      i.Modified,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),

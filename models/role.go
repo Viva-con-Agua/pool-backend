@@ -18,6 +18,8 @@ type RoleAdminRequest struct {
 	Role  string `json:"role"`
 }
 
+var PoolRoleCollection = "pool_roles"
+
 func (i *RoleRequest) New() (r *vmod.Role, err error) {
 	switch i.Role {
 	case "asp":
@@ -34,6 +36,8 @@ func (i *RoleRequest) New() (r *vmod.Role, err error) {
 		return RoleSocialMedia(i.UserID), err
 	case "awareness":
 		return RoleAwareness(i.UserID), err
+	case "other":
+		return RoleOther(i.UserID), err
 	default:
 		return nil, vcago.NewValidationError("role not supported: " + i.Role)
 	}
@@ -110,6 +114,16 @@ func RoleAwareness(userID string) *vmod.Role {
 		Name:   "awareness",
 		Label:  "Awareness",
 		Root:   "awareness;employee;admin",
+		UserID: userID,
+	}
+}
+
+func RoleOther(userID string) *vmod.Role {
+	return &vmod.Role{
+		ID:     uuid.NewString(),
+		Name:   "other",
+		Label:  "Other",
+		Root:   "other;employee;admin",
 		UserID: userID,
 	}
 }

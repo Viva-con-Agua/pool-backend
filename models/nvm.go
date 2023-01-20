@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var NVMCollection = "nvm"
+
 type (
 	NVM struct {
 		ID       string        `bson:"_id" json:"id"`

@@ -1,21 +1,26 @@
 package main
 
 import (
-	"pool-user/handlers/admin"
-	"pool-user/handlers/key"
-	"pool-user/handlers/token"
+	"pool-backend/dao"
+	"pool-backend/handlers/admin"
+	"pool-backend/handlers/key"
+	"pool-backend/handlers/token"
 
 	"github.com/Viva-con-Agua/vcago"
 )
 
 func main() {
-	e := vcago.NewEchoServer("pool-user")
-	vcago.Nats.Connect()
+	e := vcago.NewServer()
+	dao.InitialDatabase()
+	dao.InitialNats()
+	dao.FixDatabase()
+	//dao.ReloadDatabase()
 	//login routes
-	token.Login.Routes(e.Group("/auth"))
+	api := e.Group("/v1")
 
+	token.Login.Routes(api.Group("/auth"))
 	//user routes
-	tokenUser := e.Group("/users")
+	tokenUser := api.Group("/users")
 	token.User.Routes(tokenUser)
 	token.Profile.Routes(tokenUser.Group("/profile"))
 	token.UserCrew.Routes(tokenUser.Group("/crew"))
@@ -24,10 +29,26 @@ func main() {
 	token.NVM.Routes(tokenUser.Group("/nvm"))
 	token.Address.Routes(tokenUser.Group("/address"))
 	token.Avatar.Routes(tokenUser.Group("/avatar"))
+	token.Newsletter.Routes(tokenUser.Group("/newsletter"))
 	token.User.Routes(tokenUser)
 	//crew routes
-	crews := e.Group("/crews")
+	crews := api.Group("/crews")
 	token.Crew.Routes(crews)
+
+	mails := api.Group("/mails")
+	token.Mailbox.Routes(mails.Group("/mailbox"))
+	token.Message.Routes(mails.Group("/message"))
+
+	events := api.Group("/events")
+	token.Event.Routes(events.Group("/event"))
+	token.Artist.Routes(events.Group("/artist"))
+	token.Organizer.Routes(events.Group("/organizer"))
+	token.Participation.Routes(events.Group("/participation"))
+
+	finances := api.Group("/finances")
+	token.Source.Routes(finances.Group("/source"))
+	token.Taking.Routes(finances.Group("/taking"))
+	token.Deposit.Routes(finances.Group("/deposit"))
 
 	key.Crew.Routes(e.Group("/apikey/crews"))
 

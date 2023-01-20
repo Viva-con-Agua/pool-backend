@@ -11,12 +11,12 @@ import (
 
 type (
 	AddressCreate struct {
-		Street      string `json:"street" bson:"street"`
-		Number      string `json:"number" bson:"number"`
-		Zip         string `json:"zip" bson:"zip"`
-		City        string `json:"city" bson:"city"`
-		Country     string `json:"country" bson:"country"`
-		CountryCode string `json:"country_code" bson:"country_code"`
+		Street      string `json:"street" bson:"street" validate:"required"`
+		Number      string `json:"number" bson:"number" validate:"required"`
+		Zip         string `json:"zip" bson:"zip" validate:"required"`
+		City        string `json:"city" bson:"city" validate:"required"`
+		Country     string `json:"country" bson:"country" validate:"required"`
+		CountryCode string `json:"country_code" bson:"country_code" validate:"required"`
 		Additionals string `json:"additionals" bson:"additionals"`
 	}
 	AddressUpdate struct {
@@ -55,6 +55,8 @@ type (
 		ID string `param:"id"`
 	}
 )
+
+var AddressesCollection = "addresses"
 
 func (i *AddressCreate) Address(userID string) (r *Address) {
 	return &Address{

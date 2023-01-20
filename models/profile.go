@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+var ProfilesCollection = "profiles"
+
 type (
 	ProfileCreate struct {
 		Gender    string `bson:"gender" json:"gender"`

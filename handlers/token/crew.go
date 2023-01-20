@@ -1,8 +1,8 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -42,6 +42,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
+	vcago.Nats.Publish("pool.crew.create", result)
 	return c.Created(result)
 }
 
@@ -85,9 +86,10 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Crew)
-	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.NewUpdateSet(body), result); err != nil {
+	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
+	vcago.Nats.Publish("pool.crew.update", result)
 	return vcago.NewUpdated("crew", body)
 }
 
@@ -104,7 +106,7 @@ func (i *CrewHandler) Delete(cc echo.Context) (err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}
-	if err = dao.CrewsCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+	if err = dao.CrewDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

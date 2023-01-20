@@ -1,8 +1,8 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -54,7 +54,7 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 	if err = dao.ProfilesCollection.UpdateOne(
 		c.Ctx(),
 		body.Filter(token),
-		vmdb.NewUpdateSet(body),
+		vmdb.UpdateSet(body),
 		result,
 	); err != nil {
 		return

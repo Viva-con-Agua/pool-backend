@@ -1,8 +1,8 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
@@ -32,10 +32,10 @@ func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.UserCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
+	if err = dao.UserDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
-	return c.Deleted(token.ID)
+	return c.Deleted(body.ID)
 }
 
 func (i *UserHandler) GetByID(cc echo.Context) (err error) {

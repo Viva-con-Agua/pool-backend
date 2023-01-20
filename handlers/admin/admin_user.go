@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/labstack/echo/v4"
@@ -17,20 +17,24 @@ var User = &UserHandler{*vcago.NewHandler("user")}
 func (i *UserHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.GET("", i.Get)
+	group.POST("", i.Create)
 	group.GET("/:id", i.GetByID)
 	group.DELETE("/:id", i.Delete)
 }
 
-/*
 func (i *UserHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(dao.UserDatabase)
+	body := new(models.UserDatabase)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
 	result := new(models.User)
-	return vcago.NewCreated("user", result)
-}*/
+	if result, err = dao.UserInsert(c.Ctx(), body); err != nil {
+		return
+	}
+	vcago.Nats.Publish("pool.user.created", result)
+	return c.Created(result)
+}
 
 func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
@@ -38,7 +42,7 @@ func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.UserCollection.DeleteOne(c.Ctx(), body.FilterAdmin()); err != nil {
+	if err = dao.UserDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

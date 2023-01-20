@@ -2,8 +2,8 @@ package token
 
 import (
 	"net/http"
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -45,29 +45,16 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		c.Ctx(),
 		models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
 		result,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	); err != nil && !vmdb.ErrNoDocuments(err) {
 		return
 	}
 	if vmdb.ErrNoDocuments(err) {
+		err = nil
 		userDatabase := models.NewUserDatabase(tokenUser)
-		if err = dao.UserCollection.InsertOne(c.Ctx(), userDatabase); err != nil {
+		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
 			return
 		}
-		if err = dao.UserCollection.AggregateOne(
-			c.Ctx(),
-			models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
-			result,
-		); err != nil {
-			return
-		}
-		vcago.Nats.Publish("user.created", result)
-	}
-	if tokenUser.CheckUpdate(result.LastUpdate) {
-		userUpdate := models.NewUserUpdate(tokenUser)
-		if err = dao.UserCollection.UpdateOne(c.Ctx(), userUpdate.Filter(), vmdb.NewUpdateSet(userUpdate), result); err != nil {
-			return
-		}
-		vcago.Nats.Publish("user.updated", result)
+		vcago.Nats.Publish("pool.user.created", result)
 	}
 	token := new(vcago.AuthToken)
 	if token, err = result.AuthToken(); err != nil {

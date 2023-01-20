@@ -1,8 +1,8 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -38,7 +38,7 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.FindOne(c.Ctx(), body.CrewFilter(), crew); err != nil {
 		return
 	}
-	result := models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email)
+	result := models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
 	if err = dao.UserCrewCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
@@ -65,14 +65,14 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 		return vcago.NewPermissionDenied("crew")
 	}
 	result := new(models.UserCrew)
-	if err = dao.UserCrewCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
+	if err = dao.UserCrewCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
 	//reset active and nvm
 	if err = dao.ActiveCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.ActiveWithdraw()),
+		vmdb.UpdateSet(models.ActiveWithdraw()),
 		nil,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
@@ -81,7 +81,7 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.UpdateOne(
 		c.Ctx(),
 		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.NVMWithdraw()),
+		vmdb.UpdateSet(models.NVMWithdraw()),
 		nil,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
@@ -95,30 +95,9 @@ func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.UserCrewCollection.DeleteOne(c.Ctx(), bson.D{{Key: "user_id", Value: token.ID}}); err != nil {
+	if err = dao.UserCrewDelete(c.Ctx(), token.ID); err != nil {
 		return
 	}
-	//reset active and nvm
-	if err = dao.ActiveCollection.DeleteOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	//reject nvm state
-	if err = dao.NVMCollection.DeleteOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	if err = dao.PoolRoleCollection.DeleteMany(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	err = nil
 	return c.Deleted(token.ID)
 
 }
