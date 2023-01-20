@@ -29,16 +29,15 @@ func CrewInsert(ctx context.Context, i *models.Crew) (r *models.Crew, err error)
 }
 
 func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp") {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network") {
 		return nil, vcago.NewPermissionDenied("crew", nil)
 	}
 	if !token.Roles.Validate("employee;admin") {
-		update := i.ToCrewUpdateASP()
-		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(update), result); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i.ToCrewUpdateASP()), token); err != nil {
 			return
 		}
 	} else {
-		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i), result); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i), token); err != nil {
 			return
 		}
 	}
