@@ -10,13 +10,22 @@ import (
 )
 
 func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vcapool.AccessToken) (result *models.Newsletter, err error) {
-	if i.Value == "regional" && token.CrewID == "" {
-		return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+	
+	if !token.Roles.Validate("employee;admin") {
+		if i.Value == "regional" && token.CrewID == "" {
+			return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+		}
+		result = i.Newsletter(token)
+		if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
+			return
+		}
+	} else {
+		result = i.NewsletterAdmin()
+		if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
+			return
+		}
 	}
-	result = i.Newsletter(token)
-	if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
-		return
-	}
+	
 	return
 }
 
