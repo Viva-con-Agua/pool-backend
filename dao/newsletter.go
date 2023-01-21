@@ -20,6 +20,12 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vc
 			return
 		}
 	} else {
+		if i.Value == "regional" {
+			crew := new(models.UserCrew)
+			if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: i.UserID}}, crew); err != nil {
+				return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+			}
+		}
 		result = i.NewsletterAdmin()
 		if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
 			return
