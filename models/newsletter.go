@@ -8,7 +8,8 @@ import (
 
 type (
 	NewsletterCreate struct {
-		Value string `json:"value" bson:"value"`
+		Value  string `json:"value" bson:"value"`
+		UserID string `json:"user_id" bson:"user_id"`
 	}
 	Newsletter struct {
 		ID       string        `json:"id" bson:"_id"`
@@ -26,6 +27,15 @@ func (i *NewsletterCreate) Newsletter(token *vcapool.AccessToken) *Newsletter {
 		ID:       uuid.NewString(),
 		Value:    i.Value,
 		UserID:   token.ID,
+		Modified: vmod.NewModified(),
+	}
+}
+
+func (i *NewsletterCreate) NewsletterAdmin() *Newsletter {
+	return &Newsletter{
+		ID:       uuid.NewString(),
+		Value:    i.Value,
+		UserID:   i.UserID,
 		Modified: vmod.NewModified(),
 	}
 }
