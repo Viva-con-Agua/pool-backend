@@ -17,6 +17,7 @@ type (
 		Website               string           `json:"website" bson:"website"`
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
+		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
@@ -37,6 +38,7 @@ type (
 		Website               string           `json:"website" bson:"website"`
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
+		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
@@ -78,6 +80,7 @@ type (
 		Website               string           `json:"website" bson:"website"`
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
+		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
 		Artists               []Artist         `json:"artists" bson:"artists"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
@@ -106,6 +109,7 @@ type (
 		Website               string           `json:"website" bson:"website"`
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
+		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
@@ -128,6 +132,7 @@ type (
 		Name          string   `query:"name" qs:"name"`
 		CrewID        string   `query:"crew_id" qs:"crew_id"`
 		EventASPID    string   `query:"event_asp_id" qs:"event_asp_id"`
+		EventState    []string `query:"event_state" qs:"event_state"`
 		InternalASPID string   `query:"internal_asp_id" qs:"internal_asp_id"`
 		UpdatedTo     string   `query:"updated_to" qs:"updated_to"`
 		UpdatedFrom   string   `query:"updated_from" qs:"updated_from"`
@@ -165,6 +170,7 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		AdditionalInformation: i.AdditionalInformation,
 		Website:               i.Website,
 		Location:              i.Location,
+		MeetingURL:            i.MeetingURL,
 		ArtistIDs:             i.ArtistIDs,
 		OrganizerID:           i.OrganizerID,
 		StartAt:               i.StartAt,
@@ -195,6 +201,18 @@ func EventPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return
 }
+
+func EventPipelinePublic() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
+	pipe.LookupUnwind("users", "internal_asp_id", "_id", "internal_asp")
+	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
+	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
+	pipe.LookupList("artists", "artist_ids", "_id", "artists")
+	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	return
+}
+
 func (i *EventDatabase) Match() bson.D {
 	match := vmdb.NewFilter()
 	match.EqualString("_id", i.ID)
@@ -219,12 +237,14 @@ func (i *EventParam) Filter() bson.D {
 	return bson.D{{Key: "_id", Value: i.ID}}
 }
 
-func (i *EventQuery) Match() bson.D {
+func (i *EventQuery) Filter() bson.D {
 	match := vmdb.NewFilter()
 	match.EqualStringList("_id", i.ID)
 	match.LikeString("name", i.Name)
 	match.EqualString("internal_asp_id", i.InternalASPID)
 	match.EqualString("event_asp_id", i.EventASPID)
+	match.EqualStringList("event_state.state", i.EventState)
+	match.EqualString("crew_id", i.CrewID)
 	match.GteInt64("modified.updated", i.UpdatedFrom)
 	match.GteInt64("modified.created", i.CreatedFrom)
 	match.LteInt64("modified.updated", i.UpdatedTo)

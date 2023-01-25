@@ -19,7 +19,8 @@ var Event = &EventHandler{*vcago.NewHandler("event")}
 func (i *EventHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
-	group.GET("", i.Get)
+	group.GET("/public", i.GetPublic)
+	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
@@ -67,12 +68,25 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new([]models.Event)
-	if err = dao.EventCollection.Aggregate(
-		c.Ctx(),
-		models.EventPipeline().Match(body.Match()).Pipe,
-		result,
-	); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	var result *[]models.Event
+	if result, err = dao.EventGet(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Listed(result)
+}
+
+func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.EventQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	var result *[]models.Event
+	if result, err = dao.EventGetPublic(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Listed(result)
@@ -82,6 +96,10 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventUpdate)
 	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
 	result := new(models.Event)
@@ -101,6 +119,10 @@ func (i *EventHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)
 	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
 	if err = dao.EventDelete(c.Ctx(), body.ID); err != nil {

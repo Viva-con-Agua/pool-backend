@@ -53,12 +53,15 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 
 func (i *UserHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(models.UserQuery)
-	if err = c.BindAndValidate(body); err != nil {
-		return
-	}
 	token := new(vcapool.AccessToken)
 	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;operation;awareness;socialmedia;other") {
+		return vcago.NewPermissionDenied("users", nil)
+	}
+	body := new(models.UserQuery)
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
 	result := new([]models.User)
