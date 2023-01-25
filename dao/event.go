@@ -5,6 +5,8 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -34,6 +36,39 @@ func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event,
 	}
 	r = new(models.Event)
 	if err = EventCollection.AggregateOne(ctx, models.EventPipeline().Match(i.Match()).Pipe, r); err != nil {
+		return
+	}
+	return
+}
+
+func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.Event, err error) {
+	filter := vmdb.NewFilter()
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") {
+		filter.EqualStringList("event_state.state", []string{"published","finished","closed"})
+	} else if !token.Roles.Validate("employee;admin") {
+		noCrewMatch := vmdb.NewFilter()
+		crewMatch := vmdb.NewFilter()
+		crewMatch.EqualString("crew_id", token.CrewID)
+		noCrewMatch.EqualStringList("event_state.state", []string{"published","finished","closed"})
+		filter.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
+	}
+
+	pipeline := models.EventPipeline().Match(filter.Bson()).Pipe
+	result = new([]models.Event)
+
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+		return
+	}
+	return
+}
+
+func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.Event, err error) {
+	i.EventState = []string{"published","finished","closed"}
+	filter := i.Filter()
+	pipeline := models.EventPipelinePublic().Match(filter).Pipe
+	result = new([]models.Event)
+
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
 	return
