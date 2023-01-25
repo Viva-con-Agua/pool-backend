@@ -57,7 +57,7 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;operation;awareness;socialmedia;other") {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;financial;operation;awareness;socialmedia;other") {
 		return vcago.NewPermissionDenied("users", nil)
 	}
 	body := new(models.UserQuery)
