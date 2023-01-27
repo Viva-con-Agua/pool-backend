@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event, err error) {
+func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.AccessToken) (r *models.Event, err error) {
 	taking := models.TakingDatabase{
 		ID:       uuid.NewString(),
 		Name:     i.Name,
@@ -35,7 +35,7 @@ func EventInsert(ctx context.Context, i *models.EventDatabase) (r *models.Event,
 		return
 	}
 	r = new(models.Event)
-	if err = EventCollection.AggregateOne(ctx, models.EventPipeline().Match(i.Match()).Pipe, r); err != nil {
+	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, r); err != nil {
 		return
 	}
 	return
@@ -53,7 +53,7 @@ func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessTo
 		filter.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
 	}
 
-	pipeline := models.EventPipeline().Match(filter.Bson()).Pipe
+	pipeline := models.EventPipeline(token).Match(filter.Bson()).Pipe
 	result = new([]models.Event)
 
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {

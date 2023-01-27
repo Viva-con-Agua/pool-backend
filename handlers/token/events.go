@@ -21,7 +21,7 @@ func (i *EventHandler) Routes(group *echo.Group) {
 	group.POST("", i.Create, accessCookie)
 	group.GET("/public", i.GetPublic)
 	group.GET("", i.Get, accessCookie)
-	group.GET("/:id", i.GetByID)
+	group.GET("/:id", i.GetByID, accessCookie)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 
@@ -39,7 +39,7 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 	}
 	database := body.EventDatabase(token)
 	result := new(models.Event)
-	if result, err = dao.EventInsert(c.Ctx(), database); err != nil {
+	if result, err = dao.EventInsert(c.Ctx(), database, token); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -51,10 +51,14 @@ func (i *EventHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
 	result := new(models.Event)
 	if err = dao.EventCollection.AggregateOne(
 		c.Ctx(),
-		models.EventPipeline().Match(body.Match()).Pipe,
+		models.EventPipeline(token).Match(body.Match()).Pipe,
 		result,
 	); err != nil {
 		return
@@ -108,7 +112,7 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 		body.Filter(),
 		vmdb.UpdateSet(body),
 		result,
-		models.EventPipeline().Match(body.Match()).Pipe,
+		models.EventPipeline(token).Match(body.Match()).Pipe,
 	); err != nil {
 		return
 	}
