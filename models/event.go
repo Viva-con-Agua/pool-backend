@@ -181,13 +181,13 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		ExternalASP:           i.ExternalASP,
 		Application:           i.Application,
 		EventTools:            i.EventTools,
-		CreatorID:             token.ID,
 		EventState:            i.EventState,
+		CreatorID:             token.ID,
 		Modified:              vmod.NewModified(),
 	}
 }
 
-func EventPipeline() (pipe *vmdb.Pipeline) {
+func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
 	pipe.LookupUnwind("profiles", "event_asp_id", "user_id", "event_asp.profile")
@@ -196,7 +196,13 @@ func EventPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
 	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
-	pipe.Lookup("participations", "_id", "event_id", "participations")
+	if token.Roles.Validate("employee;admin") {
+		pipe.Lookup("participations", "_id", "event_id", "participations")
+	} else if token.PoolRoles.Validate("network;operation;education") {
+		pipe.LookupMatch("participations_event", "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
+	} else {
+		pipe.LookupMatch("participations_event", "_id", "event_id", "participations", bson.D{{Key: "event.event_asp_id", Value: token.ID}})
+	}
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return

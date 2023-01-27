@@ -64,6 +64,7 @@ var ReasonForPaymentCollection *vmdb.Collection
 var NewsletterCollection *vmdb.Collection
 
 var DepositUnitTakingPipe = vmdb.NewPipeline()
+var ParticipationEventPipe = vmdb.NewPipeline()
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
@@ -128,6 +129,14 @@ func InitialDatabase() {
 		"deposit_unit_taking",
 		"deposit_units",
 		DepositUnitTakingPipe.Pipe,
+	)
+
+	ParticipationEventPipe.LookupUnwind("events", "event_id", "_id", "event")
+	Database.Database.CreateView(
+		context.Background(),
+		"participations_event",
+		"participations",
+		ParticipationEventPipe.Pipe,
 	)
 }
 
