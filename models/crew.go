@@ -26,6 +26,10 @@ type (
 		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
+	CrewUpdateASP struct {
+		ID         string `json:"id,omitempty" bson:"_id"`
+		Additional string `json:"additional" bson:"additional"`
+	}
 	Crew struct {
 		ID           string        `json:"id,omitempty" bson:"_id"`
 		Name         string        `json:"name" bson:"name"`
@@ -70,6 +74,13 @@ func (i *CrewCreate) Crew() *Crew {
 		Additional:   i.Additional,
 		Cities:       i.Cities,
 		Modified:     vmod.NewModified(),
+	}
+}
+
+func (i *CrewUpdate) ToCrewUpdateASP() *CrewUpdateASP {
+	return &CrewUpdateASP{
+		ID:         i.ID,
+		Additional: i.Additional,
 	}
 }
 

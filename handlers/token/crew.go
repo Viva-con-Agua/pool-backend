@@ -5,7 +5,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -82,11 +81,8 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = models.CrewPermission(token); err != nil {
-		return
-	}
 	result := new(models.Crew)
-	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.UpdateSet(body), result); err != nil {
+	if result, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	vcago.Nats.Publish("pool.crew.update", result)

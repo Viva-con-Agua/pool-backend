@@ -4,6 +4,9 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -22,6 +25,22 @@ func CrewInsert(ctx context.Context, i *models.Crew) (r *models.Crew, err error)
 	// initial r.
 	r = i
 	//select user from database
+	return
+}
+
+func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network") {
+		return nil, vcago.NewPermissionDenied("crew", nil)
+	}
+	if !token.Roles.Validate("employee;admin") {
+		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i.ToCrewUpdateASP()), token); err != nil {
+			return
+		}
+	} else {
+		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i), token); err != nil {
+			return
+		}
+	}
 	return
 }
 
