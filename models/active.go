@@ -102,14 +102,14 @@ func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 }
 
 func ActivePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee") && !token.PoolRoles.Validate("network;operation") {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation") {
 		return vcago.NewBadRequest("active", "permission denied")
 	}
 	return
 }
 
 func (i *ActiveParam) Filter(token *vcapool.AccessToken) bson.D {
-	if token.Roles.Validate("employee") {
+	if token.Roles.Validate("employee;admin") {
 		return bson.D{{Key: "user_id", Value: i.UserID}}
 
 	}
