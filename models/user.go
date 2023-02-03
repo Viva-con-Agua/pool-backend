@@ -144,6 +144,16 @@ func UserPipeline() (pipe *vmdb.Pipeline) {
 	return
 }
 
+func UserPipelinePublic() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+
+	return
+}
+
 func UserMatch(userID string) bson.D {
 	match := vmdb.NewFilter()
 	match.EqualString("_id", userID)

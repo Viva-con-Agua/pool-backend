@@ -59,6 +59,9 @@ type (
 		Name            string   `query:"name"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
+		EventState      []string `query:"event_state"`
+		EventEndFrom    string 	 `query:"event_end_from"`
+		EventEndTo		string   `query:"event_end_to`
 		Status          []string `query:"status"`
 		StatusOpen      bool     `query:"status_open"`
 		StatusConfirmed bool     `query:"status_confirmed"`
@@ -104,7 +107,10 @@ func (i *TakingQuery) Filter() bson.D {
 	filter.EqualStringList("_id", i.ID)
 	filter.EqualStringList("crew_id", i.CrewID)
 	filter.LikeString("name", i.Name)
+	filter.EqualStringList("event.event_state.state", i.EventState)
 	filter.LikeString("event.name", i.EventName)
+	filter.GteInt64("event.end_at", i.EventEndFrom)
+	filter.LteInt64("event.end_at", i.EventEndTo)
 	status := bson.A{}
 	if i.StatusOpen || i.StatusConfirmed || i.StatusWait || i.StatusNone {
 		if i.StatusOpen {

@@ -82,6 +82,30 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 	); err != nil {
 		return
 	}
+
+	if (i.Status == "confirmed") {
+		for _, unit := range i.DepositUnit {
+			event := new(models.EventUpdate)
+			if err = EventCollection.FindOne(
+				ctx,
+				bson.D{{Key: "taking_id", Value: unit.TakingID}},
+				event,
+			); event != nil {
+				event.EventState.State = "closed"
+				e := new(models.Event)
+				if err = EventCollection.UpdateOneAggregate(
+					ctx,
+					event.Filter(),
+					vmdb.UpdateSet(event),
+					e,
+					models.EventPipeline(token).Match(event.Match()).Pipe,
+				); err != nil {
+					return
+				}
+			}
+		}
+	}
+
 	return
 }
 

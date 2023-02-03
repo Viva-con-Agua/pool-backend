@@ -60,7 +60,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	return
 }
 
-func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking, err error) {
+func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.AccessToken) (r *models.Taking, err error) {
 	takingDatabase := new(models.TakingDatabase)
 	if err = TakingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, takingDatabase); err != nil {
 		return
@@ -110,6 +110,25 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate) (r *models.Taking
 	); err != nil {
 		return
 	}
+	event := new(models.EventUpdate)
+	if err = EventCollection.FindOne(
+		ctx,
+		bson.D{{Key: "taking_id", Value: i.ID}},
+		event,
+	); event != nil {
+		event.EventState.State = "finished"
+		result := new(models.Event)
+		if err = EventCollection.UpdateOneAggregate(
+			ctx,
+			event.Filter(),
+			vmdb.UpdateSet(event),
+			result,
+			models.EventPipeline(token).Match(event.Match()).Pipe,
+		); err != nil {
+			return
+		}
+	}
+
 	return
 }
 
