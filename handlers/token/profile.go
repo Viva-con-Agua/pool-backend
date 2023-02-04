@@ -59,5 +59,10 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
+	if body.Birthdate == 0 {
+		if _, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
+			return
+		}
+	}
 	return c.Updated(body)
 }
