@@ -29,7 +29,7 @@ func CrewInsert(ctx context.Context, i *models.Crew) (r *models.Crew, err error)
 }
 
 func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network") {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other") {
 		return nil, vcago.NewPermissionDenied("crew", nil)
 	}
 	if !token.Roles.Validate("employee;admin") {

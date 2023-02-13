@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"pool-backend/models"
+	"github.com/Viva-con-Agua/vcapool"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -30,6 +31,31 @@ func UserInsert(ctx context.Context, i *models.UserDatabase) (r *models.User, er
 		return
 	}
 	return
+}
+
+func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.User, err error) {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other") {
+		i.CrewID = token.CrewID
+		i.PoolRoles = []string{"network","education","finance","operation","awareness","socialmedia","other"}
+		filter := i.Match()
+		pipeline := models.UserPipelinePublic().Match(filter).Pipe
+		result = new([]models.User)
+		if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
+			return
+		}
+		return
+	} else {
+		if !token.Roles.Validate("employee;admin") {
+			i.CrewID = token.CrewID
+		}
+		filter := i.Match()
+		pipeline := models.UserPipeline().Match(filter).Pipe
+		result = new([]models.User)
+		if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
+			return
+		}
+		return
+	}
 }
 
 func UserDelete(ctx context.Context, id string) (err error) {

@@ -44,6 +44,10 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(c.Ctx(), body.Pipeline(), result); err != nil {
 		return
@@ -53,19 +57,16 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 
 func (i *UserHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
-	if err = c.AccessToken(token); err != nil {
-		return
-	}
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other") {
-		return vcago.NewPermissionDenied("users", nil)
-	}
 	body := new(models.UserQuery)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new([]models.User)
-	if err = dao.UserCollection.Aggregate(c.Ctx(), body.Pipeline(), result); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	var result *[]models.User
+	if result, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

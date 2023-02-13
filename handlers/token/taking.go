@@ -52,7 +52,7 @@ func (i TakingHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Taking)
-	if result, err = dao.TakingUpdate(c.Ctx(), body); err != nil {
+	if result, err = dao.TakingUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Updated(result)

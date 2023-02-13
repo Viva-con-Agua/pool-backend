@@ -89,6 +89,9 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
 		return
 	}
+	if _, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
+		return
+	}
 	return c.Deleted(body.ID)
 }
 
