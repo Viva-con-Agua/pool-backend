@@ -130,9 +130,11 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 	}
 }
 
-func UserPipeline() (pipe *vmdb.Pipeline) {
+func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	if user == true {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	}
 	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
@@ -212,7 +214,7 @@ func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 func (i UserParam) Pipeline() mongo.Pipeline {
 	match := vmdb.NewFilter()
 	match.EqualString("_id", i.ID)
-	return UserPipeline().Match(match.Bson()).Pipe
+	return UserPipeline(false).Match(match.Bson()).Pipe
 }
 
 func (i *UserParam) Filter(token *vcapool.AccessToken) bson.D {
@@ -252,5 +254,5 @@ func (i *UserQuery) Match() bson.D {
 
 func (i *UserQuery) Pipeline() mongo.Pipeline {
 	match := i.Match()
-	return UserPipeline().Match(match).Pipe
+	return UserPipeline(false).Match(match).Pipe
 }
