@@ -89,7 +89,8 @@ type (
 		CreatedFrom string   `query:"created_from" qs:"created_from"`
 	}
 	DepositParam struct {
-		ID string `param:"id"`
+		ID     string `param:"id"`
+		CrewID string `param:"crew_id"`
 	}
 )
 
@@ -131,9 +132,22 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 	return
 }
 
-func (i *DepositQuery) Filter() bson.D {
+func (i *DepositQuery) Filter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
-	filter.EqualString("crew_id", i.CrewID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+	} else {
+		filter.EqualString("crew_id", i.CrewID)
+	}
+	return filter.Bson()
+}
+
+func (i *DepositParam) Filter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+	}
 	return filter.Bson()
 }

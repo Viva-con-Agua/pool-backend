@@ -132,11 +132,11 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	return
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models.Taking, err error) {
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, err error) {
 	result = new([]models.Taking)
 	if err = TakingCollection.Aggregate(
 		ctx,
-		newTakingsPipeline().Match(query.Filter()).Pipe,
+		newTakingsPipeline().Match(query.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -144,11 +144,11 @@ func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models
 	return
 }
 
-func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *models.Taking, err error) {
+func TakingGetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
 	result = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		newTakingsPipeline().Match(param.Filter()).Pipe,
+		newTakingsPipeline().Match(param.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -156,7 +156,7 @@ func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *mode
 	return
 }
 
-func TakingDeletetByID(ctx context.Context, param *models.TakingParam) (err error) {
-	err = TakingCollection.DeleteOne(ctx, param.Filter())
+func TakingDeletetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (err error) {
+	err = TakingCollection.DeleteOne(ctx, param.Filter(token))
 	return
 }

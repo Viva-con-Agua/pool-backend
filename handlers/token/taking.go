@@ -69,7 +69,7 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	var result *[]models.Taking
-	if result, err = dao.TakingGet(c.Ctx(), body); err != nil {
+	if result, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Listed(result)
@@ -86,7 +86,7 @@ func (i TakingHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	var result *models.Taking
-	if result, err = dao.TakingGetByID(c.Ctx(), body); err != nil {
+	if result, err = dao.TakingGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -102,7 +102,7 @@ func (i TakingHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.TakingDeletetByID(c.Ctx(), body); err != nil {
+	if err = dao.TakingDeletetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

@@ -65,6 +65,7 @@ type (
 		Crew       UserCrew      `json:"crew" bson:"crew,omitempty"`
 		Avatar     Avatar        `bson:"avatar,omitempty" json:"avatar"`
 		Address    Address       `json:"address" bson:"address,omitempty"`
+		AddressID  string        `json:"address_id" bson:"address_id"`
 		PoolRoles  vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
 		Active     Active        `json:"active" bson:"active,omitempty"`
 		NVM        NVM           `json:"nvm" bson:"nvm,omitempty"`
@@ -134,6 +135,10 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	if user == true {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	} else {
+		// TODO: Get rid of the address in the resonse at this point
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address._id"}}}})
 	}
 	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")

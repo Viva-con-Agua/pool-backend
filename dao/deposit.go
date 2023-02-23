@@ -83,7 +83,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 		return
 	}
 
-	if (i.Status == "confirmed") {
+	if i.Status == "confirmed" {
 		for _, unit := range i.DepositUnit {
 			event := new(models.EventUpdate)
 			if err = EventCollection.FindOne(
@@ -113,7 +113,7 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.Acce
 	result = new([]models.Deposit)
 	if err = DepositCollection.Aggregate(
 		ctx,
-		depositPipeline().Match(i.Filter()).Pipe,
+		depositPipeline().Match(i.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -121,11 +121,11 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.Acce
 	return
 }
 
-func DepositGetByID(ctx context.Context, param *models.DepositParam) (result *models.Deposit, err error) {
+func DepositGetByID(ctx context.Context, param *models.DepositParam, token *vcapool.AccessToken) (result *models.Deposit, err error) {
 	result = new(models.Deposit)
 	if err = DepositCollection.AggregateOne(
 		ctx,
-		depositPipeline().Match(bson.D{{Key: "_id", Value: param.ID}}).Pipe,
+		depositPipeline().Match(param.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
