@@ -5,6 +5,7 @@ import (
 	"log"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
@@ -37,6 +38,9 @@ func depositPipeline() *vmdb.Pipeline {
 }
 
 func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.AccessToken) (r *models.Deposit, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	deposit, depositUnits := i.DepositDatabase(token)
 	taking := new(models.TakingDatabase)
 	for _, unit := range depositUnits {
@@ -66,6 +70,9 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 }
 
 func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	depositDatabase := new(models.DepositDatabase)
 	if err = DepositCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, depositDatabase); err != nil {
 		return
@@ -83,7 +90,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 		return
 	}
 
-	if (i.Status == "confirmed") {
+	if i.Status == "confirmed" {
 		for _, unit := range i.DepositUnit {
 			event := new(models.EventUpdate)
 			if err = EventCollection.FindOne(
@@ -110,10 +117,13 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 }
 
 func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.AccessToken) (result *[]models.Deposit, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	result = new([]models.Deposit)
 	if err = DepositCollection.Aggregate(
 		ctx,
-		depositPipeline().Match(i.Filter()).Pipe,
+		depositPipeline().Match(i.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -121,11 +131,20 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.Acce
 	return
 }
 
-func DepositGetByID(ctx context.Context, param *models.DepositParam) (result *models.Deposit, err error) {
+func DepositGetByID(ctx context.Context, param *models.DepositParam, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	result = new(models.Deposit)
+	var filter bson.D
+	if !token.Roles.Validate("admin;employee") {
+		filter = bson.D{{Key: "_id", Value: param.ID}, {Key: "crew_id", Value: token.CrewID}}
+	} else {
+		filter = bson.D{{Key: "_id", Value: param.ID}}
+	}
 	if err = DepositCollection.AggregateOne(
 		ctx,
-		depositPipeline().Match(bson.D{{Key: "_id", Value: param.ID}}).Pipe,
+		depositPipeline().Match(filter).Pipe,
 		result,
 	); err != nil {
 		return

@@ -131,9 +131,13 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 	return
 }
 
-func (i *DepositQuery) Filter() bson.D {
+func (i *DepositQuery) Filter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
-	filter.EqualString("crew_id", i.CrewID)
+	if !token.Roles.Validate("admin;employee") {
+		filter.EqualString("crew_id", token.CrewID)
+	} else {
+		filter.EqualString("crew_id", i.CrewID)
+	}
 	return filter.Bson()
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,6 +39,9 @@ func newTakingsPipeline() *vmdb.Pipeline {
 	return pipe
 }
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	//create taking model form i.
 	taking := i.TakingDatabase()
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
@@ -61,6 +65,9 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 }
 
 func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.AccessToken) (r *models.Taking, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	takingDatabase := new(models.TakingDatabase)
 	if err = TakingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, takingDatabase); err != nil {
 		return
@@ -132,11 +139,14 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	return
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models.Taking, err error) {
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	result = new([]models.Taking)
 	if err = TakingCollection.Aggregate(
 		ctx,
-		newTakingsPipeline().Match(query.Filter()).Pipe,
+		newTakingsPipeline().Match(query.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -144,11 +154,14 @@ func TakingGet(ctx context.Context, query *models.TakingQuery) (result *[]models
 	return
 }
 
-func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *models.Taking, err error) {
+func TakingGetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return nil, vcago.NewPermissionDenied("takings")
+	}
 	result = new(models.Taking)
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		newTakingsPipeline().Match(param.Filter()).Pipe,
+		newTakingsPipeline().Match(param.Filter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -156,7 +169,10 @@ func TakingGetByID(ctx context.Context, param *models.TakingParam) (result *mode
 	return
 }
 
-func TakingDeletetByID(ctx context.Context, param *models.TakingParam) (err error) {
-	err = TakingCollection.DeleteOne(ctx, param.Filter())
+func TakingDeletetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return vcago.NewPermissionDenied("takings")
+	}
+	err = TakingCollection.DeleteOne(ctx, param.Filter(token))
 	return
 }
