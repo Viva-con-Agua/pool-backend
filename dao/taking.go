@@ -37,6 +37,9 @@ func newTakingsPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
 	pipe.Lookup("activity_user", "_id", "model_id", "activities")
+	pipe.LookupUnwindMatch("activity_user", "_id", "model_id", "dummy", bson.D{{Key: "status", Value: "created"}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "creator", Value: "$dummy.user"}}}})
+
 	return pipe
 }
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
@@ -114,6 +117,11 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 		}
 	}
 	r = new(models.Taking)
+	activity := models.NewActivityDB(token.ID, "taking", takingDatabase.ID, "Successfully updated", "updated")
+	if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+		return
+	}
+	r = new(models.Taking)
 	if err = TakingCollection.UpdateOneAggregate(
 		ctx,
 		bson.D{{Key: "_id", Value: i.ID}},
@@ -123,24 +131,25 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	); err != nil {
 		return
 	}
-	event := new(models.EventUpdate)
-	if err = EventCollection.FindOne(
-		ctx,
-		bson.D{{Key: "taking_id", Value: i.ID}},
-		event,
-	); event != nil {
-		event.EventState.State = "finished"
-		result := new(models.Event)
-		if err = EventCollection.UpdateOneAggregate(
+	/*
+		event := new(models.EventUpdate)
+		if err = EventCollection.FindOne(
 			ctx,
-			event.Filter(),
-			vmdb.UpdateSet(event),
-			result,
-			models.EventPipeline(token).Match(event.Match()).Pipe,
-		); err != nil {
-			return
-		}
-	}
+			bson.D{{Key: "taking_id", Value: i.ID}},
+			event,
+		); event != nil {
+			event.EventState.State = "finished"
+			result := new(models.Event)
+			if err = EventCollection.UpdateOneAggregate(
+				ctx,
+				event.Filter(),
+				vmdb.UpdateSet(event),
+				result,
+				models.EventPipeline(token).Match(event.Match()).Pipe,
+			); err != nil {
+				return
+			}
+		}*/
 
 	return
 }

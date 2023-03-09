@@ -30,7 +30,7 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 	if err = ActivityCollection.InsertOne(ctx, eventActivity); err != nil {
 		return
 	}
-	takingActivity := models.NewActivityDB(i.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "created")
+	takingActivity := models.NewActivityDB(i.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
 	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
