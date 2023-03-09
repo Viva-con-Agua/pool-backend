@@ -28,7 +28,7 @@ type (
 	}
 )
 
-var ActiveCollection = "active"
+var ActiveCollection = "actives"
 
 func NewActive(userID string, crewID string) *Active {
 	return &Active{

@@ -36,6 +36,7 @@ func newTakingsPipeline() *vmdb.Pipeline {
 	}}})
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
+	pipe.Lookup("activity_user", "_id", "model_id", "activities")
 	return pipe
 }
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
@@ -54,6 +55,10 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 		}
 	}
 	r = new(models.Taking)
+	activity := models.NewActivityDB(token.ID, "taking", taking.ID, "Successfully created", "created")
+	if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+		return
+	}
 	if err = TakingCollection.AggregateOne(
 		ctx,
 		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
@@ -61,6 +66,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	); err != nil {
 		return
 	}
+
 	return
 }
 
