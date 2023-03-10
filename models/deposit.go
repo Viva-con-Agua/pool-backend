@@ -82,7 +82,7 @@ type (
 	}
 	DepositQuery struct {
 		ID          []string `query:"id"`
-		CrewID      string   `query:"crew_id"`
+		CrewID      []string `query:"crew_id"`
 		UpdatedTo   string   `query:"updated_to" qs:"updated_to"`
 		UpdatedFrom string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo   string   `query:"created_to" qs:"created_to"`
@@ -137,7 +137,7 @@ func (i *DepositQuery) Filter(token *vcapool.AccessToken) bson.D {
 	if !token.Roles.Validate("admin;employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	} else {
-		filter.EqualString("crew_id", i.CrewID)
+		filter.EqualStringList("crew_id", i.CrewID)
 	}
 	return filter.Bson()
 }
