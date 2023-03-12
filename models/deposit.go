@@ -81,12 +81,18 @@ type (
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	DepositQuery struct {
-		ID          []string `query:"id"`
-		CrewID      []string `query:"crew_id"`
-		UpdatedTo   string   `query:"updated_to" qs:"updated_to"`
-		UpdatedFrom string   `query:"updated_from" qs:"updated_from"`
-		CreatedTo   string   `query:"created_to" qs:"created_to"`
-		CreatedFrom string   `query:"created_from" qs:"created_from"`
+		ID               []string `query:"id"`
+		Name             string   `query:"deposit_unit_name"`
+		ReasonForPayment string   `query:"reason_for_payment"`
+		CrewID           []string `query:"crew_id"`
+		Status           []string `query:"deposit_status"`
+		Creator          []string `query:"deposit_creator"`
+		Confirmer        []string `query:"deposit_confirmer"`
+		HasExternal      string   `query:"deposit_has_external"`
+		UpdatedTo        string   `query:"updated_to" qs:"updated_to"`
+		UpdatedFrom      string   `query:"updated_from" qs:"updated_from"`
+		CreatedTo        string   `query:"created_to" qs:"created_to"`
+		CreatedFrom      string   `query:"created_from" qs:"created_from"`
 	}
 	DepositParam struct {
 		ID string `param:"id"`
@@ -139,5 +145,9 @@ func (i *DepositQuery) Filter(token *vcapool.AccessToken) bson.D {
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
 	}
+	filter.EqualStringList("status", i.Status)
+	filter.EqualBool("has_external", i.HasExternal)
+	filter.LikeString("deposit_units.taking.name", i.Name)
+	filter.LikeString("reason_for_payment", i.ReasonForPayment)
 	return filter.Bson()
 }
