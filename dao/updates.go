@@ -40,9 +40,9 @@ func UpdateDatabase() {
 		UpdateCrewMaibox(ctx)
 		InsertUpdate(ctx, "update_crew_mailbox")
 	}
-	if !CheckUpdated(ctx, "update_usercrew2_mailbox") {
-		UpdateCrewMaibox(ctx)
-		InsertUpdate(ctx, "update_usercrew2_mailbox")
+	if !CheckUpdated(ctx, "update_usercrew3_mailbox") {
+		UpdateUserCrewMaibox(ctx)
+		InsertUpdate(ctx, "update_usercrew3_mailbox")
 	}
 }
 
