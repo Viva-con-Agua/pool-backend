@@ -40,6 +40,10 @@ func UpdateDatabase() {
 		UpdateCrewMaibox(ctx)
 		InsertUpdate(ctx, "update_crew_mailbox")
 	}
+	if !CheckUpdated(ctx, "update_usercrew_mailbox") {
+		UpdateCrewMaibox(ctx)
+		InsertUpdate(ctx, "update_usercrew_mailbox")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -55,6 +59,20 @@ func UpdateCrewMaibox(ctx context.Context) {
 		filter := bson.D{{Key: "_id", Value: (*crews)[i].ID}}
 		update := bson.D{{Key: "mailbox_id", Value: mailbox.ID}}
 		if err := CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateUserCrewMaibox(ctx context.Context) {
+	crews := new([]models.Crew)
+	if err := CrewsCollection.Find(ctx, bson.D{}, crews); err != nil {
+		log.Print(err)
+	}
+	for i := range *crews {
+		filter := bson.D{{Key: "crew_id", Value: (*crews)[i].ID}, {Key: "mailbox_id", Value: ""}}
+		update := bson.D{{Key: "mailbox_id", Value: (*crews)[i].ID}}
+		if _, err := UserCrewCollection.Collection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 			log.Print(err)
 		}
 	}
