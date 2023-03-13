@@ -10,6 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+var (
+	TakingCreatedActivity = &models.ActivityDB{ModelType: "taking", Comment: "Successfully created", Status: "created"}
+	TakingUpdatedActivity = &models.ActivityDB{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
+)
+
 func newTakingsPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.Lookup("deposit_unit_taking", "_id", "taking_id", "deposit_units")
@@ -58,8 +63,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 		}
 	}
 	r = new(models.Taking)
-	activity := models.NewActivityDB(token.ID, "taking", taking.ID, "Successfully created", "created")
-	if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+	if err = ActivityCollection.InsertOne(ctx, TakingCreatedActivity.New(token.ID, taking.ID)); err != nil {
 		return
 	}
 	if err = TakingCollection.AggregateOne(
@@ -117,8 +121,7 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 		}
 	}
 	r = new(models.Taking)
-	activity := models.NewActivityDB(token.ID, "taking", takingDatabase.ID, "Successfully updated", "updated")
-	if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+	if err = ActivityCollection.InsertOne(ctx, TakingUpdatedActivity.New(token.ID, takingDatabase.ID)); err != nil {
 		return
 	}
 	r = new(models.Taking)

@@ -27,6 +27,11 @@ type (
 	}
 )
 
+var (
+	TakingCreatedActivity = &ActivityDB{ModelType: "taking", Comment: "Successfully created", Status: "created"}
+	TakingUpdatedActivity = &ActivityDB{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
+)
+
 func NewActivityDB(userID string, modelType string, modelID string, comment string, status string) *ActivityDB {
 	return &ActivityDB{
 		ID:        uuid.NewString(),
@@ -37,4 +42,11 @@ func NewActivityDB(userID string, modelType string, modelID string, comment stri
 		Status:    status,
 		Modified:  vmod.NewModified(),
 	}
+}
+
+func (i *ActivityDB) New(userID string, modelID string) *ActivityDB {
+	i.ID = uuid.NewString()
+	i.UserID = userID
+	i.ModelID = modelID
+	return i
 }

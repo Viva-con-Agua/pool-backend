@@ -14,6 +14,7 @@ func main() {
 	dao.InitialDatabase()
 	dao.InitialNats()
 	dao.FixDatabase()
+	dao.UpdateDatabase()
 	//dao.ReloadDatabase()
 	//login routes
 	api := e.Group("/v1")
