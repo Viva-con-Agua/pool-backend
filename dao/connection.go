@@ -12,59 +12,63 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-var Database *vmdb.Database
+var (
+	Database *vmdb.Database
 
-// UserCollection represents the database collection of the User model.
-var UserCollection *vmdb.Collection
+	// UserCollection represents the database collection of the User model.
+	UserCollection *vmdb.Collection
 
-// UserCrewCollection represents the database collection of the UserCrew model.
-var UserCrewCollection *vmdb.Collection
+	// UserCrewCollection represents the database collection of the UserCrew model.
+	UserCrewCollection *vmdb.Collection
 
-// ActiveCollection represents the database collection of the Active model.
-var ActiveCollection *vmdb.Collection
+	// ActiveCollection represents the database collection of the Active model.
+	ActiveCollection *vmdb.Collection
 
-// NVMCollection represents the database collection of the NVM model.
-var NVMCollection *vmdb.Collection
+	// NVMCollection represents the database collection of the NVM model.
+	NVMCollection *vmdb.Collection
 
-// AdressesCollection represents the database colltection of the Address model.
-var AddressesCollection *vmdb.Collection
+	// AdressesCollection represents the database colltection of the Address model.
+	AddressesCollection *vmdb.Collection
 
-// CrewsCollection represents the database collection of the Crew model.
-var CrewsCollection *vmdb.Collection
+	// CrewsCollection represents the database collection of the Crew model.
+	CrewsCollection *vmdb.Collection
 
-// ProfilesCollection represents the database collection of the Profile model.
-var ProfilesCollection *vmdb.Collection
+	// ProfilesCollection represents the database collection of the Profile model.
+	ProfilesCollection *vmdb.Collection
 
-// AvatarCollection represents the database collection of the Avatar model.
-var AvatarCollection *vmdb.Collection
+	// AvatarCollection represents the database collection of the Avatar model.
+	AvatarCollection *vmdb.Collection
 
-// PoolRoleCollection represents the database collection of the PoolRole Collection.
-var PoolRoleCollection *vmdb.Collection
+	// PoolRoleCollection represents the database collection of the PoolRole Collection.
+	PoolRoleCollection *vmdb.Collection
 
-var MailboxCollection *vmdb.Collection
-var MessageCollection *vmdb.Collection
+	MailboxCollection *vmdb.Collection
+	MessageCollection *vmdb.Collection
 
-var ArtistCollection *vmdb.Collection
-var ParticipationCollection *vmdb.Collection
-var OrganizerCollection *vmdb.Collection
-var EventCollection *vmdb.Collection
+	ArtistCollection        *vmdb.Collection
+	ParticipationCollection *vmdb.Collection
+	OrganizerCollection     *vmdb.Collection
+	EventCollection         *vmdb.Collection
 
-var SourceCollection *vmdb.Collection
-var TakingCollection *vmdb.Collection
-var DepositCollection *vmdb.Collection
-var DepositUnitCollection *vmdb.Collection
+	SourceCollection      *vmdb.Collection
+	TakingCollection      *vmdb.Collection
+	DepositCollection     *vmdb.Collection
+	DepositUnitCollection *vmdb.Collection
 
-var FSChunkCollection *vmdb.Collection
-var FSFilesCollection *vmdb.Collection
+	FSChunkCollection *vmdb.Collection
+	FSFilesCollection *vmdb.Collection
 
-var ActivityCollection *vmdb.Collection
+	ActivityCollection *vmdb.Collection
 
-var ReasonForPaymentCollection *vmdb.Collection
+	ReasonForPaymentCollection *vmdb.Collection
 
-var NewsletterCollection *vmdb.Collection
+	NewsletterCollection *vmdb.Collection
 
-var DepositUnitTakingPipe = vmdb.NewPipeline()
-var ParticipationEventPipe = vmdb.NewPipeline()
+	DepositUnitTakingPipe  = vmdb.NewPipeline()
+	ParticipationEventPipe = vmdb.NewPipeline()
+	ActitityUserPipe       = vmdb.NewPipeline()
+	UpdateCollection       *vmdb.Collection
+)
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
@@ -138,6 +142,14 @@ func InitialDatabase() {
 		"participations",
 		ParticipationEventPipe.Pipe,
 	)
+	ActitityUserPipe.LookupUnwind("users", "user_id", "_id", "user")
+	Database.Database.CreateView(
+		context.Background(),
+		"activity_user",
+		"activities",
+		ActitityUserPipe.Pipe,
+	)
+	UpdateCollection = Database.Collection("updates").CreateIndex("name", true)
 }
 
 func FixDatabase() {

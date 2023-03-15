@@ -26,11 +26,11 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
 	}
-	eventActivity := models.NewActivityDB(i.CreatorID, "event", i.ID, "Event created")
+	eventActivity := models.NewActivityDB(i.CreatorID, "event", i.ID, "Event created", "created")
 	if err = ActivityCollection.InsertOne(ctx, eventActivity); err != nil {
 		return
 	}
-	takingActivity := models.NewActivityDB(i.CreatorID, "taking", taking.ID, "Taking automatically created for Event")
+	takingActivity := models.NewActivityDB(i.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
 	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
@@ -44,12 +44,12 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.Event, err error) {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") {
-		filter.EqualStringList("event_state.state", []string{"published","finished","closed"})
+		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	} else if !token.Roles.Validate("employee;admin") {
 		noCrewMatch := vmdb.NewFilter()
 		crewMatch := vmdb.NewFilter()
 		crewMatch.EqualString("crew_id", token.CrewID)
-		noCrewMatch.EqualStringList("event_state.state", []string{"published","finished","closed"})
+		noCrewMatch.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 		filter.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
 	}
 
@@ -63,7 +63,7 @@ func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessTo
 }
 
 func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.Event, err error) {
-	i.EventState = []string{"published","finished","closed"}
+	i.EventState = []string{"published", "finished", "closed"}
 	filter := i.Filter()
 	pipeline := models.EventPipelinePublic().Match(filter).Pipe
 	result = new([]models.Event)

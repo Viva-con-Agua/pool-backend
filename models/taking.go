@@ -44,8 +44,9 @@ type (
 		State        TakingState         `json:"state" bson:"state"`
 		Comment      string              `json:"comment" bson:"comment"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
-		Activity     []Activity          `json:"activity" bson:"activity"`
+		Activities   []Activity          `json:"activities" bson:"activities"`
 		Money        vmod.Money          `json:"money" bson:"money"`
+		Creator      UserDatabase        `json:"creator" bson:"creator"`
 	}
 	TakingState struct {
 		Open      vmod.Money `json:"open" bson:"open"`
