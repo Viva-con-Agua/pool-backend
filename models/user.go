@@ -65,6 +65,7 @@ type (
 		Crew       UserCrew      `json:"crew" bson:"crew,omitempty"`
 		Avatar     Avatar        `bson:"avatar,omitempty" json:"avatar"`
 		Address    Address       `json:"address" bson:"address,omitempty"`
+		AddressID  string        `json:"address_id" bson:"address_id"`
 		PoolRoles  vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
 		Active     Active        `json:"active" bson:"active,omitempty"`
 		NVM        NVM           `json:"nvm" bson:"nvm,omitempty"`
@@ -130,9 +131,14 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 	}
 }
 
-func UserPipeline() (pipe *vmdb.Pipeline) {
+func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	if user == true {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	} else {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
+	}
 	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
@@ -212,7 +218,7 @@ func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 func (i UserParam) Pipeline() mongo.Pipeline {
 	match := vmdb.NewFilter()
 	match.EqualString("_id", i.ID)
-	return UserPipeline().Match(match.Bson()).Pipe
+	return UserPipeline(false).Match(match.Bson()).Pipe
 }
 
 func (i *UserParam) Filter(token *vcapool.AccessToken) bson.D {
@@ -252,5 +258,5 @@ func (i *UserQuery) Match() bson.D {
 
 func (i *UserQuery) Pipeline() mongo.Pipeline {
 	match := i.Match()
-	return UserPipeline().Match(match).Pipe
+	return UserPipeline(false).Match(match).Pipe
 }
