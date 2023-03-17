@@ -136,9 +136,8 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	if user == true {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
 	} else {
-		// TODO: Get rid of the address in the resonse at this point
-		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
-		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address._id"}}}})
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
 	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
