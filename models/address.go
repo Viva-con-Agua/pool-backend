@@ -17,7 +17,7 @@ type (
 		City        string `json:"city" bson:"city" validate:"required"`
 		Country     string `json:"country" bson:"country" validate:"required"`
 		CountryCode string `json:"country_code" bson:"country_code" validate:"required"`
-		Additionals string `json:"additionals" bson:"additionals"`
+		Additional  string `json:"additional" bson:"additional"`
 	}
 	AddressUpdate struct {
 		ID          string `json:"id" bson:"_id"`
@@ -27,7 +27,7 @@ type (
 		City        string `json:"city" bson:"city"`
 		Country     string `json:"country" bson:"country"`
 		CountryCode string `json:"country_code" bson:"country_code"`
-		Additionals string `json:"additionals" bson:"additionals"`
+		Additional  string `json:"additional" bson:"additional"`
 		UserID      string `json:"user_id" bson:"user_id"`
 	}
 	Address struct {
@@ -38,7 +38,7 @@ type (
 		City        string        `json:"city" bson:"city"`
 		Country     string        `json:"country" bson:"country"`
 		CountryCode string        `json:"country_code" bson:"country_code"`
-		Additionals string        `json:"additionals" bson:"additionals"`
+		Additional  string        `json:"additional" bson:"additional"`
 		UserID      string        `json:"user_id" bson:"user_id"`
 		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -67,7 +67,7 @@ func (i *AddressCreate) Address(userID string) (r *Address) {
 		City:        i.City,
 		Country:     i.Country,
 		CountryCode: i.Country,
-		Additionals: i.Additionals,
+		Additional:  i.Additional,
 		UserID:      userID,
 	}
 }
