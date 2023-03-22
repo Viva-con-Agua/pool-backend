@@ -109,6 +109,40 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 				); err != nil {
 					return
 				}
+
+				// Add takings to CRM
+				var taking *models.Taking
+				if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: unit.TakingID}, token); err != nil {
+					return
+				}
+
+				taking.EditorID = token.ID
+				if err = IDjango.Post(taking, "/v1/pool/taking/create/"); err != nil {
+					return
+				}
+
+				// Update CRM event
+				if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
+					return
+				}
+
+				// Add participations to event
+				participations := new([]models.Participation)
+
+				query := new(models.ParticipationQuery)
+				query.EventID = []string{e.ID}
+				if err = ParticipationCollection.Aggregate(
+					ctx,
+					models.ParticipationPipeline().Match(query.Match()).Pipe,
+					participations,
+				); err != nil {
+					return
+				}
+
+				if err = IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
+					return
+				}
+
 			}
 		}
 	}

@@ -43,6 +43,7 @@ type (
 		Source       []Source            `json:"sources" bson:"sources"`
 		State        TakingState         `json:"state" bson:"state"`
 		Comment      string              `json:"comment" bson:"comment"`
+		EditorID     string              `json:"editor_id" bson:"-"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
 		Activities   []Activity          `json:"activities" bson:"activities"`
 		Money        vmod.Money          `json:"money" bson:"money"`
