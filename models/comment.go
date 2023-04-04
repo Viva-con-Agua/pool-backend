@@ -27,10 +27,7 @@ type (
 	}
 )
 
-var (
-	TakingCreatedActivity = &ActivityDB{ModelType: "taking", Comment: "Successfully created", Status: "created"}
-	TakingUpdatedActivity = &ActivityDB{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
-)
+
 
 func NewActivityDB(userID string, modelType string, modelID string, comment string, status string) *ActivityDB {
 	return &ActivityDB{
