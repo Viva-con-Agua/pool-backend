@@ -43,7 +43,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(models.UserMatch(tokenUser.ID)).Pipe,
+		models.UserPipeline(true).Match(models.UserMatch(tokenUser.ID)).Pipe,
 		result,
 	); err != nil && !vmdb.ErrNoDocuments(err) {
 		return
@@ -75,7 +75,7 @@ func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(models.UserMatchEmail(body.Email)).Pipe,
+		models.UserPipeline(true).Match(models.UserMatchEmail(body.Email)).Pipe,
 		result,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
@@ -98,7 +98,7 @@ func (i *LoginHandler) Refresh(cc echo.Context) (err error) {
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(models.UserMatch(userID)).Pipe,
+		models.UserPipeline(true).Match(models.UserMatch(userID)).Pipe,
 		result,
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return

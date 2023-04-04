@@ -205,3 +205,11 @@ func ReloadDatabase() {
 		vcago.Nats.Publish("pool.crew.created", (*crewList)[i])
 	}
 }
+
+var IDjango = new(vcago.IDjangoHandler)
+
+func InitialIDjango() {
+	IDjango.URL = vcago.Settings.String("IDJANGO_URL", "n", "https://idjango.dev.vivaconagua.org")
+	IDjango.Key = vcago.Settings.String("IDJANGO_KEY", "n", "")
+	IDjango.Export = vcago.Settings.Bool("IDJANGO_EXPORT", "n", false)
+}

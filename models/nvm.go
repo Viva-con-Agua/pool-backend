@@ -26,6 +26,9 @@ type (
 	NVMParam struct {
 		UserID string `json:"user_id"`
 	}
+	NVMIDParam struct {
+		ID string `param:"id"`
+	}
 )
 
 func NewNVM(userID string) *NVM {
@@ -59,7 +62,7 @@ func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 }
 
 func NVMRejectPermission(token *vcapool.AccessToken) (err error) {
-	if token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("employee;admin") {
 		return vcago.NewPermissionDenied("nvm")
 	}
 	return

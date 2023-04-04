@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,15 +27,35 @@ func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models
 	return
 }
 
-func NVMReject(ctx context.Context, i *models.NVMParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
 	result = new(models.NVM)
-	//check if requested user has the network or operation permission
 	if err = models.NVMRejectPermission(token); err != nil {
+		return nil, vcago.NewPermissionDenied("nvm", nil)
+	}
+	if err = NVMCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "user_id", Value: i.ID}},
+		vmdb.UpdateSet(models.NVMConfirm()),
+		result,
+	); err != nil {
+		return
+	}
+
+	return
+}
+
+func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
+	result = new(models.NVM)
+	if err = models.NVMRejectPermission(token); err != nil {
+		return nil, vcago.NewPermissionDenied("nvm", nil)
+	}
+
+	if err = NVMCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: i.ID}}, result); err != nil {
 		return
 	}
 	if err = NVMCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
+		bson.D{{Key: "user_id", Value: i.ID}},
 		vmdb.UpdateSet(models.NVMReject()),
 		result,
 	); err != nil {
@@ -42,10 +63,11 @@ func NVMReject(ctx context.Context, i *models.NVMParam, token *vcapool.AccessTok
 	}
 	if err = PoolRoleCollection.TryDeleteMany(
 		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
+		bson.D{{Key: "user_id", Value: i.ID}},
 	); err != nil {
 		return
 	}
+
 	return
 }
 

@@ -54,7 +54,8 @@ type (
 		Wait      vmod.Money `json:"wait" bson:"wait"`
 	}
 	TakingParam struct {
-		ID string `param:"id"`
+		ID     string `param:"id"`
+		CrewID string `param:"crew_id"`
 	}
 	TakingQuery struct {
 		ID              []string `query:"id"`
@@ -107,10 +108,10 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 func (i *TakingQuery) Filter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
-	if token.Roles.Validate("employee;admin") {
-		filter.EqualStringList("crew_id", i.CrewID)
-	} else {
+	if !token.Roles.Validate("employee;admin") {
 		filter.EqualStringList("crew_id", []string{token.CrewID})
+	} else {
+		filter.EqualStringList("crew_id", i.CrewID)
 	}
 	filter.LikeString("name", i.Name)
 	filter.EqualStringList("event.event_state.state", i.EventState)

@@ -19,7 +19,8 @@ var NVM = &NVMHandler{*vcago.NewHandler("nvm")}
 func (i *NVMHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.GET("/confirm", i.Confirm, accessCookie)
-	group.POST("/reject", i.Reject, accessCookie)
+	group.POST("/confirm/:id", i.ConfirmUser, accessCookie)
+	group.DELETE("/reject/:id", i.RejectUser, accessCookie)
 	group.GET("/withdraw", i.Withdraw, accessCookie)
 }
 
@@ -36,9 +37,9 @@ func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
 	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "nvm", result)
 }
 
-func (i *NVMHandler) Reject(cc echo.Context) (err error) {
+func (i *NVMHandler) ConfirmUser(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(models.NVMParam)
+	body := new(models.NVMIDParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -48,7 +49,24 @@ func (i *NVMHandler) Reject(cc echo.Context) (err error) {
 		return
 	}
 	var result *models.NVM
-	if result, err = dao.NVMReject(c.Ctx(), body, token); err != nil {
+	if result, err = dao.NVMConfirmUser(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "nvm", result)
+}
+
+func (i *NVMHandler) RejectUser(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.NVMIDParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	var result *models.NVM
+	if result, err = dao.NVMRejectUser(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "nvm", result)

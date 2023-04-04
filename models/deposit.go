@@ -95,7 +95,8 @@ type (
 		CreatedFrom      string   `query:"created_from" qs:"created_from"`
 	}
 	DepositParam struct {
-		ID string `param:"id"`
+		ID     string `param:"id"`
+		CrewID string `param:"crew_id"`
 	}
 )
 
