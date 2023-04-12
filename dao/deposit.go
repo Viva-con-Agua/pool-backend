@@ -145,7 +145,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 
 			}
 		}
-		
+
 	}
 
 	return
