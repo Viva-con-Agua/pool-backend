@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pool-backend
+  labels: &labels
+    app.kubernetes.io/name: pool-backend
+    app.kubernetes.io/component: component-explorer
+spec:
+  selector:
+    matchLabels: *labels
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - name: pool-backend
+          image: ghcr.io/viva-con-agua/pool-backend
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: pool-backend
+            - secretRef:
+                name: pool-backend
+          ports:
+            - name: http
+              containerPort: 1323
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 1323
+          resources:
+            limits:
+              memory: 400Mi
+              cpu: 100m # 10 milli-cores = 1% of a core

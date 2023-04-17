@@ -1,8 +1,8 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -18,11 +18,11 @@ var Address = &AddressHandler{*vcago.NewHandler("address")}
 
 func (i *AddressHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
-	group.GET("", i.Get, vcapool.AccessCookieConfig())
-	group.GET("/:id", i.GetByID, vcapool.AccessCookieConfig())
-	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.PUT("", i.Update, accessCookie)
+	group.GET("", i.Get, accessCookie)
+	group.GET("/:id", i.GetByID, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *AddressHandler) Create(cc echo.Context) (err error) {
@@ -70,7 +70,7 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
+	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
 	return c.Updated(result)
@@ -89,10 +89,13 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
 		return
 	}
+	if _, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
+		return
+	}
 	return c.Deleted(body.ID)
 }
 
-//TODO
+// TODO
 func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressQuery)

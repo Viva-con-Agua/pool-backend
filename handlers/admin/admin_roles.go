@@ -1,10 +1,11 @@
 package admin
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,12 +30,12 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(body.MatchUser()).Pipe,
+		models.UserPipeline(false).Match(body.MatchUser()).Pipe,
 		user,
 	); err != nil {
 		return
 	}
-	var result *vcago.Role
+	var result *vmod.Role
 	if result, err = body.New(); err != nil {
 		return
 	}
@@ -53,12 +54,12 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(body.MatchUser()).Pipe,
+		models.UserPipeline(false).Match(body.MatchUser()).Pipe,
 		user,
 	); err != nil {
 		return
 	}
-	result := new(vcago.Role)
+	result := new(vmod.Role)
 	if err = dao.PoolRoleCollection.FindOne(
 		c.Ctx(),
 		body.Filter(),

@@ -1,11 +1,10 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -18,11 +17,11 @@ var Crew = &CrewHandler{*vcago.NewHandler("crew")}
 
 func (i *CrewHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
 	group.GET("", i.Get)
 	group.GET("/:id", i.GetByID)
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
-	group.DELETE("/:id", i.Delete, vcapool.AccessCookieConfig())
+	group.PUT("", i.Update, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *CrewHandler) Create(cc echo.Context) (err error) {
@@ -42,6 +41,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
+	vcago.Nats.Publish("pool.crew.create", result)
 	return c.Created(result)
 }
 
@@ -81,13 +81,11 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = models.CrewPermission(token); err != nil {
-		return
-	}
 	result := new(models.Crew)
-	if err = dao.CrewsCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.NewUpdateSet(body), result); err != nil {
+	if result, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
+	vcago.Nats.Publish("pool.crew.update", result)
 	return vcago.NewUpdated("crew", body)
 }
 
@@ -104,7 +102,7 @@ func (i *CrewHandler) Delete(cc echo.Context) (err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}
-	if err = dao.CrewsCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+	if err = dao.CrewDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

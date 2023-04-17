@@ -2,12 +2,14 @@ package token
 
 import (
 	"log"
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type RoleHandler struct {
@@ -18,8 +20,8 @@ var Role = &RoleHandler{*vcago.NewHandler("role")}
 
 func (i *RoleHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.DELETE("", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.DELETE("", i.Delete, accessCookie)
 }
 
 func (i *RoleHandler) Create(cc echo.Context) (err error) {
@@ -35,13 +37,13 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(body.MatchUser()).Pipe,
+		models.UserPipeline(false).Match(body.MatchUser()).Pipe,
 		user,
 	); err != nil {
 		log.Print(err)
 		return
 	}
-	var result *vcago.Role
+	var result *vmod.Role
 	if result, err = body.New(); err != nil {
 		return
 	}
@@ -70,12 +72,12 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.FindOne(
 		c.Ctx(),
-		body.Filter(),
+		bson.D{{Key: "_id", Value: body.UserID}},
 		user,
 	); err != nil {
 		return
 	}
-	result := new(vcago.Role)
+	result := new(vmod.Role)
 	if err = dao.PoolRoleCollection.FindOne(
 		c.Ctx(),
 		body.Filter(),
@@ -83,7 +85,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
-	if !token.Roles.CheckRoot((*vcago.Role)(result)) && !token.PoolRoles.CheckRoot((*vcago.Role)(result)) {
+	if !token.Roles.CheckRoot((*vmod.Role)(result)) && !token.PoolRoles.CheckRoot((*vmod.Role)(result)) {
 		return vcago.NewValidationError("no permission for delete this role")
 	}
 	if err = dao.PoolRoleCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {

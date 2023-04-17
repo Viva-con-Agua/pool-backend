@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -17,7 +18,9 @@ type RoleAdminRequest struct {
 	Role  string `json:"role"`
 }
 
-func (i *RoleRequest) New() (r *vcago.Role, err error) {
+var PoolRoleCollection = "pool_roles"
+
+func (i *RoleRequest) New() (r *vmod.Role, err error) {
 	switch i.Role {
 	case "asp":
 		return RoleASP(i.UserID), err
@@ -33,13 +36,15 @@ func (i *RoleRequest) New() (r *vcago.Role, err error) {
 		return RoleSocialMedia(i.UserID), err
 	case "awareness":
 		return RoleAwareness(i.UserID), err
+	case "other":
+		return RoleOther(i.UserID), err
 	default:
 		return nil, vcago.NewValidationError("role not supported: " + i.Role)
 	}
 }
 
-func RoleASP(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleASP(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "asp",
 		Label:  "ASP",
@@ -48,8 +53,8 @@ func RoleASP(userID string) *vcago.Role {
 	}
 }
 
-func RoleSupporter(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleSupporter(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "supporter",
 		Label:  "Supporter",
@@ -58,8 +63,8 @@ func RoleSupporter(userID string) *vcago.Role {
 	}
 }
 
-func RoleFinance(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleFinance(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "finance",
 		Label:  "Finanzen",
@@ -67,8 +72,8 @@ func RoleFinance(userID string) *vcago.Role {
 		UserID: userID,
 	}
 }
-func RoleAction(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleAction(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "operation",
 		Label:  "Aktion",
@@ -76,8 +81,8 @@ func RoleAction(userID string) *vcago.Role {
 		UserID: userID,
 	}
 }
-func RoleEducation(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleEducation(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "education",
 		Label:  "Bildung",
@@ -85,8 +90,8 @@ func RoleEducation(userID string) *vcago.Role {
 		UserID: userID,
 	}
 }
-func RoleNetwork(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleNetwork(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "network",
 		Label:  "Netzwerk",
@@ -94,8 +99,8 @@ func RoleNetwork(userID string) *vcago.Role {
 		UserID: userID,
 	}
 }
-func RoleSocialMedia(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleSocialMedia(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "socialmedia",
 		Label:  "Social Media",
@@ -103,8 +108,8 @@ func RoleSocialMedia(userID string) *vcago.Role {
 		UserID: userID,
 	}
 }
-func RoleAwareness(userID string) *vcago.Role {
-	return &vcago.Role{
+func RoleAwareness(userID string) *vmod.Role {
+	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "awareness",
 		Label:  "Awareness",
@@ -113,10 +118,20 @@ func RoleAwareness(userID string) *vcago.Role {
 	}
 }
 
-func (i *RoleRequest) MatchUser() (match *vmdb.Match) {
-	match = vmdb.NewMatch()
+func RoleOther(userID string) *vmod.Role {
+	return &vmod.Role{
+		ID:     uuid.NewString(),
+		Name:   "other",
+		Label:  "Other",
+		Root:   "other;employee;admin",
+		UserID: userID,
+	}
+}
+
+func (i *RoleRequest) MatchUser() bson.D {
+	match := vmdb.NewFilter()
 	match.EqualString("_id", i.UserID)
-	return
+	return match.Bson()
 }
 
 func (i *RoleRequest) Filter() bson.D {

@@ -4,17 +4,20 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 )
 
+var NVMCollection = "nvm"
+
 type (
 	NVM struct {
-		ID       string         `bson:"_id" json:"id"`
-		Status   string         `bson:"status" json:"status"`
-		Since    int64          `bson:"since" json:"since"`
-		UserID   string         `bson:"user_id" json:"user_id"`
-		Modified vcago.Modified `bson:"modified" json:"modified"`
+		ID       string        `bson:"_id" json:"id"`
+		Status   string        `bson:"status" json:"status"`
+		Since    int64         `bson:"since" json:"since"`
+		UserID   string        `bson:"user_id" json:"user_id"`
+		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	NVMUpdate struct {
 		Status string `bson:"status" json:"status"`
@@ -22,6 +25,9 @@ type (
 	}
 	NVMParam struct {
 		UserID string `json:"user_id"`
+	}
+	NVMIDParam struct {
+		ID string `param:"id"`
 	}
 )
 
@@ -31,7 +37,7 @@ func NewNVM(userID string) *NVM {
 		Status:   "not_requested",
 		Since:    time.Now().Unix(),
 		UserID:   userID,
-		Modified: vcago.NewModified(),
+		Modified: vmod.NewModified(),
 	}
 }
 
@@ -56,7 +62,7 @@ func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 }
 
 func NVMRejectPermission(token *vcapool.AccessToken) (err error) {
-	if token.Roles.Validate("employee") {
+	if !token.Roles.Validate("employee;admin") {
 		return vcago.NewPermissionDenied("nvm")
 	}
 	return

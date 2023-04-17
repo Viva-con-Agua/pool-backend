@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +12,12 @@ import (
 
 type (
 	Active struct {
-		ID       string         `bson:"_id" json:"id"`
-		Status   string         `bson:"status" json:"status"`
-		Since    int64          `bson:"since" json:"since"`
-		UserID   string         `bson:"user_id" json:"user_id"`
-		CrewID   string         `bson:"crew_id" json:"crew_id"`
-		Modified vcago.Modified `bson:"modified" json:"modified"`
+		ID       string        `bson:"_id" json:"id"`
+		Status   string        `bson:"status" json:"status"`
+		Since    int64         `bson:"since" json:"since"`
+		UserID   string        `bson:"user_id" json:"user_id"`
+		CrewID   string        `bson:"crew_id" json:"crew_id"`
+		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	ActiveUpdate struct {
 		Status string `bson:"status" json:"status"`
@@ -27,6 +28,8 @@ type (
 	}
 )
 
+var ActiveCollection = "active"
+
 func NewActive(userID string, crewID string) *Active {
 	return &Active{
 		ID:       uuid.NewString(),
@@ -34,7 +37,7 @@ func NewActive(userID string, crewID string) *Active {
 		Since:    time.Now().Unix(),
 		UserID:   userID,
 		CrewID:   crewID,
-		Modified: vcago.NewModified(),
+		Modified: vmod.NewModified(),
 	}
 }
 
@@ -99,14 +102,14 @@ func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 }
 
 func ActivePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee") && !token.PoolRoles.Validate("network;operation") {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation") {
 		return vcago.NewBadRequest("active", "permission denied")
 	}
 	return
 }
 
 func (i *ActiveParam) Filter(token *vcapool.AccessToken) bson.D {
-	if token.Roles.Validate("employee") {
+	if token.Roles.Validate("employee;admin") {
 		return bson.D{{Key: "user_id", Value: i.UserID}}
 
 	}
