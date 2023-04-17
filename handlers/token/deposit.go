@@ -63,8 +63,12 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
 	var result *models.Deposit
-	if result, err = dao.DepositGetByID(c.Ctx(), body); err != nil {
+	if result, err = dao.DepositGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

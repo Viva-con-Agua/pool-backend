@@ -13,7 +13,9 @@ func main() {
 	e := vcago.NewServer()
 	dao.InitialDatabase()
 	dao.InitialNats()
+	dao.InitialIDjango()
 	dao.FixDatabase()
+	dao.UpdateDatabase()
 	//dao.ReloadDatabase()
 	//login routes
 	api := e.Group("/v1")

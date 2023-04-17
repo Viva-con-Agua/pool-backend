@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -15,12 +16,12 @@ type (
 		Comment   string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID       string         `json:"id" bson:"_id"`
-		Name     string         `json:"name" bson:"name"`
-		CrewID   string         `json:"crew_id" bson:"crew_id"`
-		Sources  []SourceUpdate `json:"sources" bson:"-"`
-		State    *TakingState   `json:"-;omitempty" bson:"state"`
-		Comment  string         `json:"comment"`
+		ID      string         `json:"id" bson:"_id"`
+		Name    string         `json:"name" bson:"name"`
+		CrewID  string         `json:"crew_id" bson:"crew_id"`
+		Sources []SourceUpdate `json:"sources" bson:"-"`
+		State   *TakingState   `json:"-;omitempty" bson:"state"`
+		Comment string         `json:"comment"`
 	}
 
 	TakingDatabase struct {
@@ -42,9 +43,11 @@ type (
 		Source       []Source            `json:"sources" bson:"sources"`
 		State        TakingState         `json:"state" bson:"state"`
 		Comment      string              `json:"comment" bson:"comment"`
+		EditorID     string              `json:"editor_id" bson:"-"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
-		Activity     []Activity          `json:"activity" bson:"activity"`
+		Activities   []Activity          `json:"activities" bson:"activities"`
 		Money        vmod.Money          `json:"money" bson:"money"`
+		Creator      UserDatabase        `json:"creator" bson:"creator"`
 	}
 	TakingState struct {
 		Open      vmod.Money `json:"open" bson:"open"`
@@ -52,7 +55,8 @@ type (
 		Wait      vmod.Money `json:"wait" bson:"wait"`
 	}
 	TakingParam struct {
-		ID string `param:"id"`
+		ID     string `param:"id"`
+		CrewID string `param:"crew_id"`
 	}
 	TakingQuery struct {
 		ID              []string `query:"id"`
@@ -60,8 +64,8 @@ type (
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
 		EventState      []string `query:"event_state"`
-		EventEndFrom    string 	 `query:"event_end_from"`
-		EventEndTo		string   `query:"event_end_to`
+		EventEndFrom    string   `query:"event_end_from"`
+		EventEndTo      string   `query:"event_end_to"`
 		Status          []string `query:"status"`
 		StatusOpen      bool     `query:"status_open"`
 		StatusConfirmed bool     `query:"status_confirmed"`
@@ -102,10 +106,14 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 	return r
 }
 
-func (i *TakingQuery) Filter() bson.D {
+func (i *TakingQuery) Filter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
-	filter.EqualStringList("crew_id", i.CrewID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualStringList("crew_id", []string{token.CrewID})
+	} else {
+		filter.EqualStringList("crew_id", i.CrewID)
+	}
 	filter.LikeString("name", i.Name)
 	filter.EqualStringList("event.event_state.state", i.EventState)
 	filter.LikeString("event.name", i.EventName)
@@ -143,8 +151,11 @@ func (i *TakingUpdate) Filter() bson.D {
 func (i *TakingUpdate) Update() bson.D {
 	return vmdb.UpdateSet(i)
 }
-func (i *TakingParam) Filter() bson.D {
+func (i *TakingParam) Filter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+	}
 	return filter.Bson()
 }

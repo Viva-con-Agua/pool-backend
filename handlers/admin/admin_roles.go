@@ -30,7 +30,7 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(body.MatchUser()).Pipe,
+		models.UserPipeline(false).Match(body.MatchUser()).Pipe,
 		user,
 	); err != nil {
 		return
@@ -54,7 +54,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	user := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
 		c.Ctx(),
-		models.UserPipeline().Match(body.MatchUser()).Pipe,
+		models.UserPipeline(false).Match(body.MatchUser()).Pipe,
 		user,
 	); err != nil {
 		return

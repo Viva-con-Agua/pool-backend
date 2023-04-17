@@ -99,6 +99,7 @@ type (
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
 		Creator               User             `json:"creator" bson:"creator"`
 		EventState            EventState       `json:"event_state" bson:"event_state"`
+		EditorID              string           `json:"editor_id" bson:"editor_id"`
 		Modified              vmod.Modified    `json:"modified" bson:"modified"`
 	}
 	EventUpdate struct {

@@ -19,6 +19,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: pool-backend
+            - secretRef:
+                name: pool-backend
           ports:
             - name: http
               containerPort: 1323

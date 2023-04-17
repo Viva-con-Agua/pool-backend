@@ -1,4 +1,5 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 commonLabels:
   app.kubernetes.io/part-of: pool-backend
 
@@ -11,4 +12,7 @@ resources:
   - .k8s/mongodb_volume.yml
 
 configMapGenerator:
+  - name: pool-backend
+
+secretGenerator:
   - name: pool-backend
