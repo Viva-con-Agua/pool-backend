@@ -15,6 +15,7 @@ type (
 		Name         string `json:"name" bson:"name"`
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
@@ -23,11 +24,13 @@ type (
 		Name         string `json:"name" bson:"name"`
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdateASP struct {
 		ID         string `json:"id,omitempty" bson:"_id"`
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional string `json:"additional" bson:"additional"`
 	}
 	Crew struct {
@@ -35,6 +38,7 @@ type (
 		Name         string        `json:"name" bson:"name"`
 		Email        string        `json:"email" bson:"email"`
 		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
+		Mattermost   string        `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string        `json:"additional" bson:"additional"`
 		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities       []City        `json:"cities" bson:"cities"`
@@ -70,6 +74,7 @@ func (i *CrewCreate) Crew() *Crew {
 		ID:           uuid.NewString(),
 		Name:         i.Name,
 		Email:        i.Email,
+		Mattermost:   i.Mattermost,
 		Abbreviation: i.Abbreviation,
 		Additional:   i.Additional,
 		Cities:       i.Cities,
@@ -80,6 +85,7 @@ func (i *CrewCreate) Crew() *Crew {
 func (i *CrewUpdate) ToCrewUpdateASP() *CrewUpdateASP {
 	return &CrewUpdateASP{
 		ID:         i.ID,
+		Mattermost: i.Mattermost,
 		Additional: i.Additional,
 	}
 }
