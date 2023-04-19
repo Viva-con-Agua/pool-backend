@@ -258,3 +258,18 @@ func (i *EventQuery) Filter() bson.D {
 	match.LteInt64("modified.created", i.CreatedTo)
 	return match.Bson()
 }
+
+func (i *EventQuery) CreateFilter() *vmdb.Filter {
+	match := vmdb.NewFilter()
+	match.EqualStringList("_id", i.ID)
+	match.LikeString("name", i.Name)
+	match.EqualString("internal_asp_id", i.InternalASPID)
+	match.EqualString("event_asp_id", i.EventASPID)
+	match.EqualStringList("event_state.state", i.EventState)
+	match.EqualString("crew_id", i.CrewID)
+	match.GteInt64("modified.updated", i.UpdatedFrom)
+	match.GteInt64("modified.created", i.CreatedFrom)
+	match.LteInt64("modified.updated", i.UpdatedTo)
+	match.LteInt64("modified.created", i.CreatedTo)
+	return match
+}
