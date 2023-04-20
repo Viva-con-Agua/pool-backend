@@ -52,7 +52,7 @@ func main() {
 	token.Taking.Routes(finances.Group("/taking"))
 	token.Deposit.Routes(finances.Group("/deposit"))
 
-	key.Crew.Routes(e.Group("/apikey/crews"))
+	key.Crew.Routes(e.Group("/v1/apikey/crews"))
 
 	admin.Crew.Routes(e.Group("/admin/crews"))
 	admin.Role.Routes(e.Group("/admin/users/role"))

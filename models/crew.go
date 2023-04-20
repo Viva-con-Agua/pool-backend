@@ -17,6 +17,7 @@ type (
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
 		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
+		Status       string `json:"status" bson:"status"`
 	}
 	CrewUpdate struct {
 		ID           string `json:"id,omitempty" bson:"_id"`
@@ -24,6 +25,7 @@ type (
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
 		Additional   string `json:"additional" bson:"additional"`
+		Status       string `json:"status" bson:"status"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdateASP struct {
@@ -38,6 +40,7 @@ type (
 		Additional   string        `json:"additional" bson:"additional"`
 		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities       []City        `json:"cities" bson:"cities"`
+		Status       string        `json:"status" bson:"status"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
 	City struct {
@@ -73,6 +76,7 @@ func (i *CrewCreate) Crew() *Crew {
 		Abbreviation: i.Abbreviation,
 		Additional:   i.Additional,
 		Cities:       i.Cities,
+		Status:       i.Status,
 		Modified:     vmod.NewModified(),
 	}
 }
