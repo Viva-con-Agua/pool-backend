@@ -40,6 +40,7 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 		i.PoolRoles = []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"}
 		filter := i.Match()
 		pipeline := models.UserPipelinePublic().Match(filter).Pipe
+		pipeline = append(pipeline, models.UserProjection())
 		result = new([]models.User)
 		if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 			return
