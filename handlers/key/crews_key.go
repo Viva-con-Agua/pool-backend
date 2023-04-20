@@ -25,8 +25,9 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.CrewsCollection.InsertOne(c.Ctx(), body); err != nil {
+	var result *models.Crew
+	if result, err = dao.CrewInsert(c.Ctx(), body); err != nil {
 		return c.ErrorResponse(err)
 	}
-	return c.Created(body)
+	return c.Created(result)
 }
