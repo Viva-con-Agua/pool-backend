@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -41,7 +42,9 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
-	vcago.Nats.Publish("pool.crew.create", result)
+	if err = dao.IDjango.Post(result, "/v1/pool/crew/"); err != nil {
+		log.Print(err)
+	}
 	return c.Created(result)
 }
 
@@ -81,11 +84,12 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(models.Crew)
-	if result, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
+	if _, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
-	vcago.Nats.Publish("pool.crew.update", result)
+	if err = dao.IDjango.Post(body, "/v1/pool/crew/"); err != nil {
+		log.Print(err)
+	}
 	return vcago.NewUpdated("crew", body)
 }
 
