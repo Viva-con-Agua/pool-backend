@@ -32,6 +32,13 @@ type (
 		UserID     string        `bson:"user_id" json:"user_id"`
 		Modified   vmod.Modified `bson:"modified" json:"modified"`
 	}
+	ProfileImport struct {
+		Gender     string `bson:"gender" json:"gender"`
+		Phone      string `bson:"phone" json:"phone"`
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		Birthdate  int64  `bson:"birthdate" json:"birthdate"`
+		DropsID    string `bson:"drops_id" json:"drops_id"`
+	}
 )
 
 func (i *ProfileCreate) Profile(userID string) *Profile {
@@ -48,4 +55,16 @@ func (i *ProfileCreate) Profile(userID string) *Profile {
 
 func (i *ProfileUpdate) Filter(token *vcapool.AccessToken) bson.D {
 	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+}
+
+func (i *ProfileImport) Profile(userID string) *Profile {
+	return &Profile{
+		ID:         uuid.NewString(),
+		Gender:     i.Gender,
+		Phone:      i.Phone,
+		Mattermost: i.Mattermost,
+		Birthdate:  i.Birthdate,
+		UserID:     userID,
+		Modified:   vmod.NewModified(),
+	}
 }

@@ -34,6 +34,10 @@ type (
 	UserCrewParam struct {
 		ID string `param:"id"`
 	}
+	UserCrewImport struct {
+		DropsID string `json:"drops_id"`
+		CrewID  string `json:"crew_id"`
+	}
 )
 
 func NewUserCrew(userID string, crewID string, name string, email string, mailboxID string) *UserCrew {
