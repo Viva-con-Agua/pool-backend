@@ -54,11 +54,35 @@ type (
 	AddressParam struct {
 		ID string `param:"id"`
 	}
+	AddressImport struct {
+		Street      string `json:"street" bson:"street"`
+		Number      string `json:"number" bson:"number"`
+		Zip         string `json:"zip" bson:"zip"`
+		City        string `json:"city" bson:"city"`
+		Country     string `json:"country" bson:"country"`
+		CountryCode string `json:"country_code" bson:"country_code"`
+		Additional  string `json:"additional" bson:"additional"`
+		DropsID     string `json:"drops_id"`
+	}
 )
 
 var AddressesCollection = "addresses"
 
 func (i *AddressCreate) Address(userID string) (r *Address) {
+	return &Address{
+		ID:          uuid.NewString(),
+		Street:      i.Street,
+		Number:      i.Number,
+		Zip:         i.Zip,
+		City:        i.City,
+		Country:     i.Country,
+		CountryCode: i.Country,
+		Additional:  i.Additional,
+		UserID:      userID,
+	}
+}
+
+func (i *AddressImport) Address(userID string) (r *Address) {
 	return &Address{
 		ID:          uuid.NewString(),
 		Street:      i.Street,
