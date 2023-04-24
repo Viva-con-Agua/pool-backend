@@ -19,7 +19,8 @@ var Crew = &CrewHandler{*vcago.NewHandler("crew")}
 func (i *CrewHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
-	group.GET("", i.Get)
+	group.GET("", i.Get, accessCookie)
+	group.GET("/public", i.GetPublic)
 	group.GET("/:id", i.GetByID)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
@@ -54,6 +55,27 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied("crew", nil)
+	}
+	result := new([]models.Crew)
+	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
+		return
+	}
+	return c.Listed(result)
+}
+
+func (i *CrewHandler) GetPublic(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.CrewQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	body.Status = "active"
 	result := new([]models.Crew)
 	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return

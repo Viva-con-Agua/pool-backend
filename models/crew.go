@@ -56,9 +56,10 @@ type (
 	}
 	CrewList  []Crew
 	CrewQuery struct {
-		ID    []string `query:"id,omitempty" qs:"id"`
-		Name  string   `query:"name" qs:"name"`
-		Email string   `query:"email" qs:"email"`
+		ID     []string `query:"id,omitempty" qs:"id"`
+		Name   string   `query:"name" qs:"name"`
+		Status string   `json:"status" bson:"status"`
+		Email  string   `query:"email" qs:"email"`
 	}
 	CrewSimple struct {
 		ID    string `json:"id" bson:"id"`
@@ -104,6 +105,7 @@ func (i *CrewQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.LikeString("email", i.Email)
+	filter.LikeString("status", i.Status)
 	filter.LikeString("name", i.Name)
 	return bson.D(*filter)
 }
