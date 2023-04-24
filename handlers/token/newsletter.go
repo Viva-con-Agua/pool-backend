@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -35,6 +36,9 @@ func (i *NewsletterHandler) Create(cc echo.Context) (err error) {
 	if result, err = dao.NewsletterCreate(c.Ctx(), body, token); err != nil {
 		return
 	}
+	if err = dao.IDjango.Post(result, "/v1/pool/newsletter/"); err != nil {
+		log.Print(err)
+	}
 	return c.Created(result)
 }
 
@@ -48,8 +52,12 @@ func (i *NewsletterHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.NewsletterDelete(c.Ctx(), body, token); err != nil {
+	var result *models.Newsletter
+	if result, err = dao.NewsletterDelete(c.Ctx(), body, token); err != nil {
 		return
+	}
+	if err = dao.IDjango.Post(result, "/v1/pool/newsletter/"); err != nil {
+		log.Print(err)
 	}
 	return c.Deleted(body.ID)
 }
