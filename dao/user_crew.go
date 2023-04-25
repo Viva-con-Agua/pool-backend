@@ -49,11 +49,19 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
-	if err = ActiveCollection.InsertOne(ctx, models.NewActive(user.ID, crew.ID)); err != nil {
+	active := imp.ToActive(user.ID)
+	if err = ActiveCollection.InsertOne(ctx, active); err != nil {
 		return
 	}
-	if err = NVMCollection.InsertOne(ctx, models.NewNVM(user.ID)); err != nil {
+	nvm := imp.ToNVM(user.ID)
+	if err = NVMCollection.InsertOne(ctx, nvm); err != nil {
 		return
+	}
+	roles := imp.ToRoles(user.ID)
+	for _, role := range roles {
+		if err = PoolRoleCollection.InsertOne(ctx, &role); err != nil {
+			return
+		}
 	}
 	return
 

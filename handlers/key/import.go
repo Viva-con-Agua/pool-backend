@@ -20,6 +20,7 @@ func (i *ImportHandler) Routes(group *echo.Group) {
 	group.POST("/profile", i.ImportProfile, vcago.KeyAuthMiddleware())
 	group.POST("/address", i.ImportAddress, vcago.KeyAuthMiddleware())
 	group.POST("/usercrew", i.ImportUserCrew, vcago.KeyAuthMiddleware())
+	group.POST("/newsletter", i.ImportNewsletter, vcago.KeyAuthMiddleware())
 }
 
 func (i *ImportHandler) ImportCrew(cc echo.Context) (err error) {
@@ -69,6 +70,19 @@ func (i *ImportHandler) ImportUserCrew(cc echo.Context) (err error) {
 	}
 	var result *models.UserCrew
 	if result, err = dao.UserCrewImport(c.Ctx(), body); err != nil {
+		return
+	}
+	return c.Created(result)
+}
+
+func (i *ImportHandler) ImportNewsletter(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.NewsletterImport)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	var result *models.Newsletter
+	if result, err = dao.NewsletterImport(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Created(result)
