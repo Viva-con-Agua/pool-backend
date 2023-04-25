@@ -20,6 +20,9 @@ func main() {
 	//login routes
 	api := e.Group("/v1")
 
+	assets := api.Group("/assets")
+	token.Assets.Routes(assets)
+
 	token.Login.Routes(api.Group("/auth"))
 	//user routes
 	tokenUser := api.Group("/users")
