@@ -21,6 +21,9 @@ spec:
                 name: pool-backend
             - secretRef:
                 name: pool-backend
+          volumeMounts:
+            - name: assets-storage
+              mountPath: /public/files
           ports:
             - name: http
               containerPort: 1323
@@ -32,3 +35,7 @@ spec:
             limits:
               memory: 400Mi
               cpu: 100m # 10 milli-cores = 1% of a core
+      volumes:
+        - name: assets-storage
+          persistentVolumeClaim:
+            claimName: assets-storage-pvc
