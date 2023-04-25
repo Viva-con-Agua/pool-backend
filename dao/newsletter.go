@@ -11,7 +11,7 @@ import (
 
 func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vcapool.AccessToken) (result *models.Newsletter, err error) {
 
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("employee;admin") || i.UserID == "" {
 		if i.Value == "regional" && token.CrewID == "" {
 			return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
 		}
@@ -35,18 +35,37 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vc
 	return
 }
 
-func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vcapool.AccessToken) (err error) {
-	newletter := new(models.Newsletter)
+func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vcapool.AccessToken) (newletter *models.Newsletter, err error) {
+	newletter = new(models.Newsletter)
 	filter := bson.D{{Key: "_id", Value: i.ID}}
 	if err = NewsletterCollection.FindOne(ctx, filter, newletter); err != nil {
 		return
 	}
 	if !token.Roles.Validate("employee;admin") {
 		if token.ID != newletter.UserID {
-			return vcago.NewPermissionDenied("newsletter", i.ID)
+			return nil, vcago.NewPermissionDenied("newsletter", i.ID)
 		}
 	}
 	if err = NewsletterCollection.DeleteOne(ctx, filter); err != nil {
+		return
+	}
+	return
+}
+
+func NewsletterImport(ctx context.Context, imp *models.NewsletterImport) (result *models.Newsletter, err error) {
+	user := new(models.UserDatabase)
+	userFilter := bson.D{{Key: "drops_id", Value: imp.DropsID}}
+	if err = UserCollection.FindOne(ctx, userFilter, user); err != nil {
+		return
+	}
+	if imp.Value == "regional" {
+		crew := new(models.UserCrew)
+		if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}}, crew); err != nil {
+			return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+		}
+	}
+	result = imp.ToNewsletter(user.ID)
+	if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
 	return

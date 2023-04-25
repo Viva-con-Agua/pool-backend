@@ -113,17 +113,17 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 				// Add takings to CRM
 				var taking *models.Taking
 				if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: unit.TakingID}, token); err != nil {
-					return
+					log.Print(err)
 				}
 
 				taking.EditorID = token.ID
 				if err = IDjango.Post(taking, "/v1/pool/taking/create/"); err != nil {
-					return
+					log.Print(err)
 				}
 
 				// Update CRM event
 				if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
-					return
+					log.Print(err)
 				}
 
 				// Add participations to event
@@ -140,7 +140,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 				}
 
 				if err = IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
-					return
+					log.Print(err)
 				}
 
 			}

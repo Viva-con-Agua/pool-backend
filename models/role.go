@@ -18,6 +18,11 @@ type RoleAdminRequest struct {
 	Role  string `json:"role"`
 }
 
+type RoleImport struct {
+	Role    string `json:"role"`
+	DropsID string `json:"drops_id"`
+}
+
 var PoolRoleCollection = "pool_roles"
 
 func (i *RoleRequest) New() (r *vmod.Role, err error) {

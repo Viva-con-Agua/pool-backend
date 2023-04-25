@@ -52,13 +52,12 @@ func main() {
 	token.Taking.Routes(finances.Group("/taking"))
 	token.Deposit.Routes(finances.Group("/deposit"))
 
-	key.Crew.Routes(e.Group("/apikey/crews"))
+	key.Import.Routes(api.Group("/import"))
 
 	admin.Crew.Routes(e.Group("/admin/crews"))
 	admin.Role.Routes(e.Group("/admin/users/role"))
 	admin.User.Routes(e.Group("/admin/users"))
 
 	//server
-	port := vcago.Settings.String("APP_PORT", "n", "1323")
-	e.Logger.Fatal(e.Start(":" + port))
+	e.Run()
 }
