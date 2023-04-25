@@ -42,7 +42,7 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 }
 
 func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.Event, err error) {
-	filter := vmdb.NewFilter()
+	filter := i.CreateFilter()
 	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") {
 		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	} else if !token.Roles.Validate("employee;admin") {

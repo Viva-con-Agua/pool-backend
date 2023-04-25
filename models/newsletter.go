@@ -20,6 +20,10 @@ type (
 	NewsletterParam struct {
 		ID string `param:"id"`
 	}
+	NewsletterImport struct {
+		Value   string `json:"value"`
+		DropsID string `json:"drops_id"`
+	}
 )
 
 func (i *NewsletterCreate) Newsletter(token *vcapool.AccessToken) *Newsletter {
@@ -36,6 +40,15 @@ func (i *NewsletterCreate) NewsletterAdmin() *Newsletter {
 		ID:       uuid.NewString(),
 		Value:    i.Value,
 		UserID:   i.UserID,
+		Modified: vmod.NewModified(),
+	}
+}
+
+func (i *NewsletterImport) ToNewsletter(userID string) *Newsletter {
+	return &Newsletter{
+		ID:       uuid.NewString(),
+		Value:    i.Value,
+		UserID:   userID,
 		Modified: vmod.NewModified(),
 	}
 }

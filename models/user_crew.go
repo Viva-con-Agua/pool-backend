@@ -34,6 +34,14 @@ type (
 	UserCrewParam struct {
 		ID string `param:"id"`
 	}
+	UserCrewImport struct {
+		DropsID string   `json:"drops_id"`
+		CrewID  string   `json:"crew_id"`
+		NVMDate int64    `json:"nvm_date"`
+		Created int64    `json:"created"`
+		Active  string   `json:"active"`
+		Roles   []string `json:"roles"`
+	}
 )
 
 func NewUserCrew(userID string, crewID string, name string, email string, mailboxID string) *UserCrew {
@@ -56,4 +64,54 @@ func (i *UserCrewCreate) CrewFilter() bson.D {
 
 func (i *UserCrewUpdate) Filter(token *vcapool.AccessToken) bson.D {
 	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+}
+
+func (i *UserCrewImport) ToActive(userID string) (result *Active) {
+	result = NewActive(userID, i.CrewID)
+	if i.Active != "" {
+		if i.Active == "active" {
+			result.Status = "confirmed"
+		}
+		if i.Active == "requested" {
+			result.Status = "requested"
+		}
+		result.Since = i.Created
+		result.Modified.Created = i.Created
+	}
+	return
+}
+
+func (i *UserCrewImport) ToNVM(userID string) (result *NVM) {
+	result = NewNVM(userID)
+	if i.NVMDate != 0 {
+		result.Since = i.NVMDate
+		result.Modified.Created = i.NVMDate
+		result.Status = "confirmed"
+	}
+	return
+}
+
+func (i *UserCrewImport) ToRoles(userID string) (result []vmod.Role) {
+	result = []vmod.Role{}
+	for _, role := range i.Roles {
+		switch role {
+		case "asp":
+			result = append(result, *RoleASP(userID))
+		case "finance":
+			result = append(result, *RoleFinance(userID))
+		case "operation":
+			result = append(result, *RoleAction(userID))
+		case "education":
+			result = append(result, *RoleEducation(userID))
+		case "network":
+			result = append(result, *RoleNetwork(userID))
+		case "socialmedia":
+			result = append(result, *RoleSocialMedia(userID))
+		case "awareness":
+			result = append(result, *RoleAwareness(userID))
+		case "other":
+			result = append(result, *RoleOther(userID))
+		}
+	}
+	return
 }

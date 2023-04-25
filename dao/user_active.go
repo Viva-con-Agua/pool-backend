@@ -14,7 +14,7 @@ func ActiveWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *mo
 	if err = ActiveCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
+		vmdb.UpdateSet(models.ActiveWithdraw()),
 		result,
 	); err != nil {
 		return

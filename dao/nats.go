@@ -13,6 +13,7 @@ import (
 func InitialNats() {
 	vcago.Nats.Connect()
 	vcago.Nats.Subscribe("system.user.updated", SubscribeUserUpdate)
+	vcago.Nats.Subscribe("system.user.import", SubscribeUserImport)
 }
 
 func SubscribeUserUpdate(m *models.UserUpdate) {
@@ -30,4 +31,12 @@ func SubscribeUserUpdate(m *models.UserUpdate) {
 		vcago.Nats.Publish("pool.user.updated", result)
 	}
 
+}
+
+func SubscribeUserImport(m *models.UserDatabase) {
+	if m.DropsID != "" {
+		if _, err := UserInsert(context.Background(), m); err != nil {
+			log.Print(err)
+		}
+	}
 }
