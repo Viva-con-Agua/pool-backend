@@ -13,7 +13,7 @@ type OrganizerHandler struct {
 	vcago.Handler
 }
 
-var Organizer = &OrganizerHandler{*vcago.NewHandler("artist")}
+var Organizer = &OrganizerHandler{*vcago.NewHandler("organizer")}
 
 func (i *OrganizerHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
