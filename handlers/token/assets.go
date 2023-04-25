@@ -12,7 +12,7 @@ type AssetsHandler struct {
 	vcago.Handler
 }
 
-var Assets = &AssetsHandler{*vcago.NewHandler("user")}
+var Assets = &AssetsHandler{*vcago.NewHandler("assets")}
 
 func (i *AssetsHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
