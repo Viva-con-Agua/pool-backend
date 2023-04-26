@@ -31,6 +31,12 @@ func UserCrewDelete(ctx context.Context, id string) (err error) {
 	); err != nil {
 		return
 	}
+	if err = NewsletterCollection.TryDeleteOne(
+		ctx,
+		bson.D{{Key: "user_id", Value: id}, {Key: "value", Value: "regional"}},
+	); err != nil {
+		return
+	}
 	return
 }
 
@@ -44,6 +50,9 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	crewFilter := bson.D{{Key: "_id", Value: imp.CrewID}}
 	if err = CrewsCollection.FindOne(ctx, crewFilter, crew); err != nil {
 		return nil, vcago.NewBadRequest("crew", err.Error(), crewFilter)
+	}
+	if crew.Status != "active" {
+		return nil, vcago.NewBadRequest("crew", "crew_is_dissolved", nil)
 	}
 	result = models.NewUserCrew(user.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
