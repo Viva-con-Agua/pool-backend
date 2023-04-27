@@ -64,7 +64,7 @@ func (i *ParticipationHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Participation)
-	if err = dao.ArtistCollection.AggregateOne(
+	if err = dao.ParticipationCollection.AggregateOne(
 		c.Ctx(),
 		models.ParticipationPipeline().Match(body.Match()).Pipe,
 		result,

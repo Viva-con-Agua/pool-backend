@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"net/http"
 	"pool-backend/dao"
 	"pool-backend/models"
@@ -34,6 +35,9 @@ func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
 	if result, err = dao.NVMConfirm(c.Ctx(), token); err != nil {
 		return
 	}
+	if err = dao.IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
+		log.Print(err)
+	}
 	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "nvm", result)
 }
 
@@ -52,6 +56,9 @@ func (i *NVMHandler) ConfirmUser(cc echo.Context) (err error) {
 	if result, err = dao.NVMConfirmUser(c.Ctx(), body, token); err != nil {
 		return
 	}
+	if err = dao.IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
+		log.Print(err)
+	}
 	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "nvm", result)
 }
 
@@ -69,6 +76,9 @@ func (i *NVMHandler) RejectUser(cc echo.Context) (err error) {
 	if result, err = dao.NVMRejectUser(c.Ctx(), body, token); err != nil {
 		return
 	}
+	if err = dao.IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
+		log.Print(err)
+	}
 	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "nvm", result)
 }
 
@@ -81,6 +91,9 @@ func (i *NVMHandler) Withdraw(cc echo.Context) (err error) {
 	var result *models.NVM
 	if result, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
 		return
+	}
+	if err = dao.IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
+		log.Print(err)
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_withdrawed", "nvm", result)
 }

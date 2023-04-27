@@ -56,6 +56,9 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 	if err = dao.PoolRoleCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
+	if err = dao.IDjango.Post(result, "/v1/pool/crew/asp/"); err != nil {
+		log.Print(err)
+	}
 	return c.Created(result)
 }
 
@@ -90,6 +93,9 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	}
 	if err = dao.PoolRoleCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
 		return
+	}
+	if err = dao.IDjango.Post(result, "/v1/pool/crew/asp/"); err != nil {
+		log.Print(err)
 	}
 	return c.Deleted(body)
 }

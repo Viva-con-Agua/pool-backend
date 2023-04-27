@@ -15,6 +15,7 @@ type (
 		Name         string `json:"name" bson:"name"`
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 		Status       string `json:"status" bson:"status"`
@@ -24,12 +25,14 @@ type (
 		Name         string `json:"name" bson:"name"`
 		Email        string `json:"email" bson:"email"`
 		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string `json:"additional" bson:"additional"`
 		Status       string `json:"status" bson:"status"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdateASP struct {
 		ID         string `json:"id,omitempty" bson:"_id"`
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional string `json:"additional" bson:"additional"`
 	}
 	Crew struct {
@@ -37,6 +40,7 @@ type (
 		Name         string        `json:"name" bson:"name"`
 		Email        string        `json:"email" bson:"email"`
 		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
+		Mattermost   string        `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string        `json:"additional" bson:"additional"`
 		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities       []City        `json:"cities" bson:"cities"`
@@ -52,9 +56,10 @@ type (
 	}
 	CrewList  []Crew
 	CrewQuery struct {
-		ID    []string `query:"id,omitempty" qs:"id"`
-		Name  string   `query:"name" qs:"name"`
-		Email string   `query:"email" qs:"email"`
+		ID     []string `query:"id,omitempty" qs:"id"`
+		Name   string   `query:"name" qs:"name"`
+		Status string   `json:"status" bson:"status"`
+		Email  string   `query:"email" qs:"email"`
 	}
 	CrewSimple struct {
 		ID    string `json:"id" bson:"id"`
@@ -73,6 +78,7 @@ func (i *CrewCreate) Crew() *Crew {
 		ID:           uuid.NewString(),
 		Name:         i.Name,
 		Email:        i.Email,
+		Mattermost:   i.Mattermost,
 		Abbreviation: i.Abbreviation,
 		Additional:   i.Additional,
 		Cities:       i.Cities,
@@ -84,6 +90,7 @@ func (i *CrewCreate) Crew() *Crew {
 func (i *CrewUpdate) ToCrewUpdateASP() *CrewUpdateASP {
 	return &CrewUpdateASP{
 		ID:         i.ID,
+		Mattermost: i.Mattermost,
 		Additional: i.Additional,
 	}
 }
@@ -98,6 +105,7 @@ func (i *CrewQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.LikeString("email", i.Email)
+	filter.LikeString("status", i.Status)
 	filter.LikeString("name", i.Name)
 	return bson.D(*filter)
 }

@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -44,7 +45,7 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 	}
 	result.EditorID = token.ID
 	if err = dao.IDjango.Post(result, "/v1/pool/event/create/"); err != nil {
-		return
+		log.Print(err)
 	}
 	return c.Created(result)
 }
@@ -122,7 +123,7 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	}
 	result.EditorID = token.ID
 	if err = dao.IDjango.Post(result, "/v1/pool/event/update/"); err != nil {
-		return
+		log.Print(err)
 	}
 	return c.Updated(result)
 }

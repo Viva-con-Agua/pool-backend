@@ -76,7 +76,7 @@ func (i *AddressCreate) Address(userID string) (r *Address) {
 		Zip:         i.Zip,
 		City:        i.City,
 		Country:     i.Country,
-		CountryCode: i.Country,
+		CountryCode: i.CountryCode,
 		Additional:  i.Additional,
 		UserID:      userID,
 	}
