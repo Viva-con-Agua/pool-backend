@@ -21,6 +21,9 @@ spec:
                 name: pool-backend
             - secretRef:
                 name: pool-backend
+          volumeMounts:
+            - name: assets-storage
+              mountPath: /public/files
           ports:
             - name: http
               containerPort: 1323
@@ -28,3 +31,7 @@ spec:
             httpGet:
               path: /healthz
               port: 1323
+      volumes:
+        - name: assets-storage
+          persistentVolumeClaim:
+            claimName: assets-storage-pvc

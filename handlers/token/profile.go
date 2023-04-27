@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -36,6 +37,7 @@ func (i *ProfileHandler) Create(cc echo.Context) (err error) {
 	if err = dao.ProfilesCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
+	// TODO: ADD PROFLE CREATE
 	return c.Created(result)
 }
 
@@ -60,9 +62,16 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	if body.Birthdate == 0 {
-		if _, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
+		var nvm *models.NVM
+		if nvm, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
 			return
 		}
+		if err = dao.IDjango.Post(nvm, "/v1/pool/profile/nvm/"); err != nil {
+			log.Print(err)
+		}
 	}
-	return c.Updated(body)
+	if err = dao.IDjango.Post(result, "/v1/pool/profile/"); err != nil {
+		log.Print(err)
+	}
+	return c.Updated(result)
 }

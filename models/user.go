@@ -72,6 +72,24 @@ type (
 		Newsletter []Newsletter  `json:"newsletter" bson:"newsletter"`
 		Modified   vmod.Modified `json:"modified" bson:"modified"`
 	}
+	UserPublic struct {
+		ID          string        `json:"id,omitempty" bson:"_id"`
+		FirstName   string        `bson:"first_name" json:"first_name" validate:"required"`
+		LastName    string        `bson:"last_name" json:"last_name" validate:"required"`
+		FullName    string        `bson:"full_name" json:"full_name"`
+		DisplayName string        `bson:"display_name" json:"display_name"`
+		Roles       vmod.RoleList `json:"system_roles" bson:"system_roles"`
+		Country     string        `bson:"country" json:"country"`
+		Confirmed   bool          `bson:"confirmed" json:"confirmed"`
+		LastUpdate  string        `bson:"last_update" json:"last_update"`
+		//extends the vcago.User
+		DropsID   string        `bson:"drops_id" json:"drops_id"`
+		Profile   Profile       `json:"profile" bson:"profile,truncate"`
+		Crew      UserCrew      `json:"crew" bson:"crew,omitempty"`
+		Avatar    Avatar        `bson:"avatar,omitempty" json:"avatar"`
+		PoolRoles vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
+		Modified  vmod.Modified `json:"modified" bson:"modified"`
+	}
 	UserParam struct {
 		ID string `param:"id"`
 	}
@@ -131,6 +149,23 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 	}
 }
 
+func UserProjection() bson.D {
+	return bson.D{{
+		Key: "$project", Value: bson.D{
+			{Key: "_id", Value: 1},
+			{Key: "first_name", Value: 1},
+			{Key: "full_name", Value: 1},
+			{Key: "display_name", Value: 1},
+			{Key: "last_name", Value: 1},
+			{Key: "profile", Value: 1},
+			{Key: "pool_roles", Value: 1},
+			{Key: "system_roles", Value: 1},
+			{Key: "nvm", Value: 1},
+			{Key: "avatar", Value: 1},
+			{Key: "crew", Value: 1}},
+	}}
+}
+
 func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	if user == true {
@@ -156,7 +191,6 @@ func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
-
 	return
 }
 
