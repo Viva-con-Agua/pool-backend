@@ -44,6 +44,10 @@ func UpdateDatabase() {
 		UpdateUserCrewMaibox(ctx)
 		InsertUpdate(ctx, "update_usercrew3_mailbox")
 	}
+	if !CheckUpdated(ctx, "update_delete_confirmed") {
+		UpdateDeleteUnconfirmd(ctx)
+		InsertUpdate(ctx, "update_delete_confirmed")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -73,6 +77,19 @@ func UpdateUserCrewMaibox(ctx context.Context) {
 		filter := bson.D{{Key: "crew_id", Value: (*crews)[i].ID}}
 		update := bson.D{{Key: "mailbox_id", Value: (*crews)[i].MailboxID}}
 		if _, err := UserCrewCollection.Collection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateDeleteUnconfirmd(ctx context.Context) {
+	users := new([]models.User)
+	filter := bson.D{{Key: "confirmed", Value: false}}
+	if err := UserCollection.Find(ctx, filter, users); err != nil {
+		log.Print(err)
+	}
+	for _, user := range *users {
+		if err := UserDelete(ctx, user.ID); err != nil {
 			log.Print(err)
 		}
 	}
