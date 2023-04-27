@@ -39,7 +39,8 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 		i.CrewID = token.CrewID
 		i.PoolRoles = []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"}
 		filter := i.Match()
-		pipeline := models.UserPipelinePublic().Match(filter).Pipe
+		pipeline := models.UserPipelinePublic().Match(filter).Sort(i.Sort()).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+
 		pipeline = append(pipeline, models.UserProjection())
 		result = new([]models.User)
 		if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
@@ -51,7 +52,7 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 			i.CrewID = token.CrewID
 		}
 		filter := i.Match()
-		pipeline := models.UserPipeline(false).Match(filter).Pipe
+		pipeline := models.UserPipeline(false).Match(filter).Sort(i.Sort()).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 		result = new([]models.User)
 		if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 			return

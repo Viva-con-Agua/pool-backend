@@ -94,23 +94,33 @@ type (
 		ID string `param:"id"`
 	}
 	UserQuery struct {
-		ID            []string `query:"id" qs:"id"`
-		FirstName     string   `query:"first_name" qs:"first_name"`
-		LastName      string   `query:"last_name" qs:"last_name"`
-		FullName      string   `query:"full_name" qs:"full_name"`
-		DisplayName   string   `query:"display_name" qs:"display_name"`
-		ActiveState   []string `query:"active_state" qs:"active_state"`
-		SystemRoles   []string `query:"system_roles" qs:"system_roles"`
-		PoolRoles     []string `query:"pool_roles" qs:"pool_roles"`
-		PrivacyPolicy string   `query:"privacy_policy" qs:"privacy_policy"`
-		NVMState      []string `query:"nvm_state" qs:"nvm_state"`
-		CrewID        string   `query:"crew_id" qs:"crew_id"`
-		Country       string   `query:"country" qs:"country"`
-		Confirmed     string   `query:"confirmed" qs:"confirmed"`
-		UpdatedTo     string   `query:"updated_to" qs:"updated_to"`
-		UpdatedFrom   string   `query:"updated_from" qs:"updated_from"`
-		CreatedTo     string   `query:"created_to" qs:"created_to"`
-		CreatedFrom   string   `query:"created_from" qs:"created_from"`
+		ID             []string `query:"id" qs:"id"`
+		FirstName      string   `query:"first_name" qs:"first_name"`
+		LastName       string   `query:"last_name" qs:"last_name"`
+		FullName       string   `query:"full_name" qs:"full_name"`
+		DisplayName    string   `query:"display_name" qs:"display_name"`
+		ActiveState    []string `query:"active_state" qs:"active_state"`
+		SystemRoles    []string `query:"system_roles" qs:"system_roles"`
+		PoolRoles      []string `query:"pool_roles" qs:"pool_roles"`
+		PrivacyPolicy  string   `query:"privacy_policy" qs:"privacy_policy"`
+		NVMState       []string `query:"nvm_state" qs:"nvm_state"`
+		CrewID         string   `query:"crew_id" qs:"crew_id"`
+		Country        string   `query:"country" qs:"country"`
+		Confirmed      string   `query:"confirmed" qs:"confirmed"`
+		UpdatedTo      string   `query:"updated_to" qs:"updated_to"`
+		UpdatedFrom    string   `query:"updated_from" qs:"updated_from"`
+		CreatedTo      string   `query:"created_to" qs:"created_to"`
+		CreatedFrom    string   `query:"created_from" qs:"created_from"`
+		Limit          int64    `query:"limit" qs:"limit"`
+		Skip           int64    `query:"skip" qs:"skip"`
+		SortName       string   `query:"sort_name"`
+		SortCreated    string   `query:"sort_created"`
+		SortCrew       string   `query:"sort_crew"`
+		SortEmail      string   `query:"sort_email"`
+		SortMattermost string   `query:"sort_mattermost"`
+		SortActive     string   `query:"sort_active"`
+		SortNVM        string   `query:"sort_nvm"`
+		SortBirthdate  string   `query:"sort_birthdate"`
 	}
 )
 
@@ -281,7 +291,6 @@ func (i *UserQuery) Match() bson.D {
 	match.EqualBool("privacy_policy", i.PrivacyPolicy)
 	match.EqualStringList("active.status", i.ActiveState)
 	match.EqualStringList("nvm.status", i.NVMState)
-	match.EqualString("crew.crew_id", i.CrewID)
 	match.EqualString("country", i.Country)
 	match.EqualBool("confirmed", i.Confirmed)
 	match.GteInt64("modified.updated", i.UpdatedFrom)
@@ -294,4 +303,58 @@ func (i *UserQuery) Match() bson.D {
 func (i *UserQuery) Pipeline() mongo.Pipeline {
 	match := i.Match()
 	return UserPipeline(false).Match(match).Pipe
+}
+
+func (i *UserQuery) Sort() bson.D {
+	sort := vmdb.NewSort()
+	sort.Add("full_name", i.SortName)
+	sort.Add("modified.created", i.SortCreated)
+	sort.Add("crew.name", i.SortCrew)
+	sort.Add("email", i.SortEmail)
+	sort.Add("profile.mattermost", i.SortMattermost)
+	sort.Add("active.status", i.SortActive)
+	sort.Add("nvm.status", i.SortNVM)
+	sort.Add("profile.birthdate", i.SortBirthdate)
+	return sort.Bson()
+}
+
+// TODO: smarter query
+func (i *UserQuery) UserFilter() bson.D {
+	userFilter := vmdb.NewFilter()
+	userFilter.LikeString("first_name", i.FirstName)
+	userFilter.LikeString("last_name", i.LastName)
+	userFilter.LikeString("full_name", i.FullName)
+	userFilter.LikeString("display_name", i.DisplayName)
+	userFilter.GteInt64("modified.updated", i.UpdatedFrom)
+	userFilter.GteInt64("modified.created", i.CreatedFrom)
+	userFilter.LteInt64("modified.updated", i.UpdatedTo)
+	userFilter.LteInt64("modified.created", i.CreatedTo)
+	return userFilter.Bson()
+}
+
+func (i *UserQuery) CrewFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("crew.crew_id", i.CrewID)
+	return filter.Bson()
+}
+
+func (i *UserQuery) UserPipeline(user bool) (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.Match(i.UserFilter())
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.Match(i.CrewFilter())
+	if user == true {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	} else {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
+	}
+	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.Lookup("newsletters", "_id", "user_id", "newsletter")
+	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+
+	return
 }
