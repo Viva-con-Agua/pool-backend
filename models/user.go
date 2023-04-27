@@ -236,6 +236,7 @@ func (i *UserParam) FilterAdmin() bson.D {
 
 func (i *UserQuery) Match() bson.D {
 	match := vmdb.NewFilter()
+	match.EqualBool("confirmed", "true")
 	match.LikeString("first_name", i.FirstName)
 	match.LikeString("last_name", i.LastName)
 	match.LikeString("full_name", i.FullName)
