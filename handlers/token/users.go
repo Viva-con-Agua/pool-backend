@@ -36,9 +36,11 @@ func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.UserDelete(c.Ctx(), body.ID); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(&models.Profile{UserID: body.ID}, "/v1/pool/profile/delete/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(&models.Profile{UserID: body.ID}, "/v1/pool/profile/delete/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Deleted(body.ID)
 }
 
