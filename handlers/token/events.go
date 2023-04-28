@@ -44,9 +44,11 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	result.EditorID = token.ID
-	if err = dao.IDjango.Post(result, "/v1/pool/event/create/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/event/create/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Created(result)
 }
 
@@ -122,9 +124,11 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result.EditorID = token.ID
-	if err = dao.IDjango.Post(result, "/v1/pool/event/update/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/event/update/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Updated(result)
 }
 

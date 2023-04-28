@@ -63,15 +63,18 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 	}
 	if body.Birthdate == 0 {
 		var nvm *models.NVM
-		if nvm, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
-			return
+		if nvm, err = dao.NVMWithdraw(c.Ctx(), token); err == nil {
+			go func() {
+				if err = dao.IDjango.Post(nvm, "/v1/pool/profile/nvm/"); err != nil {
+					log.Print(err)
+				}
+			}()
 		}
-		if err = dao.IDjango.Post(nvm, "/v1/pool/profile/nvm/"); err != nil {
+	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/profile/"); err != nil {
 			log.Print(err)
 		}
-	}
-	if err = dao.IDjango.Post(result, "/v1/pool/profile/"); err != nil {
-		log.Print(err)
-	}
+	}()
 	return c.Updated(result)
 }
