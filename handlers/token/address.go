@@ -40,9 +40,11 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	if err = dao.AddressesCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(result, "/v1/pool/address/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/address/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Created(result)
 }
 
@@ -77,9 +79,11 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(result, "/v1/pool/address/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/address/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Updated(result)
 }
 
@@ -100,12 +104,14 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if result, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(&models.Address{UserID: token.ID}, "/v1/pool/address/"); err != nil {
-		log.Print(err)
-	}
-	if err = dao.IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(&models.Address{UserID: token.ID}, "/v1/pool/address/"); err != nil {
+			log.Print(err)
+		}
+		if err = dao.IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Deleted(body.ID)
 }
 
