@@ -49,9 +49,11 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.NVMCollection.InsertOne(c.Ctx(), models.NewNVM(token.ID)); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(result, "/v1/pool/profile/crew/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Created(result)
 }
 
@@ -102,9 +104,11 @@ func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.UserCrewDelete(c.Ctx(), token.ID); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(&models.UserCrewUpdate{UserID: token.ID}, "/v1/pool/profile/crew/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(&models.UserCrewUpdate{UserID: token.ID}, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Deleted(token.ID)
 
 }

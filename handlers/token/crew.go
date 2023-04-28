@@ -43,9 +43,11 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(result, "/v1/pool/crew/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Created(result)
 }
 
@@ -109,9 +111,11 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	if _, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(body, "/v1/pool/crew/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(body, "/v1/pool/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return vcago.NewUpdated("crew", body)
 }
 

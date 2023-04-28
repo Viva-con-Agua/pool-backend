@@ -36,9 +36,11 @@ func (i *NewsletterHandler) Create(cc echo.Context) (err error) {
 	if result, err = dao.NewsletterCreate(c.Ctx(), body, token); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(result, "/v1/pool/newsletter/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/newsletter/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Created(result)
 }
 
@@ -56,8 +58,10 @@ func (i *NewsletterHandler) Delete(cc echo.Context) (err error) {
 	if result, err = dao.NewsletterDelete(c.Ctx(), body, token); err != nil {
 		return
 	}
-	if err = dao.IDjango.Post(result, "/v1/pool/newsletter/"); err != nil {
-		log.Print(err)
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/newsletter/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Deleted(body.ID)
 }
