@@ -44,15 +44,13 @@ func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 
 func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
 	event := new(models.Event)
-	filter := bson.D{}
-	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") {
-		filter = bson.D{{Key: "_id", Value: i.EventID}, {Key: "event_asp_id", Value: token.ID}}
-	} else {
-		filter = bson.D{{Key: "_id", Value: i.EventID}}
-	}
+	filter := bson.D{{Key: "_id", Value: i.EventID}}
 	pipeline := models.EventPipeline(token).Match(filter)
 	if err = EventCollection.AggregateOne(ctx, pipeline.Pipe, event); err != nil {
 		return
+	}
+	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
+		return nil, vcago.NewBadRequest("message", "not allowed to send message")
 	}
 	result = []models.TOData{}
 	for _, value := range event.Participation {
