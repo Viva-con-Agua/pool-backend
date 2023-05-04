@@ -12,22 +12,18 @@ import (
 )
 
 func MessageFilter(id string, crew *models.Crew, token *vcapool.AccessToken) bson.D {
-	if token.PoolRoles.Validate("finance;network;education;") {
-		return bson.D{
-			{Key: "_id", Value: id},
-			{Key: "$or", Value: bson.A{
-				bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
-				bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
-			}}}
-	} else {
-		return bson.D{
-			{Key: "_id", Value: id},
-			{Key: "mailbox_id", Value: token.MailboxID},
-		}
-	}
+	return bson.D{
+		{Key: "_id", Value: id},
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
+			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
+		}}}
 }
 
-func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup) (result []models.TOData, err error) {
+func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
+	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") {
+		return nil, vcago.NewBadRequest("message", "not allowed to send message")
+	}
 	filter := vmdb.NewFilter()
 	filter.EqualString("crew.crew_id", i.CrewID)
 	filter.EqualStringList("active.status", i.Active)
@@ -46,35 +42,52 @@ func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup) (result []m
 	return
 }
 
-func MessageEventUser(ctx context.Context, i *models.RecipientGroup) (result []models.TOData, err error) {
+func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
+	event := new(models.Event)
+	filter := bson.D{}
+	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") {
+		filter = bson.D{{Key: "_id", Value: i.EventID}, {Key: "event_asp_id", Value: token.ID}}
+	} else {
+		filter = bson.D{{Key: "_id", Value: i.EventID}}
+	}
+	pipeline := models.EventPipeline(token).Match(filter)
+	if err = EventCollection.AggregateOne(ctx, pipeline.Pipe, event); err != nil {
+		return
+	}
+	result = []models.TOData{}
+	for _, value := range event.Participation {
+		result = append(result, models.TOData{UserID: value.User.ID, MailboxID: value.User.MailboxID, Email: value.User.Email})
+	}
 	return
 }
 
 func MessageSendCycular(ctx context.Context, i *vmod.IDParam, token *vcapool.AccessToken) (result *models.Message, mail *vcago.CycularMail, err error) {
 	// get message via filter by mailbox and message ids
-	result = new(models.Message)
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
 		return
 	}
 	filter := MessageFilter(i.ID, crew, token)
+	result = new(models.Message)
 	if err = MessageCollection.FindOne(ctx, filter, result); err != nil {
 		return
 	}
 	//select TOData based on the recipientgroup
 	if result.RecipientGroup.Type == "crew" {
-		if result.To, err = MesseageCrewUser(ctx, &result.RecipientGroup); err != nil {
+
+		if result.To, err = MesseageCrewUser(ctx, &result.RecipientGroup, token); err != nil {
 			return
 		}
 	} else if result.RecipientGroup.Type == "event" {
-		return nil, nil, vcago.NewBadRequest("message", "event is currently not supported", result.RecipientGroup)
+		if result.To, err = MessageEventUser(ctx, &result.RecipientGroup, token); err != nil {
+			return
+		}
 	} else {
 		return nil, nil, vcago.NewBadRequest("message", "type is not supported", result.RecipientGroup)
 	}
 
 	//create new cycular mail
 	mail = vcago.NewCycularMail(result.From, result.ToEmails(), result.Subject, result.Message)
-
 	if err = MessageCollection.InsertMany(ctx, *result.Inbox()); err != nil {
 		return
 	}
