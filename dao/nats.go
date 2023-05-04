@@ -7,6 +7,7 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -14,6 +15,7 @@ func InitialNats() {
 	vcago.Nats.Connect()
 	vcago.Nats.Subscribe("system.user.updated", SubscribeUserUpdate)
 	vcago.Nats.Subscribe("system.user.import", SubscribeUserImport)
+	vcago.Nats.Subscribe("system.user.delete", SubscribeUserDelete)
 }
 
 func SubscribeUserUpdate(m *models.UserUpdate) {
@@ -38,5 +40,11 @@ func SubscribeUserImport(m *models.UserDatabase) {
 		if _, err := UserInsert(context.Background(), m); err != nil {
 			log.Print(err)
 		}
+	}
+}
+
+func SubscribeUserDelete(m *vmod.DeletedResponse) {
+	if err := UserDelete(context.Background(), m.ID); err != nil {
+		log.Print(err)
 	}
 }
