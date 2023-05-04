@@ -48,6 +48,10 @@ func UpdateDatabase() {
 		UpdateDeleteUnconfirmd(ctx)
 		InsertUpdate(ctx, "update_delete_confirmed")
 	}
+	if !CheckUpdated(ctx, "update_confirm_admin") {
+		UpdateConfirmAdmin(ctx)
+		InsertUpdate(ctx, "update_confirm_admin")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -92,5 +96,13 @@ func UpdateDeleteUnconfirmd(ctx context.Context) {
 		if err := UserDelete(ctx, user.ID); err != nil {
 			log.Print(err)
 		}
+	}
+}
+
+func UpdateConfirmAdmin(ctx context.Context) {
+	update := bson.D{{Key: "confirmed", Value: true}}
+	filter := bson.D{{Key: "email", Value: "it@vivaconagua.org"}}
+	if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+		log.Print(err)
 	}
 }
