@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type MessageHandler struct {
@@ -52,9 +54,13 @@ func (i *MessageHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
+	crew := new(models.Crew)
+	if err = dao.CrewsCollection.FindOne(c.Ctx(), bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
+		log.Print("No crew for user")
+	}
 
 	result := new(models.Message)
-	if err = dao.MessageCollection.FindOne(c.Ctx(), body.Filter(token), result); err != nil {
+	if err = dao.MessageCollection.FindOne(c.Ctx(), body.Filter(token, crew), result); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -92,7 +98,11 @@ func (i *MessageHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.MessageCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
+	crew := new(models.Crew)
+	if err = dao.CrewsCollection.FindOne(c.Ctx(), bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
+		log.Print("No crew for user")
+	}
+	if err = dao.MessageCollection.DeleteOne(c.Ctx(), body.Filter(token, crew)); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
