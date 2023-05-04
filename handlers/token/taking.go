@@ -72,7 +72,7 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 	if result, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i TakingHandler) GetByID(cc echo.Context) (err error) {

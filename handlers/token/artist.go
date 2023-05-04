@@ -92,5 +92,5 @@ func (i *ArtistHandler) Get(cc echo.Context) (err error) {
 	if err = dao.ArtistCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return c.ErrorResponse(err)
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
