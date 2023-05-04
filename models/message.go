@@ -111,12 +111,12 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 	}
 }
 
-func (i *MessageParam) Filter(token *vcapool.AccessToken) bson.D {
+func (i *MessageParam) Filter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	return bson.D{
 		{Key: "_id", Value: i.ID},
 		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "mailbox_id", Value: token.ID}},
-			bson.D{{Key: "mailbox_id", Value: token.CrewID}},
+			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
+			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
 		}}}
 }
 

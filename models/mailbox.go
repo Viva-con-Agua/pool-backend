@@ -40,8 +40,10 @@ func MailboxPipeline() *vmdb.Pipeline {
 	inboxMatch.EqualString("type", "inbox")
 	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
 	outboxMatch := vmdb.NewFilter()
+	outboxMatch.EqualString("type", "outbox")
 	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
 	draftMatch := vmdb.NewFilter()
+	draftMatch.EqualString("type", "draft")
 	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
 	return pipe
 }
