@@ -45,15 +45,20 @@ func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
 	event := new(models.Event)
 	filter := bson.D{{Key: "_id", Value: i.EventID}}
-	pipeline := models.EventPipeline(token).Match(filter)
-	if err = EventCollection.AggregateOne(ctx, pipeline.Pipe, event); err != nil {
+	if err = EventCollection.FindOne(ctx, filter, event); err != nil {
 		return
 	}
 	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
 		return nil, vcago.NewBadRequest("message", "not allowed to send message")
 	}
+	pFilter := bson.D{{Key: "event_id", Value: event.ID}}
+	pPipeline := models.ParticipationPipeline().Match(pFilter)
+	participations := new([]models.Participation)
+	if err = ParticipationCollection.Aggregate(ctx, pPipeline.Pipe, participations); err != nil {
+		return
+	}
 	result = []models.TOData{}
-	for _, value := range event.Participation {
+	for _, value := range *participations {
 		result = append(result, models.TOData{UserID: value.User.ID, MailboxID: value.User.MailboxID, Email: value.User.Email})
 	}
 	return
