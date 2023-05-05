@@ -61,6 +61,10 @@ type (
 		ID     string `json:"id"`
 		Status string `json:"status"`
 	}
+	ParticipationImport struct {
+		DropsID string `json:"drops_id"`
+		Comment string `json:"comment"`
+	}
 )
 
 func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
