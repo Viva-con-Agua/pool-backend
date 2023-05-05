@@ -29,7 +29,7 @@ func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 	filter.EqualStringList("active.status", i.Active)
 	filter.EqualStringList("nvm.status", i.NVM)
 	if !i.IgnoreNewsletter {
-		filter.EqualString("newsletter.value", "global")
+		filter.EqualString("newsletter.value", "regional")
 	}
 	userList := new([]models.User)
 	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter.Bson()).Pipe, userList); err != nil {

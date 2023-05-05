@@ -10,20 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func CrewInsert(ctx context.Context, i *models.Crew) (r *models.Crew, err error) {
+func CrewInsert(ctx context.Context, i *models.CrewCreate) (r *models.Crew, err error) {
 	//create mailbox
 	mailbox := models.NewMailboxDatabase("crew")
 	if err = MailboxCollection.InsertOne(ctx, mailbox); err != nil {
 		return
 	}
+	r = i.Crew()
 	// refer the mailbox.ID
-	i.MailboxID = mailbox.ID
+	r.MailboxID = mailbox.ID
 	// insert user
-	if err = CrewsCollection.InsertOne(ctx, i); err != nil {
+	if err = CrewsCollection.InsertOne(ctx, r); err != nil {
 		return
 	}
-	// initial r.
-	r = i
 	//select user from database
 	return
 }

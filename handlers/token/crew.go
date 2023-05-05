@@ -40,7 +40,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	result := body.Crew()
-	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
+	if result, err = dao.CrewInsert(c.Ctx(), body); err != nil {
 		return
 	}
 	go func() {
