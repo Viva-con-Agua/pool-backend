@@ -161,6 +161,23 @@ type (
 		Lat float64 `json:"lat" bson:"lat"`
 		Lng float64 `json:"lng" bson:"lng"`
 	}
+	EventImport struct {
+		Name                  string                `json:"name" bson:"name"`
+		TypeOfEvent           string                `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string                `json:"additional_information" bson:"additional_information"`
+		Location              Location              `json:"location" bson:"location"`
+		ArtistIDs             []string              `json:"artist_ids" bson:"artist_ids"`
+		OrganizerID           string                `json:"organizer_id" bson:"organizer_id"`
+		StartAt               int64                 `json:"start_at" bson:"start_at"`
+		EndAt                 int64                 `json:"end_at" bson:"end_at"`
+		CrewName              string                `json:"crew_name" bson:"crew_name"`
+		ExternalASP           UserExternal          `json:"external_asp" bson:"external_asp"`
+		Application           EventApplication      `json:"application" bson:"application"`
+		EventTools            EventTools            `json:"event_tools" bson:"event_tools"`
+		EventState            EventState            `json:"event_state" bson:"event_state"`
+		Participations        []ParticipationImport `json:"participations"`
+		Modified              vmod.Modified         `json:"modified"`
+	}
 )
 
 func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
