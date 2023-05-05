@@ -25,7 +25,7 @@ func (i *ImportHandler) Routes(group *echo.Group) {
 
 func (i *ImportHandler) ImportCrew(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(models.Crew)
+	body := new(models.CrewCreate)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}

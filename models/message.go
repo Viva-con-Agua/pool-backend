@@ -27,7 +27,6 @@ type (
 		MailboxID      string         `json:"mailbox_id" bson:"mailbox_id"`
 		Read           bool           `json:"read" bson:"read"`
 		RecipientGroup RecipientGroup `json:"recipient_group" bson:"recipient_group"`
-		To             []User         `json:"to" bson:"to"`
 	}
 	MessageParam struct {
 		ID string `param:"id"`
@@ -43,7 +42,8 @@ type (
 		MailboxID      string         `json:"mailbox_id" bson:"mailbox_id"`
 		Read           bool           `json:"read" bson:"read"`
 		RecipientGroup RecipientGroup `json:"recipient_group" bson:"recipient_group"`
-		To             []User         `json:"to" bson:"to"`
+		ToID           []string       `json:"to_id" bson:"to_id"`
+		To             []TOData       `json:"to" bson:"-"`
 		Modified       vmod.Modified  `json:"modified" bson:"modified"`
 	}
 	MessageList []Message
@@ -61,7 +61,7 @@ type (
 		MailboxID      string         `json:"mailbox_id" bson:"mailbox_id"`
 		Read           bool           `json:"read" bson:"read"`
 		RecipientGroup RecipientGroup `json:"recipient_group" bson:"recipient_group"`
-		To             []User         `json:"-" bson:"to"`
+		To             []TOData       `json:"-" bson:"to"`
 		Modified       vmod.Modified  `json:"modified" bson:"modified"`
 	}
 
@@ -74,6 +74,11 @@ type (
 		UpdatedFrom string   `query:"updated_from"`
 		CreatedTo   string   `query:"created_to"`
 		CreatedFrom string   `query:"created_from"`
+	}
+	TOData struct {
+		UserID    string `bson:"user_id" json:"user_id"`
+		MailboxID string `bson:"mailbox_id" json:"mailbox_id"`
+		Email     string `bson:"email" json:"email"`
 	}
 )
 
@@ -107,25 +112,24 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 		MailboxID:      i.MailboxID,
 		Read:           i.Read,
 		RecipientGroup: i.RecipientGroup,
-		To:             i.To,
 	}
 }
 
-func (i *MessageParam) Filter(token *vcapool.AccessToken) bson.D {
+func (i *MessageParam) Filter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	return bson.D{
 		{Key: "_id", Value: i.ID},
 		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "mailbox_id", Value: token.ID}},
-			bson.D{{Key: "mailbox_id", Value: token.CrewID}},
+			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
+			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
 		}}}
 }
 
-func (i *MessageUpdate) Filter(token *vcapool.AccessToken) bson.D {
+func (i *MessageUpdate) Filter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	return bson.D{
 		{Key: "_id", Value: i.ID},
 		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "mailbox_id", Value: token.ID}},
-			bson.D{{Key: "mailbox_id", Value: token.CrewID}},
+			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
+			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
 		}}}
 }
 
@@ -134,12 +138,18 @@ func (i *Message) Inbox() *[]interface{} {
 	for n := range i.To {
 		message := *i
 		message.ID = uuid.NewString()
-		message.MailboxID = (i.To)[n].ID
+		message.MailboxID = (i.To)[n].MailboxID
 		message.Type = "inbox"
 		message.Modified = vmod.NewModified()
 		*inbox = append(*inbox, message)
-
 	}
 	return inbox
+}
 
+func (i *Message) ToEmails() (result []string) {
+	result = []string{}
+	for _, value := range i.To {
+		result = append(result, value.Email)
+	}
+	return
 }

@@ -40,7 +40,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	result := body.Crew()
-	if err = dao.CrewsCollection.InsertOne(c.Ctx(), result); err != nil {
+	if result, err = dao.CrewInsert(c.Ctx(), body); err != nil {
 		return
 	}
 	go func() {
@@ -68,7 +68,7 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *CrewHandler) GetPublic(cc echo.Context) (err error) {
@@ -82,7 +82,7 @@ func (i *CrewHandler) GetPublic(cc echo.Context) (err error) {
 	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *CrewHandler) GetByID(cc echo.Context) (err error) {

@@ -130,5 +130,5 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	if err = dao.AddressesCollection.Find(c.Ctx(), body.Filter(token), result); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }

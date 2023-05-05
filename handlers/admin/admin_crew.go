@@ -23,7 +23,7 @@ func (i *CrewHandler) Routes(group *echo.Group) {
 
 func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(models.Crew)
+	body := new(models.CrewCreate)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -44,7 +44,7 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *CrewHandler) Delete(cc echo.Context) (err error) {
