@@ -44,7 +44,7 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	if dao.CrewsCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *CrewHandler) Delete(cc echo.Context) (err error) {

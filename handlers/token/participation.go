@@ -115,7 +115,7 @@ func (i *ParticipationHandler) Get(cc echo.Context) (err error) {
 	); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *ParticipationHandler) Delete(cc echo.Context) (err error) {

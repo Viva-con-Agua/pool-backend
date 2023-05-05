@@ -48,6 +48,8 @@ func (i *RoleRequest) New() (r *vmod.Role, err error) {
 	}
 }
 
+var ASPRole = "asp;finance;operation;education;network;socialmedia;awareness"
+
 func RoleASP(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
