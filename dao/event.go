@@ -83,3 +83,6 @@ func EventDelete(ctx context.Context, id string) (err error) {
 	}
 	return
 }
+
+
+func EventImport(ctx context.Context, import *models.EventImport)
