@@ -15,7 +15,7 @@ func InitialNats() {
 	vcago.Nats.Connect()
 	vcago.Nats.Subscribe("system.user.updated", SubscribeUserUpdate)
 	vcago.Nats.Subscribe("system.user.import", SubscribeUserImport)
-	vcago.Nats.Subscribe("system.user.delete", SubscribeUserDelete)
+	vcago.Nats.Subscribe("system.user.deleted", SubscribeUserDelete)
 }
 
 func SubscribeUserUpdate(m *models.UserUpdate) {
