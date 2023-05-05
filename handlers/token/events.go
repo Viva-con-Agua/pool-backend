@@ -87,7 +87,7 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 	if result, err = dao.EventGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
@@ -100,7 +100,7 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 	if result, err = dao.EventGetPublic(c.Ctx(), body); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i *EventHandler) Update(cc echo.Context) (err error) {

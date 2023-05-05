@@ -75,7 +75,7 @@ func (i *SourceHandler) Get(cc echo.Context) (err error) {
 	if err = dao.SourceCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
 		return
 	}
-	return c.Listed(result)
+	return c.Selected(result)
 }
 
 func (i SourceHandler) GetByID(cc echo.Context) (err error) {
