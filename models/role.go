@@ -23,6 +23,14 @@ type RoleImport struct {
 	DropsID string `json:"drops_id"`
 }
 
+type RoleDatabase struct {
+	ID     string `bson:"_id" json:"id"`
+	Name   string `bson:"name" json:"name"`
+	UserID string `bson:"user_id" json:"user_id"`
+	Label  string `bson:"label" json:"label"`
+	Root   string `bson:"root" json:"root"`
+}
+
 var PoolRoleCollection = "pool_roles"
 
 func (i *RoleRequest) New() (r *vmod.Role, err error) {

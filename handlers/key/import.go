@@ -18,6 +18,7 @@ func (i *ImportHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("/crew", i.ImportCrew, vcago.KeyAuthMiddleware())
 	group.POST("/profile", i.ImportProfile, vcago.KeyAuthMiddleware())
+	group.POST("/event", i.ImportEvent, vcago.KeyAuthMiddleware())
 	group.POST("/address", i.ImportAddress, vcago.KeyAuthMiddleware())
 	group.POST("/usercrew", i.ImportUserCrew, vcago.KeyAuthMiddleware())
 	group.POST("/newsletter", i.ImportNewsletter, vcago.KeyAuthMiddleware())
@@ -44,6 +45,19 @@ func (i *ImportHandler) ImportProfile(cc echo.Context) (err error) {
 	}
 	var result *models.Profile
 	if result, err = dao.ProfileImport(c.Ctx(), body); err != nil {
+		return
+	}
+	return c.Created(result)
+}
+
+func (i *ImportHandler) ImportEvent(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.EventImport)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	var result *models.Event
+	if result, err = dao.EventImport(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Created(result)
