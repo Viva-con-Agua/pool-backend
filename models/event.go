@@ -170,7 +170,7 @@ type (
 		OrganizerID           string                `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64                 `json:"start_at" bson:"start_at"`
 		EndAt                 int64                 `json:"end_at" bson:"end_at"`
-		CrewName              string                `json:"crew_name" bson:"crew_name"`
+		CrewID                string                `json:"crew_id" bson:"crew_id"`
 		ExternalASP           UserExternal          `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication      `json:"application" bson:"application"`
 		EventTools            EventTools            `json:"event_tools" bson:"event_tools"`
@@ -205,6 +205,26 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 	}
 }
 
+func (i *EventImport) EventDatabase() *EventDatabase {
+	return &EventDatabase{
+		ID:                    uuid.NewString(),
+		Name:                  i.Name,
+		TypeOfEvent:           i.TypeOfEvent,
+		AdditionalInformation: i.AdditionalInformation,
+		Location:              i.Location,
+		ArtistIDs:             i.ArtistIDs,
+		OrganizerID:           i.OrganizerID,
+		StartAt:               i.StartAt,
+		EndAt:                 i.EndAt,
+		CrewID:                i.CrewID,
+		ExternalASP:           i.ExternalASP,
+		Application:           i.Application,
+		EventTools:            i.EventTools,
+		EventState:            i.EventState,
+		Modified:              vmod.NewModified(),
+	}
+}
+
 func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
@@ -222,6 +242,19 @@ func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 		pipe.LookupMatch("participations_event", "_id", "event_id", "participations", bson.D{{Key: "event.event_asp_id", Value: token.ID}})
 	}
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
+	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	return
+}
+
+func EventImportPipeline() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
+	pipe.LookupUnwind("profiles", "event_asp_id", "user_id", "event_asp.profile")
+	pipe.LookupUnwind("users", "internal_asp_id", "_id", "internal_asp")
+	pipe.LookupUnwind("profiles", "internal_asp_id", "user_id", "internal_asp.profile")
+	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
+	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
+	pipe.Lookup("participations", "_id", "event_id", "participations")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
 	return
 }
