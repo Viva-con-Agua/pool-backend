@@ -84,6 +84,12 @@ func EventDelete(ctx context.Context, id string) (err error) {
 	return
 }
 
+func rolePipeline() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwindMatch(models.PoolRoleCollection, "user_id", "user_id", "user", bson.D{{Key: "name", Value: "operation"}})
+	return pipe
+}
+
 func EventImport(ctx context.Context, event *models.EventImport) (result *models.Event, err error) {
 	i := event.EventDatabase()
 
@@ -97,7 +103,7 @@ func EventImport(ctx context.Context, event *models.EventImport) (result *models
 	i.TakingID = taking.ID
 
 	admin := new(models.UserDatabase)
-	adminFilter := bson.D{{Key: "email", Value: "f.wittamann@vivaconagua.org"}}
+	adminFilter := bson.D{{Key: "email", Value: "f.wittmann@vivaconagua.org"}}
 	if err = UserCollection.FindOne(
 		ctx,
 		adminFilter,
@@ -111,12 +117,7 @@ func EventImport(ctx context.Context, event *models.EventImport) (result *models
 
 	if i.CrewID != "" {
 		aspRole := new(models.RoleDatabase)
-		aspRoleFilter := bson.D{{Key: "crew_id", Value: i.CrewID}, {Key: "name", Value: "operation"}}
-		if err = PoolRoleCollection.FindOne(
-			ctx,
-			aspRoleFilter,
-			aspRole,
-		); err != nil {
+		if err = UserCrewCollection.AggregateOne(ctx, rolePipeline().Match(bson.D{{Key: "crew_id", Value: i.CrewID}}).Pipe, aspRole); err != nil {
 			return
 		}
 		i.EventASPID = aspRole.UserID

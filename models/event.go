@@ -167,6 +167,7 @@ type (
 		AdditionalInformation string                `json:"additional_information" bson:"additional_information"`
 		Location              Location              `json:"location" bson:"location"`
 		ArtistIDs             []string              `json:"artist_ids" bson:"artist_ids"`
+		Website               string                `json:"website" bson:"website"`
 		OrganizerID           string                `json:"organizer_id" bson:"organizer_id"`
 		StartAt               int64                 `json:"start_at" bson:"start_at"`
 		EndAt                 int64                 `json:"end_at" bson:"end_at"`
@@ -213,6 +214,7 @@ func (i *EventImport) EventDatabase() *EventDatabase {
 		AdditionalInformation: i.AdditionalInformation,
 		Location:              i.Location,
 		ArtistIDs:             i.ArtistIDs,
+		Website:               i.Website,
 		OrganizerID:           i.OrganizerID,
 		StartAt:               i.StartAt,
 		EndAt:                 i.EndAt,
