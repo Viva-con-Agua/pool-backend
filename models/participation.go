@@ -79,6 +79,15 @@ func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) 
 	}
 }
 
+func (i *ParticipationImport) ParticipationDatabase() *ParticipationDatabase {
+	return &ParticipationDatabase{
+		ID:       uuid.NewString(),
+		Comment:  i.Comment,
+		Status:   "requested",
+		Modified: vmod.NewModified(),
+	}
+}
+
 func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind("users", "user_id", "_id", "user")
