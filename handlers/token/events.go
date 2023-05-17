@@ -96,7 +96,7 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	var result *[]models.Event
+	var result *[]models.EventPublic
 	if result, err = dao.EventGetPublic(c.Ctx(), body); err != nil {
 		return
 	}
