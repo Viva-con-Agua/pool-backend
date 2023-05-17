@@ -62,11 +62,11 @@ func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessTo
 	return
 }
 
-func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.Event, err error) {
+func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.EventPublic, err error) {
 	i.EventState = []string{"published", "finished", "closed"}
 	filter := i.Filter()
 	pipeline := models.EventPipelinePublic().Match(filter).Pipe
-	result = new([]models.Event)
+	result = new([]models.EventPublic)
 
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return

@@ -72,6 +72,36 @@ type (
 		TakingID             string `json:"taking_id" bson:"taking_id"`
 		DepositID            string `json:"deposit_id" bson:"deposit_id"`
 	}
+	EventASPPublic struct {
+		FirstName   string `bson:"first_name" json:"first_name" validate:"required"`
+		LastName    string `bson:"last_name" json:"last_name" validate:"required"`
+		FullName    string `bson:"full_name" json:"full_name"`
+		DisplayName string `bson:"display_name" json:"display_name"`
+	}
+	EventPublic struct {
+		ID                    string           `json:"id" bson:"_id"`
+		Name                  string           `json:"name" bson:"name"`
+		TypeOfEvent           string           `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string           `json:"additional_information" bson:"additional_information"`
+		Website               string           `json:"website" bson:"website"`
+		TourID                string           `json:"tour_id" bson:"tour_id"`
+		Location              Location         `json:"location" bson:"location"`
+		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
+		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
+		Artists               []Artist         `json:"artists" bson:"artists"`
+		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
+		Organizer             Organizer        `json:"organizer" bson:"organizer"`
+		StartAt               int64            `json:"start_at" bson:"start_at"`
+		EndAt                 int64            `json:"end_at" bson:"end_at"`
+		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew             `json:"crew" bson:"crew"`
+		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
+		EventASP              EventASPPublic   `json:"event_asp" bson:"event_asp"`
+		Application           EventApplication `json:"application" bson:"application"`
+		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
+		EventState            EventState       `json:"event_state" bson:"event_state"`
+		Modified              vmod.Modified    `json:"modified" bson:"modified"`
+	}
 	Event struct {
 		ID                    string           `json:"id" bson:"_id"`
 		Name                  string           `json:"name" bson:"name"`
