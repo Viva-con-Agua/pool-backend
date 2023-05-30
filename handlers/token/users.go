@@ -67,7 +67,7 @@ func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
 		return
 	}
 	var result *[]models.UserMinimal
-	if result, err = dao.CrewUsersGet(c.Ctx(), body, token); err != nil {
+	if result, err = dao.UsersMinimalGet(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

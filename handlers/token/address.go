@@ -6,7 +6,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -36,8 +35,8 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := body.Address(token.ID)
-	if err = dao.AddressesCollection.InsertOne(c.Ctx(), result); err != nil {
+	result := new(models.Address)
+	if result, err = dao.AddressInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
@@ -59,7 +58,7 @@ func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.PermittedFilter(token), result); err != nil {
+	if result, err = dao.AddressGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -76,7 +75,7 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.PermittedFilter(token), vmdb.UpdateSet(body), result); err != nil {
+	if result, err = dao.AddressUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
@@ -97,11 +96,8 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token)); err != nil {
-		return
-	}
 	var result *models.NVM
-	if result, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
+	if result, err = dao.AddressDelete(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
@@ -126,7 +122,7 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.Address)
-	if err = dao.AddressesCollection.Find(c.Ctx(), body.PermittedFilter(token), result); err != nil {
+	if result, err = dao.AddressGet(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

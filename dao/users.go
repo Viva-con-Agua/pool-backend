@@ -63,7 +63,7 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 	}
 }
 
-func CrewUsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserMinimal, err error) {
+func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserMinimal, err error) {
 	if !token.Roles.Validate("employee;admin") {
 		i.CrewID = token.CrewID
 	}

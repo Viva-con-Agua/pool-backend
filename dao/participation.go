@@ -27,6 +27,7 @@ func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *
 
 	return
 }
+
 func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (result *models.Participation, err error) {
 	filter := i.Filter(token)
 	result = new(models.Participation)

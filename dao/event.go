@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.AccessToken) (r *models.Event, err error) {
+func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.AccessToken) (result *models.Event, err error) {
 	taking := models.TakingDatabase{
 		ID:       uuid.NewString(),
 		Name:     i.Name,
@@ -34,8 +34,8 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
-	r = new(models.Event)
-	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, r); err != nil {
+	result = new(models.Event)
+	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, result); err != nil {
 		return
 	}
 	return

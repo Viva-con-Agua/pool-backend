@@ -120,6 +120,15 @@ func (i *CrewQuery) Filter() bson.D {
 	return bson.D(*filter)
 }
 
+func (i *CrewQuery) ActiveFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("_id", i.ID)
+	filter.LikeString("email", i.Email)
+	filter.LikeString("status", "active")
+	filter.LikeString("name", i.Name)
+	return bson.D(*filter)
+}
+
 func CrewPermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
 		return vcago.NewPermissionDenied("crew", nil)
@@ -132,6 +141,13 @@ func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
 		return vcago.NewPermissionDenied("crew", nil)
 	}
 	return
+}
+
+func (i *CrewQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", token.CrewID)
+	filter.LikeString("status", "active")
+	return filter.Bson()
 }
 
 func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
