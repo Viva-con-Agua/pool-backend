@@ -61,7 +61,7 @@ func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
-func NVMRejectPermission(token *vcapool.AccessToken) (err error) {
+func NVMPermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
 		return vcago.NewPermissionDenied("nvm")
 	}

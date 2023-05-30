@@ -4,20 +4,18 @@ import (
 	"context"
 	"pool-backend/models"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// TODO CHECK RESULT new Model shit IN EVERY FILE remove new(Model) and keep new([]Model)
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
-
 	database := i.ParticipationDatabase(token)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
 	}
 	filter := database.Match()
-	//result = new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
 		models.ParticipationPipeline().Match(filter).Pipe,
@@ -29,11 +27,10 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 }
 
 func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *[]models.Participation, err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		return nil, vcago.NewPermissionDenied("participations")
+	if err = models.ParticipationPermission(token); err != nil {
+		return
 	}
-	filter := i.Filter(token)
-
+	filter := i.PermittedFilter(token)
 	result = new([]models.Participation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
@@ -42,17 +39,15 @@ func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *
 	); err != nil {
 		return
 	}
-
 	return
 }
 
 func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	filter := i.Filter(token)
-	result = new(models.Participation)
+	filter := i.PermittedFilter(token)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
 		models.ParticipationPipeline().Match(filter).Pipe,
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -75,7 +70,6 @@ func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, tok
 
 func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *models.EventDetails, err error) {
 	filter := i.FilterAspInformation(token)
-
 	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
@@ -84,9 +78,7 @@ func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, toke
 	); err != nil {
 		return
 	}
-
 	result = result.FromParticipationEvent(participation.Event)
-
 	return
 }
 
@@ -100,32 +92,18 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 	); err != nil {
 		return
 	}
-
 	return
 }
 
 func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	filter := i.Filter(token)
-	result = new(models.Participation)
-
+	filter := i.PermittedFilter(token)
 	if err = ParticipationCollection.UpdateOneAggregate(
 		ctx,
 		filter,
 		vmdb.UpdateSet(i),
-		result,
+		&result,
 		models.ParticipationPipeline().Match(i.Match()).Pipe,
 	); err != nil {
-		return
-	}
-	return
-}
-
-func ParticipationDelete(ctx context.Context, id string, token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("participation")
-	}
-
-	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
 		return
 	}
 	return
@@ -133,14 +111,23 @@ func ParticipationDelete(ctx context.Context, id string, token *vcapool.AccessTo
 
 func ParticipationUpdateStatus(ctx context.Context, i *models.ParticipationStateRequest, token *vcapool.AccessToken) (result *models.Participation, err error) {
 	filter := i.PermittedFilter(token)
-	result = new(models.Participation)
 	if err = ParticipationCollection.UpdateOneAggregate(
 		ctx,
 		filter,
 		vmdb.UpdateSet(i),
-		result,
+		&result,
 		models.ParticipationPipeline().Match(i.Match()).Pipe,
 	); err != nil {
+		return
+	}
+	return
+}
+
+func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (err error) {
+	if err = models.ParticipationDeletePermission(token); err != nil {
+		return
+	}
+	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {
 		return
 	}
 	return

@@ -28,8 +28,7 @@ func AddressGet(ctx context.Context, i *models.AddressQuery, token *vcapool.Acce
 
 func AddressGetByID(ctx context.Context, i *models.AddressParam, token *vcapool.AccessToken) (result *models.Address, err error) {
 	filter := i.PermittedFilter(token)
-	result = new(models.Address)
-	if err = AddressesCollection.FindOne(ctx, filter, result); err != nil {
+	if err = AddressesCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	return
@@ -37,8 +36,7 @@ func AddressGetByID(ctx context.Context, i *models.AddressParam, token *vcapool.
 
 func AddressUpdate(ctx context.Context, i *models.AddressUpdate, token *vcapool.AccessToken) (result *models.Address, err error) {
 	filter := i.PermittedFilter(token)
-	result = new(models.Address)
-	if err = AddressesCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), result); err != nil {
+	if err = AddressesCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
 	return
@@ -49,7 +47,6 @@ func AddressDelete(ctx context.Context, i *models.AddressParam, token *vcapool.A
 	if err = AddressesCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}
-	result = new(models.NVM)
 	if result, err = NVMWithdraw(ctx, token); err != nil {
 		return
 	}

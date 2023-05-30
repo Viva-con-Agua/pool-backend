@@ -37,8 +37,7 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
-	result = new(models.Event)
-	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, result); err != nil {
+	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, &result); err != nil {
 		return
 	}
 	return
@@ -56,11 +55,10 @@ func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessTo
 func EventGetByID(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
 	filter := i.PermittedFilter(token)
 
-	result = new(models.Event)
 	if err = EventCollection.AggregateOne(
 		ctx,
 		models.EventPipeline(token).Match(filter).Pipe,
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -69,11 +67,10 @@ func EventGetByID(ctx context.Context, i *models.EventParam, token *vcapool.Acce
 
 func EventAspGetByID(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
 	filter := i.PermittedFilter(token)
-	result = new(models.Event)
 	if err = EventCollection.AggregateOne(
 		ctx,
 		models.EventPipeline(token).Match(filter).Pipe,
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -81,11 +78,10 @@ func EventAspGetByID(ctx context.Context, i *models.EventParam, token *vcapool.A
 }
 
 func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models.EventPublic, err error) {
-	result = new(models.EventPublic)
 	if err = EventCollection.AggregateOne(
 		ctx,
 		models.EventPipelinePublic().Match(i.Match()).Pipe,
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -123,12 +119,11 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 
 func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
 	filter := i.PermittedFilter(token)
-	result = new(models.Event)
 	if err = EventCollection.UpdateOneAggregate(
 		ctx,
 		filter,
 		vmdb.UpdateSet(i),
-		result,
+		&result,
 		models.EventPipeline(token).Match(i.Match()).Pipe,
 	); err != nil {
 		return
@@ -199,8 +194,7 @@ func EventImport(ctx context.Context, event *models.EventImport) (result *models
 		return
 	}
 
-	result = new(models.Event)
-	if err = EventCollection.AggregateOne(ctx, models.EventImportPipeline().Match(i.Match()).Pipe, result); err != nil {
+	if err = EventCollection.AggregateOne(ctx, models.EventImportPipeline().Match(i.Match()).Pipe, &result); err != nil {
 		return
 	}
 

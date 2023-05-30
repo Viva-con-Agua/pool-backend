@@ -6,7 +6,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -33,8 +32,8 @@ func (i *ProfileHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := body.Profile(token.ID)
-	if err = dao.ProfilesCollection.InsertOne(c.Ctx(), result); err != nil {
+	result := new(models.Profile)
+	if result, err = dao.ProfileInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	// TODO: ADD PROFLE CREATE
@@ -52,24 +51,8 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Profile)
-
-	if err = dao.ProfilesCollection.UpdateOne(
-		c.Ctx(),
-		body.Filter(token),
-		vmdb.UpdateSet(body),
-		result,
-	); err != nil {
+	if result, err = dao.ProfileUpdate(c.Ctx(), body, token); err != nil {
 		return
-	}
-	if body.Birthdate == 0 {
-		var nvm *models.NVM
-		if nvm, err = dao.NVMWithdraw(c.Ctx(), token); err == nil {
-			go func() {
-				if err = dao.IDjango.Post(nvm, "/v1/pool/profile/nvm/"); err != nil {
-					log.Print(err)
-				}
-			}()
-		}
 	}
 	go func() {
 		if err = dao.IDjango.Post(result, "/v1/pool/profile/"); err != nil {

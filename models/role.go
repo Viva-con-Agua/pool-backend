@@ -4,6 +4,7 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -33,7 +34,7 @@ type RoleDatabase struct {
 
 var PoolRoleCollection = "pool_roles"
 
-func (i *RoleRequest) New() (r *vmod.Role, err error) {
+func (i *RoleRequest) NewRole() (r *vmod.Role, err error) {
 	switch i.Role {
 	case "asp":
 		return RoleASP(i.UserID), err
@@ -150,5 +151,25 @@ func (i *RoleRequest) MatchUser() bson.D {
 }
 
 func (i *RoleRequest) Filter() bson.D {
-	return bson.D{{Key: "name", Value: i.Role}, {Key: "user_id", Value: i.UserID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("name", i.Role)
+	filter.EqualString("user_id", i.UserID)
+	return filter.Bson()
+}
+
+func RolesPermission(result *vmod.Role, user *User, token *vcapool.AccessToken) (err error) {
+	if user.NVM.Status != "confirmed" {
+		return vcago.NewBadRequest("role", "nvm required", nil)
+	}
+	if !(token.Roles.CheckRoot(result) || token.PoolRoles.CheckRoot(result)) {
+		return vcago.NewBadRequest("role", "no permission for set this role", nil)
+	}
+	return
+}
+
+func RolesDeletePermission(result *vmod.Role, token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.CheckRoot((*vmod.Role)(result)) || token.PoolRoles.CheckRoot((*vmod.Role)(result))) {
+		return vcago.NewBadRequest("role", "no permission for set this role", nil)
+	}
+	return
 }

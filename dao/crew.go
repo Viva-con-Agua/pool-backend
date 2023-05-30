@@ -45,17 +45,16 @@ func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToke
 }
 
 func CrewGetByID(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (result *models.Crew, err error) {
-	result = new(models.Crew)
 	filter := i.PermittedFilter(token)
-	if err = CrewsCollection.FindOne(ctx, filter, result); err != nil {
+	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	return
 }
 
 func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.CrewPublic, err error) {
-	result = new([]models.CrewPublic)
 	filter := i.ActiveFilter()
+	result = new([]models.CrewPublic)
 	if err = CrewsCollection.Find(ctx, filter, result); err != nil {
 		return
 	}
@@ -64,9 +63,8 @@ func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.C
 }
 
 func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *models.Crew, err error) {
-	result = new(models.Crew)
 	filter := i.PermittedFilter(token)
-	if err = CrewsCollection.FindOne(ctx, filter, result); err != nil {
+	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	return
@@ -78,13 +76,12 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 		return
 	}
 	filter := i.PermittedFilter(token)
-	result = new(models.Crew)
 	if !token.Roles.Validate("employee;admin") {
-		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), result); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), &result); err != nil {
 			return
 		}
 	} else {
-		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), result); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 			return
 		}
 	}

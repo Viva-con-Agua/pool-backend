@@ -52,19 +52,19 @@ func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vca
 	return
 }
 
-func NewsletterImport(ctx context.Context, imp *models.NewsletterImport) (result *models.Newsletter, err error) {
+func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *models.Newsletter, err error) {
 	user := new(models.UserDatabase)
-	userFilter := bson.D{{Key: "drops_id", Value: imp.DropsID}}
+	userFilter := bson.D{{Key: "drops_id", Value: i.DropsID}}
 	if err = UserCollection.FindOne(ctx, userFilter, user); err != nil {
 		return
 	}
-	if imp.Value == "regional" {
+	if i.Value == "regional" {
 		crew := new(models.UserCrew)
 		if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}}, crew); err != nil {
 			return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
 		}
 	}
-	result = imp.ToNewsletter(user.ID)
+	result = i.ToNewsletter(user.ID)
 	if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
 		return
 	}

@@ -44,11 +44,15 @@ func (i *ArtistCreate) Artist() *Artist {
 }
 
 func (i *ArtistParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *ArtistUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func ArtistPermission(token *vcapool.AccessToken) (err error) {

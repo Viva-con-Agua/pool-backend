@@ -30,8 +30,7 @@ func OrganizerGet(ctx context.Context, i *models.OrganizerQuery) (result *[]mode
 
 func OrganizerGetByID(ctx context.Context, i *models.OrganizerParam) (result *models.Organizer, err error) {
 	filter := i.Filter()
-	result = new(models.Organizer)
-	if err = OrganizerCollection.FindOne(ctx, filter, result); err != nil {
+	if err = OrganizerCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	return
@@ -42,8 +41,7 @@ func OrganizerUpdate(ctx context.Context, i *models.OrganizerUpdate, token *vcap
 		return
 	}
 	filter := i.Filter()
-	result = new(models.Organizer)
-	if err = OrganizerCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), result); err != nil {
+	if err = OrganizerCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
 	return

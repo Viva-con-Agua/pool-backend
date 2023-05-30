@@ -52,12 +52,11 @@ func MessageUpdate(ctx context.Context, i *models.MessageUpdate, token *vcapool.
 		log.Print("No crew for user")
 	}
 	filter := i.PermittedFilter(token, crew)
-	result = new(models.Message)
 	if err = MessageCollection.UpdateOne(
 		ctx,
 		filter,
 		vmdb.UpdateSet(i),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -120,8 +119,7 @@ func MessageSendCycular(ctx context.Context, i *models.MessageParam, token *vcap
 		log.Print("No crew for user")
 	}
 	filter := i.PermittedFilter(token, crew)
-	result = new(models.Message)
-	if err = MessageCollection.FindOne(ctx, filter, result); err != nil {
+	if err = MessageCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	//select TOData based on the recipientgroup
@@ -146,7 +144,7 @@ func MessageSendCycular(ctx context.Context, i *models.MessageParam, token *vcap
 		ctx,
 		bson.D{{Key: "_id", Value: result.ID}},
 		vmdb.UpdateSet(result.MessageUpdate()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}

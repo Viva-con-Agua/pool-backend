@@ -42,7 +42,6 @@ func (i *ParticipationHandler) Create(cc echo.Context) (err error) {
 	if result, err = dao.ParticipationInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
-
 	return c.Created(result)
 }
 
@@ -56,7 +55,7 @@ func (i *ParticipationHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *[]models.Participation
+	result := new([]models.Participation)
 	if result, err = dao.ParticipationGet(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -90,7 +89,7 @@ func (i *ParticipationHandler) GetByUser(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *[]models.UserParticipation
+	result := new([]models.UserParticipation)
 	if result, err = dao.ParticipationUserGet(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -107,7 +106,7 @@ func (i *ParticipationHandler) GetByEvent(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *[]models.EventParticipation
+	result := new([]models.EventParticipation)
 	if result, err = dao.ParticipationEventGet(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -124,7 +123,6 @@ func (i *ParticipationHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-
 	result := new(models.Participation)
 	if result, err = dao.ParticipationUpdate(c.Ctx(), body, token); err != nil {
 		return
@@ -159,8 +157,7 @@ func (i *ParticipationHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-
-	if err = dao.ParticipationDelete(c.Ctx(), body.ID, token); err != nil {
+	if err = dao.ParticipationDelete(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

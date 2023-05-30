@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
@@ -53,8 +54,11 @@ func (i *ProfileCreate) Profile(userID string) *Profile {
 	}
 }
 
-func (i *ProfileUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *ProfileUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }
 
 func (i *ProfileImport) Profile(userID string) *Profile {

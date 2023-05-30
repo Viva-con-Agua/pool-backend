@@ -30,8 +30,7 @@ func ArtistGet(ctx context.Context, i *models.ArtistQuery) (result *[]models.Art
 
 func ArtistGetByID(ctx context.Context, i *models.ArtistParam) (result *models.Artist, err error) {
 	filter := i.Filter()
-	result = new(models.Artist)
-	if err = ArtistCollection.FindOne(ctx, filter, result); err != nil {
+	if err = ArtistCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	return

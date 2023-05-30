@@ -7,10 +7,9 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 )
 
-func MailboxGetByID(ctx context.Context, i *models.MailboxParam, token *vcapool.AccessToken) (r *models.Mailbox, err error) {
+func MailboxGetByID(ctx context.Context, i *models.MailboxParam, token *vcapool.AccessToken) (result *models.Mailbox, err error) {
 	filter := i.PermittedFilter(token)
-	r = new(models.Mailbox)
-	if err = MailboxCollection.AggregateOne(ctx, models.MailboxPipeline().Match(filter).Pipe, r); err != nil {
+	if err = MailboxCollection.AggregateOne(ctx, models.MailboxPipeline().Match(filter).Pipe, &result); err != nil {
 		return
 	}
 	return

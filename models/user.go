@@ -275,7 +275,34 @@ func (i *UserParam) FilterAdmin() bson.D {
 
 }
 
-func (i *UserQuery) Match() bson.D {
+func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	match := vmdb.NewFilter()
+	match.EqualBool("confirmed", "true")
+	match.LikeString("first_name", i.FirstName)
+	match.LikeString("last_name", i.LastName)
+	match.LikeString("full_name", i.FullName)
+	match.LikeString("display_name", i.DisplayName)
+	match.EqualString("crew.crew_id", i.CrewID)
+	match.ElemMatchList("system_roles", "name", i.SystemRoles)
+	match.ElemMatchList("pool_roles", "name", i.PoolRoles)
+	match.EqualBool("privacy_policy", i.PrivacyPolicy)
+	match.EqualStringList("active.status", i.ActiveState)
+	match.EqualStringList("nvm.status", i.NVMState)
+	if !token.Roles.Validate("employee;admin") {
+		match.EqualString("crew.crew_id", token.CrewID)
+	} else {
+		match.EqualString("crew.crew_id", i.CrewID)
+	}
+	match.EqualString("country", i.Country)
+	match.EqualBool("confirmed", i.Confirmed)
+	match.GteInt64("modified.updated", i.UpdatedFrom)
+	match.GteInt64("modified.created", i.CreatedFrom)
+	match.LteInt64("modified.updated", i.UpdatedTo)
+	match.LteInt64("modified.created", i.CreatedTo)
+	return match.Bson()
+}
+
+func (i *UserQuery) Filter() bson.D {
 	match := vmdb.NewFilter()
 	match.EqualBool("confirmed", "true")
 	match.LikeString("first_name", i.FirstName)
@@ -299,6 +326,6 @@ func (i *UserQuery) Match() bson.D {
 }
 
 func (i *UserQuery) Pipeline() mongo.Pipeline {
-	match := i.Match()
+	match := i.Filter()
 	return UserPipeline(false).Match(match).Pipe
 }

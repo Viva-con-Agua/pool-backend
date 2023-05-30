@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -143,7 +144,21 @@ func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
 	return
 }
 
-func (i *ParticipationQuery) Filter(token *vcapool.AccessToken) bson.D {
+func ParticipationPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		return vcago.NewPermissionDenied("participations")
+	}
+	return
+}
+
+func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied("participations")
+	}
+	return
+}
+
+func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.EqualStringList("event_id", i.EventID)
@@ -199,44 +214,46 @@ func (i *ParticipationDatabase) Match() bson.D {
 }
 
 func (i *ParticipationUpdate) Match() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
-func (i *ParticipationUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+func (i *ParticipationUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		match.EqualString("user_id", token.ID)
+		filter.EqualString("user_id", token.ID)
 	} else if !token.Roles.Validate("employee;admin") {
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("crew_id", token.CrewID)
 	}
-	return match.Bson()
+	return filter.Bson()
 }
 
-func (i *ParticipationParam) Filter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+func (i *ParticipationParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		match.EqualString("user_id", token.ID)
+		filter.EqualString("user_id", token.ID)
 	} else if !token.Roles.Validate("employee;admin") {
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("crew_id", token.CrewID)
 	}
-	return match.Bson()
+	return filter.Bson()
 }
 
 func (i *ParticipationStateRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	if i.Status == "withdrawn" {
-		return bson.D{{Key: "_id", Value: i.ID}, {Key: "user", Value: token.ID}}
+		filter.EqualString("user_id", token.ID)
 	} else if i.Status == "confirmed" || i.Status == "rejected" {
-		if token.Roles.Validate("employee;admin") {
-			return bson.D{{Key: "_id", Value: i.ID}}
-		} else if token.Roles.Validate("operation") {
-			return bson.D{{Key: "_id", Value: i.ID}, {Key: "crew.id", Value: token.CrewID}}
+		if !token.Roles.Validate("employee;admin") {
+			filter.EqualString("crew_id", token.CrewID)
 		}
+	} else {
+		return bson.D{{Key: "_id", Value: "not_defined"}}
 	}
-	return bson.D{{Key: "_id", Value: "not_defined"}}
+	return filter.Bson()
 }
 
 func (i *ParticipationStateRequest) Match() bson.D {

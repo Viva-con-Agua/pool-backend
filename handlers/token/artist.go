@@ -34,7 +34,7 @@ func (i *ArtistHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Artist
+	result := new(models.Artist)
 	if result, err = dao.ArtistInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
