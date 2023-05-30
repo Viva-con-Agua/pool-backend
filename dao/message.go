@@ -20,19 +20,24 @@ func MessageFilter(id string, crew *models.Crew, token *vcapool.AccessToken) bso
 		}}}
 }
 
-func MesseageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
-	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") {
+func MessageInsert(ctx context.Context, i *models.Message, token *vcapool.AccessToken) (result *models.Message, err error) {
+	crew := new(models.Crew)
+	CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew)
+	event := new(models.Event)
+	EventCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.RecipientGroup.EventID}}, event)
+	if err = MessageCollection.InsertOne(ctx, i.PermittedCreate(token, crew, event)); err != nil {
+		return
+	}
+	return
+}
+
+func MessageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate(models.ASPRole)) {
 		return nil, vcago.NewBadRequest("message", "not allowed to send message")
 	}
-	filter := vmdb.NewFilter()
-	filter.EqualString("crew.crew_id", i.CrewID)
-	filter.EqualStringList("active.status", i.Active)
-	filter.EqualStringList("nvm.status", i.NVM)
-	if !i.IgnoreNewsletter {
-		filter.EqualString("newsletter.value", "regional")
-	}
+
 	userList := new([]models.User)
-	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter.Bson()).Pipe, userList); err != nil {
+	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(i.PermittedFilter(token)).Pipe, userList); err != nil {
 		return
 	}
 	result = []models.TOData{}
@@ -78,7 +83,7 @@ func MessageSendCycular(ctx context.Context, i *vmod.IDParam, token *vcapool.Acc
 	//select TOData based on the recipientgroup
 	if result.RecipientGroup.Type == "crew" {
 
-		if result.To, err = MesseageCrewUser(ctx, &result.RecipientGroup, token); err != nil {
+		if result.To, err = MessageCrewUser(ctx, &result.RecipientGroup, token); err != nil {
 			return
 		}
 	} else if result.RecipientGroup.Type == "event" {
@@ -106,6 +111,7 @@ func MessageSendCycular(ctx context.Context, i *vmod.IDParam, token *vcapool.Acc
 	return
 }
 
+// TODO CHECK SECURITY
 func MessageUpdate(ctx context.Context, i *models.MessageUpdate, token *vcapool.AccessToken) (result *models.Message, err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {

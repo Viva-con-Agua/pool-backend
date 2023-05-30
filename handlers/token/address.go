@@ -59,7 +59,7 @@ func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.Filter(token), result); err != nil {
+	if err = dao.AddressesCollection.FindOne(c.Ctx(), body.PermittedFilter(token), result); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -76,7 +76,7 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Address)
-	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
+	if err = dao.AddressesCollection.UpdateOne(c.Ctx(), body.PermittedFilter(token), vmdb.UpdateSet(body), result); err != nil {
 		return
 	}
 	go func() {
@@ -97,7 +97,7 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.Filter(token)); err != nil {
+	if err = dao.AddressesCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token)); err != nil {
 		return
 	}
 	var result *models.NVM
@@ -115,7 +115,6 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	return c.Deleted(body.ID)
 }
 
-// TODO
 func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressQuery)
@@ -127,7 +126,7 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.Address)
-	if err = dao.AddressesCollection.Find(c.Ctx(), body.Filter(token), result); err != nil {
+	if err = dao.AddressesCollection.Find(c.Ctx(), body.PermittedFilter(token), result); err != nil {
 		return
 	}
 	return c.Selected(result)

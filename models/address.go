@@ -97,34 +97,40 @@ func (i *AddressImport) Address(userID string) (r *Address) {
 }
 
 func (i *AddressParam) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {
-		match.EqualString("user_id", token.ID)
+		filter.EqualString("user_id", token.ID)
 	}
-	return vmdb.NewPipeline().Match(match.Bson()).Pipe
+	return vmdb.NewPipeline().Match(filter.Bson()).Pipe
 }
 
-func (i *AddressQuery) Filter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
+func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
 	if token.Roles.Validate("employee;admin") {
-		match.EqualStringList("_id", i.ID)
-		match.EqualStringList("crew_id", i.CrewID)
-		match.EqualStringList("user_id", i.UserID)
+		filter.EqualStringList("_id", i.ID)
+		filter.EqualStringList("crew_id", i.CrewID)
+		filter.EqualStringList("user_id", i.UserID)
 	} else {
-		match.EqualString("user_id", token.ID)
+		filter.EqualString("user_id", token.ID)
 	}
-	match.GteInt64("modified.updated", i.UpdatedFrom)
-	match.GteInt64("modified.created", i.CreatedFrom)
-	match.LteInt64("modified.updated", i.UpdatedTo)
-	match.LteInt64("modified.created", i.CreatedTo)
-	return match.Bson()
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
 }
 
-func (i *AddressUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *AddressUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }
 
-func (i *AddressParam) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *AddressParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }

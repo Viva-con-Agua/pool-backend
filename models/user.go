@@ -90,6 +90,13 @@ type (
 		PoolRoles vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
 		Modified  vmod.Modified `json:"modified" bson:"modified"`
 	}
+	UserMinimal struct {
+		ID          string `json:"id,omitempty" bson:"_id"`
+		FirstName   string `bson:"first_name" json:"first_name" validate:"required"`
+		LastName    string `bson:"last_name" json:"last_name" validate:"required"`
+		FullName    string `bson:"full_name" json:"full_name"`
+		DisplayName string `bson:"display_name" json:"display_name"`
+	}
 	UserParam struct {
 		ID string `param:"id"`
 	}

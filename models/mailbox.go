@@ -5,6 +5,7 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -36,6 +37,8 @@ func NewMailboxDatabase(t string) *MailboxDatabase {
 
 func MailboxPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
+	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
 	inboxMatch := vmdb.NewFilter()
 	inboxMatch.EqualString("type", "inbox")
 	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
@@ -63,4 +66,19 @@ func (i *MailboxParam) Pipeline() mongo.Pipeline {
 	pipe := MailboxPipeline()
 	pipe.Match(match.Bson())
 	return pipe.Pipe
+}
+
+func (i *MailboxParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	match := vmdb.NewFilter()
+	match.EqualString("_id", i.ID)
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;asp;")) {
+		match.EqualString("user._id", token.ID)
+		match.EqualString("type", "user")
+	} else if !token.Roles.Validate("employee;admin") {
+		status := bson.A{}
+		status = append(status, bson.D{{Key: "user._id", Value: token.ID}})
+		status = append(status, bson.D{{Key: "crew._id", Value: token.CrewID}})
+		match.Append(bson.E{Key: "$or", Value: status})
+	}
+	return match.Bson()
 }

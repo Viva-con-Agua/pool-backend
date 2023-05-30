@@ -41,20 +41,11 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 	return
 }
 
-func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.Event, err error) {
-	filter := i.CreateFilter()
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") {
-		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
-	} else if !token.Roles.Validate("employee;admin") {
-		noCrewMatch := vmdb.NewFilter()
-		crewMatch := vmdb.NewFilter()
-		crewMatch.EqualString("crew_id", token.CrewID)
-		noCrewMatch.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
-		filter.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
-	}
+func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListEvent, err error) {
+	filter := i.PermittedFilter(token)
 
-	pipeline := models.EventPipeline(token).Match(filter.Bson()).Pipe
-	result = new([]models.Event)
+	pipeline := models.EventPipeline(token).Match(filter).Pipe
+	result = new([]models.ListEvent)
 
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
@@ -62,9 +53,47 @@ func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessTo
 	return
 }
 
+func EventGetByID(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
+	filter := i.PermittedFilter(token)
+
+	result = new(models.Event)
+	if err = EventCollection.AggregateOne(
+		ctx,
+		models.EventPipeline(token).Match(filter).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func EventAspGetByID(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
+	filter := i.PermittedFilter(token)
+	result = new(models.Event)
+	if err = EventCollection.AggregateOne(
+		ctx,
+		models.EventPipeline(token).Match(filter).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models.EventPublic, err error) {
+	result = new(models.EventPublic)
+	if err = EventCollection.AggregateOne(
+		ctx,
+		models.EventPipelinePublic().Match(i.Match()).Pipe,
+		result,
+	); err != nil {
+		return
+	}
+	return
+}
+
 func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.EventPublic, err error) {
-	i.EventState = []string{"published", "finished", "closed"}
-	filter := i.Filter()
+	filter := i.Match()
 	pipeline := models.EventPipelinePublic().Match(filter).Pipe
 	result = new([]models.EventPublic)
 
@@ -74,11 +103,52 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	return
 }
 
-func EventDelete(ctx context.Context, id string) (err error) {
-	if err = EventCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
+func EmailEvents(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.EventPublic, err error) {
+	filter := i.FilterEmailEvents(token)
+
+	pipeline := models.EventPipelinePublic().Match(filter).Pipe
+	result = new([]models.EventPublic)
+
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	if err = ParticipationCollection.TryDeleteMany(ctx, bson.D{{Key: "event_id", Value: id}}); err != nil {
+	return
+}
+
+func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListDetailsEvent, err error) {
+	filter := i.FilterAsp(token)
+
+	pipeline := models.EventPipeline(token).Match(filter).Pipe
+	result = new([]models.ListDetailsEvent)
+
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+		return
+	}
+
+	return
+}
+
+func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
+	filter := i.PermittedFilter(token)
+	result = new(models.Event)
+
+	if err = EventCollection.UpdateOneAggregate(
+		ctx,
+		filter,
+		vmdb.UpdateSet(i),
+		result,
+		models.EventPipeline(token).Match(i.Match()).Pipe,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (err error) {
+	if err = EventCollection.DeleteOne(ctx, i.Match()); err != nil {
+		return
+	}
+	if err = ParticipationCollection.TryDeleteMany(ctx, bson.D{{Key: "event_id", Value: i.ID}}); err != nil {
 		return
 	}
 	return
@@ -139,8 +209,7 @@ func EventImport(ctx context.Context, event *models.EventImport) (result *models
 	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
-	match := i.Match()
-	pipe := models.EventImportPipeline().Match(match).Pipe
+	pipe := models.EventImportPipeline().Match(i.Match()).Pipe
 
 	result = new(models.Event)
 	if err = EventCollection.AggregateOne(ctx, pipe, result); err != nil {

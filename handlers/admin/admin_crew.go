@@ -53,7 +53,7 @@ func (i *CrewHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.CrewDelete(c.Ctx(), body.ID); err != nil {
+	if err = dao.CrewDelete(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

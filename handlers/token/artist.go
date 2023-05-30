@@ -1,7 +1,6 @@
 package token
 
 import (
-	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -34,8 +33,10 @@ func (i *ArtistHandler) Create(cc echo.Context) (err error) {
 	}
 	token := new(vcapool.AccessToken)
 	if err = c.AccessToken(token); err != nil {
-		log.Print(err)
-		return c.ErrorResponse(err)
+		return
+	}
+	if err = models.ArtistPermission(token); err != nil {
+		return
 	}
 	result := body.Artist()
 	if err = dao.ArtistCollection.InsertOne(c.Ctx(), result); err != nil {
@@ -63,6 +64,13 @@ func (i *ArtistHandler) Update(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
 	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = models.ArtistPermission(token); err != nil {
+		return
+	}
 	result := new(models.Artist)
 	if err = dao.ArtistCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.UpdateSet(body), result); err != nil {
 		return c.ErrorResponse(err)
@@ -75,6 +83,13 @@ func (i *ArtistHandler) Delete(cc echo.Context) (err error) {
 	body := new(models.ArtistParam)
 	if c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = models.ArtistDeletePermission(token); err != nil {
+		return
 	}
 	if err = dao.ArtistCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
 		return c.ErrorResponse(err)

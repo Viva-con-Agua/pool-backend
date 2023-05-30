@@ -18,6 +18,7 @@ var User = &UserHandler{*vcago.NewHandler("user")}
 func (i *UserHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.GET("", i.Get, accessCookie)
+	group.GET("/crew", i.GetMinimal, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
 }
 
@@ -50,6 +51,23 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 	}
 	var result *[]models.User
 	if result, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Selected(result)
+}
+
+func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	var result *[]models.UserMinimal
+	if result, err = dao.CrewUsersGet(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

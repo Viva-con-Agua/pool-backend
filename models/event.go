@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -72,11 +73,19 @@ type (
 		TakingID             string `json:"taking_id" bson:"taking_id"`
 		DepositID            string `json:"deposit_id" bson:"deposit_id"`
 	}
+	EventStatePublic struct {
+		State string `json:"state" bson:"state"`
+	}
+	EventDetails struct {
+		MeetingURL string         `json:"meeting_url" bson:"meeting_url"`
+		EventASP   EventASPPublic `json:"event_asp" bson:"event_asp"`
+	}
 	EventASPPublic struct {
-		FirstName   string `bson:"first_name" json:"first_name" validate:"required"`
-		LastName    string `bson:"last_name" json:"last_name" validate:"required"`
 		FullName    string `bson:"full_name" json:"full_name"`
 		DisplayName string `bson:"display_name" json:"display_name"`
+		Phone       string `bson:"phone" json:"phone"`
+		Email       string `json:"email" bson:"email"`
+		Mattermost  string `bson:"mattermost_username" json:"mattermost_username"`
 	}
 	EventPublic struct {
 		ID                    string           `json:"id" bson:"_id"`
@@ -86,7 +95,6 @@ type (
 		Website               string           `json:"website" bson:"website"`
 		TourID                string           `json:"tour_id" bson:"tour_id"`
 		Location              Location         `json:"location" bson:"location"`
-		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
 		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
 		Artists               []Artist         `json:"artists" bson:"artists"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
@@ -94,13 +102,61 @@ type (
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		CrewID                string           `json:"crew_id" bson:"crew_id"`
-		Crew                  Crew             `json:"crew" bson:"crew"`
-		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
-		EventASP              EventASPPublic   `json:"event_asp" bson:"event_asp"`
+		Crew                  CrewPublic       `json:"crew" bson:"crew"`
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
-		EventState            EventState       `json:"event_state" bson:"event_state"`
+		EventState            EventStatePublic `json:"event_state" bson:"event_state"`
 		Modified              vmod.Modified    `json:"modified" bson:"modified"`
+	}
+	ListEvent struct {
+		ID                    string                 `json:"id" bson:"_id"`
+		Name                  string                 `json:"name" bson:"name"`
+		TypeOfEvent           string                 `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string                 `json:"additional_information" bson:"additional_information"`
+		Website               string                 `json:"website" bson:"website"`
+		TourID                string                 `json:"tour_id" bson:"tour_id"`
+		Location              Location               `json:"location" bson:"location"`
+		ArtistIDs             []string               `json:"artist_ids" bson:"artist_ids"`
+		Artists               []Artist               `json:"artists" bson:"artists"`
+		OrganizerID           string                 `json:"organizer_id" bson:"organizer_id"`
+		Organizer             Organizer              `json:"organizer" bson:"organizer"`
+		StartAt               int64                  `json:"start_at" bson:"start_at"`
+		EndAt                 int64                  `json:"end_at" bson:"end_at"`
+		CrewID                string                 `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew                   `json:"crew" bson:"crew"`
+		EventASPID            string                 `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID         string                 `json:"internal_asp_id" bson:"internal_asp_id"`
+		Application           EventApplication       `json:"application" bson:"application"`
+		Participation         []ParticipationMinimal `json:"participations" bson:"participations"`
+		EventTools            EventTools             `json:"event_tools" bson:"event_tools"`
+		EventState            EventState             `json:"event_state" bson:"event_state"`
+		Modified              vmod.Modified          `json:"modified" bson:"modified"`
+	}
+	ListDetailsEvent struct {
+		ID                    string                 `json:"id" bson:"_id"`
+		Name                  string                 `json:"name" bson:"name"`
+		TypeOfEvent           string                 `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string                 `json:"additional_information" bson:"additional_information"`
+		Website               string                 `json:"website" bson:"website"`
+		TourID                string                 `json:"tour_id" bson:"tour_id"`
+		Location              Location               `json:"location" bson:"location"`
+		MeetingURL            string                 `json:"meeting_url" bson:"meeting_url"`
+		ArtistIDs             []string               `json:"artist_ids" bson:"artist_ids"`
+		Artists               []Artist               `json:"artists" bson:"artists"`
+		OrganizerID           string                 `json:"organizer_id" bson:"organizer_id"`
+		Organizer             Organizer              `json:"organizer" bson:"organizer"`
+		StartAt               int64                  `json:"start_at" bson:"start_at"`
+		EndAt                 int64                  `json:"end_at" bson:"end_at"`
+		CrewID                string                 `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew                   `json:"crew" bson:"crew"`
+		EventASPID            string                 `json:"event_asp_id" bson:"event_asp_id"`
+		EventASP              EventASPPublic         `json:"event_asp" bson:"event_asp"`
+		InternalASPID         string                 `json:"internal_asp_id" bson:"internal_asp_id"`
+		Application           EventApplication       `json:"application" bson:"application"`
+		Participation         []ParticipationMinimal `json:"participations" bson:"participations"`
+		EventTools            EventTools             `json:"event_tools" bson:"event_tools"`
+		EventState            EventState             `json:"event_state" bson:"event_state"`
+		Modified              vmod.Modified          `json:"modified" bson:"modified"`
 	}
 	Event struct {
 		ID                    string           `json:"id" bson:"_id"`
@@ -236,6 +292,19 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 	}
 }
 
+func (i *EventDetails) FromParticipationEvent(event Event) *EventDetails {
+	return &EventDetails{
+		MeetingURL: event.MeetingURL,
+		EventASP: EventASPPublic{
+			FullName:    event.EventASP.FullName,
+			DisplayName: event.EventASP.DisplayName,
+			Phone:       event.EventASP.Profile.Phone,
+			Email:       event.EventASP.Email,
+			Mattermost:  event.EventASP.Profile.Mattermost,
+		},
+	}
+}
+
 func (i *EventImport) EventDatabase() *EventDatabase {
 	return &EventDatabase{
 		ID:                    uuid.NewString(),
@@ -293,12 +362,24 @@ func EventImportPipeline() (pipe *vmdb.Pipeline) {
 
 func EventPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind("users", "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
+	pipe.Lookup("participations", "_id", "event_id", "participations")
 	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
 	pipe.LookupList("artists", "artist_ids", "_id", "artists")
 	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	return
+}
+
+func EventPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied("crew", nil)
+	}
+	return
+}
+
+func EventDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied("event", nil)
+	}
 	return
 }
 
@@ -319,15 +400,63 @@ func (i *EventUpdate) Match() bson.D {
 	return match.Bson()
 }
 
-func (i *EventUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
-}
-func (i *EventParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	match := vmdb.NewFilter()
+	match.EqualString("_id", i.ID)
+
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		match.EqualString("event_asp_id", token.ID)
+		match.EqualString("crew_id", token.CrewID)
+	} else if !token.Roles.Validate("employee;admin") {
+		match.EqualString("crew_id", token.CrewID)
+	}
+
+	return match.Bson()
 }
 
-func (i *EventQuery) Filter() bson.D {
+func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	match := vmdb.NewFilter()
+	match.EqualString("_id", i.ID)
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		match.EqualString("event_asp_id", token.ID)
+		match.EqualString("crew_id", token.CrewID)
+		match.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+	} else if !token.Roles.Validate("employee;admin") {
+		match.EqualString("crew_id", token.CrewID)
+	}
+	return match.Bson()
+}
+
+func (i *EventQuery) Match() bson.D {
+	match := vmdb.NewFilter()
+	match.EqualStringList("_id", i.ID)
+	match.LikeString("name", i.Name)
+	match.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+	match.EqualString("crew_id", i.CrewID)
+	match.GteInt64("modified.updated", i.UpdatedFrom)
+	match.GteInt64("modified.created", i.CreatedFrom)
+	match.LteInt64("modified.updated", i.UpdatedTo)
+	match.LteInt64("modified.created", i.CreatedTo)
+	return match.Bson()
+}
+
+func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
+	match := vmdb.NewFilter()
+	match.EqualString("event_asp_id", token.ID)
+	return match.Bson()
+}
+
+func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	match := vmdb.NewFilter()
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		match.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+	} else if !token.Roles.Validate("employee;admin") {
+		noCrewMatch := vmdb.NewFilter()
+		crewMatch := vmdb.NewFilter()
+		crewMatch.EqualString("crew_id", token.CrewID)
+		noCrewMatch.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+		match.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
+	}
 	match.EqualStringList("_id", i.ID)
 	match.LikeString("name", i.Name)
 	match.EqualString("internal_asp_id", i.InternalASPID)
@@ -341,17 +470,14 @@ func (i *EventQuery) Filter() bson.D {
 	return match.Bson()
 }
 
-func (i *EventQuery) CreateFilter() *vmdb.Filter {
+func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
 	match := vmdb.NewFilter()
-	match.EqualStringList("_id", i.ID)
-	match.LikeString("name", i.Name)
-	match.EqualString("internal_asp_id", i.InternalASPID)
-	match.EqualString("event_asp_id", i.EventASPID)
-	match.EqualStringList("event_state.state", i.EventState)
-	match.EqualString("crew_id", i.CrewID)
-	match.GteInt64("modified.updated", i.UpdatedFrom)
-	match.GteInt64("modified.created", i.CreatedFrom)
-	match.LteInt64("modified.updated", i.UpdatedTo)
-	match.LteInt64("modified.created", i.CreatedTo)
-	return match
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		match.EqualString("event_asp_id", token.ID)
+		match.EqualString("crew_id", token.CrewID)
+	} else if !token.Roles.Validate("employee;admin") {
+		match.EqualString("crew_id", token.CrewID)
+	}
+
+	return match.Bson()
 }

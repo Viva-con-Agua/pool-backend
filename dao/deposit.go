@@ -102,7 +102,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 				e := new(models.Event)
 				if err = EventCollection.UpdateOneAggregate(
 					ctx,
-					event.Filter(),
+					event.Match(),
 					vmdb.UpdateSet(event),
 					e,
 					models.EventPipeline(token).Match(event.Match()).Pipe,
@@ -129,11 +129,9 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 				// Add participations to event
 				participations := new([]models.Participation)
 
-				query := new(models.ParticipationQuery)
-				query.EventID = []string{e.ID}
 				if err = ParticipationCollection.Aggregate(
 					ctx,
-					models.ParticipationPipeline().Match(query.Match()).Pipe,
+					models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
 					participations,
 				); err != nil {
 					return

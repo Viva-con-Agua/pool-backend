@@ -47,6 +47,16 @@ type (
 		Status       string        `json:"status" bson:"status"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
+	CrewPublic struct {
+		ID         string `json:"id,omitempty" bson:"_id"`
+		Name       string `json:"name" bson:"name"`
+		Cities     []City `json:"cities" bson:"cities"`
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+	}
+	CrewName struct {
+		ID   string `json:"id,omitempty" bson:"_id"`
+		Name string `json:"name" bson:"name"`
+	}
 	City struct {
 		City        string        `json:"city" bson:"city"`
 		Country     string        `json:"country" bson:"country"`
@@ -117,10 +127,27 @@ func CrewPermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
-func (i *CrewUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other") {
+		return vcago.NewPermissionDenied("crew", nil)
+	}
+	return
 }
 
-func (i *CrewParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+	}
+	return filter.Bson()
+}
+
+func (i *CrewParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+	}
+	return filter.Bson()
 }

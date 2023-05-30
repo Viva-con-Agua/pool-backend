@@ -40,7 +40,7 @@ func (i *MessageHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	result := body.MessageSub(token)
-	if err = dao.MessageCollection.InsertOne(c.Ctx(), result); err != nil {
+	if result, err = dao.MessageInsert(c.Ctx(), result, token); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -62,7 +62,7 @@ func (i *MessageHandler) GetByID(cc echo.Context) (err error) {
 	}
 
 	result := new(models.Message)
-	if err = dao.MessageCollection.FindOne(c.Ctx(), body.Filter(token, crew), result); err != nil {
+	if err = dao.MessageCollection.FindOne(c.Ctx(), body.PermittedFilter(token, crew), result); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -85,7 +85,7 @@ func (i *MessageHandler) Update(cc echo.Context) (err error) {
 	result := new(models.Message)
 	if err = dao.MessageCollection.UpdateOne(
 		c.Ctx(),
-		body.Filter(token, crew),
+		body.PermittedFilter(token, crew),
 		vmdb.UpdateSet(body),
 		result,
 	); err != nil {
@@ -108,7 +108,7 @@ func (i *MessageHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.CrewsCollection.FindOne(c.Ctx(), bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
 		log.Print("No crew for user")
 	}
-	if err = dao.MessageCollection.DeleteOne(c.Ctx(), body.Filter(token, crew)); err != nil {
+	if err = dao.MessageCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token, crew)); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

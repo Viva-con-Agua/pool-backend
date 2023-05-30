@@ -3,6 +3,7 @@ package models
 import (
 	"mime/multipart"
 
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
@@ -57,18 +58,28 @@ type AvatarUpdate struct {
 	Type   string `bson:"type" json:"type"`
 }
 
-func (i *AvatarUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *AvatarUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }
 
-func (i *AvatarParam) Permission(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *AvatarParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }
 
 func (i *AvatarParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *AvatarParam) FilterChunk() bson.D {
-	return bson.D{{Key: "files_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("files_id", i.ID)
+	return filter.Bson()
 }
