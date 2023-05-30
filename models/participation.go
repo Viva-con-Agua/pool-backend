@@ -226,7 +226,7 @@ func (i *ParticipationParam) Filter(token *vcapool.AccessToken) bson.D {
 	return match.Bson()
 }
 
-func (i *ParticipationStateRequest) Permission(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationStateRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	if i.Status == "withdrawn" {
 		return bson.D{{Key: "_id", Value: i.ID}, {Key: "user", Value: token.ID}}
 	} else if i.Status == "confirmed" || i.Status == "rejected" {

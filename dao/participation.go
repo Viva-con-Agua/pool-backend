@@ -10,6 +10,24 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
+
+	database := i.ParticipationDatabase(token)
+	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
+		return
+	}
+	filter := database.Match()
+	//result = new(models.Participation)
+	if err = ParticipationCollection.AggregateOne(
+		ctx,
+		models.ParticipationPipeline().Match(filter).Pipe,
+		&result,
+	); err != nil {
+		return
+	}
+	return
+}
+
 func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *[]models.Participation, err error) {
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		return nil, vcago.NewPermissionDenied("participations")
@@ -108,6 +126,21 @@ func ParticipationDelete(ctx context.Context, id string, token *vcapool.AccessTo
 	}
 
 	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
+		return
+	}
+	return
+}
+
+func ParticipationUpdateStatus(ctx context.Context, i *models.ParticipationStateRequest, token *vcapool.AccessToken) (result *models.Participation, err error) {
+	filter := i.PermittedFilter(token)
+	result = new(models.Participation)
+	if err = ParticipationCollection.UpdateOneAggregate(
+		ctx,
+		filter,
+		vmdb.UpdateSet(i),
+		result,
+		models.ParticipationPipeline().Match(i.Match()).Pipe,
+	); err != nil {
 		return
 	}
 	return

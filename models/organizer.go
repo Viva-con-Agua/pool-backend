@@ -1,8 +1,10 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -47,6 +49,20 @@ func (i *OrganizerParam) Filter() bson.D {
 
 func (i *OrganizerUpdate) Filter() bson.D {
 	return bson.D{{Key: "_id", Value: i.ID}}
+}
+
+func OrganizerPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		return vcago.NewBadRequest("organizer", "permission denied")
+	}
+	return
+}
+
+func OrganizerDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewBadRequest("organizer", "permission denied")
+	}
+	return
 }
 
 func (i *OrganizerQuery) Filter() bson.D {

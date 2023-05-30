@@ -42,8 +42,7 @@ func ArtistUpdate(ctx context.Context, i *models.ArtistUpdate, token *vcapool.Ac
 		return
 	}
 	filter := i.Filter()
-	result = new(models.Artist)
-	if err = ArtistCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), result); err != nil {
+	if err = ArtistCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
 	return
