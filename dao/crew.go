@@ -78,12 +78,13 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 		return
 	}
 	filter := i.PermittedFilter(token)
+	result = new(models.Crew)
 	if !token.Roles.Validate("employee;admin") {
-		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), token); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), result); err != nil {
 			return
 		}
 	} else {
-		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), token); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), result); err != nil {
 			return
 		}
 	}

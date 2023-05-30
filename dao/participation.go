@@ -104,7 +104,7 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 
 func ParticipationDelete(ctx context.Context, id string, token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("participation", nil)
+		return vcago.NewPermissionDenied("participation")
 	}
 
 	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {

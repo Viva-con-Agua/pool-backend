@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -114,6 +115,20 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 		Read:           i.Read,
 		RecipientGroup: i.RecipientGroup,
 	}
+}
+
+func MessageCrewPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate(ASPRole)) {
+		return vcago.NewBadRequest("message", "not allowed to send message")
+	}
+	return
+}
+
+func MessageEventPermission(token *vcapool.AccessToken, event *Event) (err error) {
+	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
+		return vcago.NewBadRequest("message", "not allowed to send message")
+	}
+	return
 }
 
 func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {

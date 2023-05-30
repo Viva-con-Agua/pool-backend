@@ -123,7 +123,8 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if _, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
+	result := new(models.Crew)
+	if result, err = dao.CrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
@@ -131,7 +132,7 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 			log.Print(err)
 		}
 	}()
-	return vcago.NewUpdated("crew", body)
+	return c.Updated(result)
 }
 
 func (i *CrewHandler) Delete(cc echo.Context) (err error) {

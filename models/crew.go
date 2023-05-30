@@ -131,14 +131,14 @@ func (i *CrewQuery) ActiveFilter() bson.D {
 
 func CrewPermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("crew", nil)
+		return vcago.NewPermissionDenied("crew")
 	}
 	return
 }
 
 func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other") {
-		return vcago.NewPermissionDenied("crew", nil)
+		return vcago.NewPermissionDenied("crew")
 	}
 	return
 }

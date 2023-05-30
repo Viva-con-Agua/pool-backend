@@ -57,7 +57,7 @@ func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) 
 	} else if token.CrewID == mailbox.ID {
 		return
 	}
-	return vcago.NewPermissionDenied("mailbox", i)
+	return vcago.NewPermissionDenied("mailbox")
 }
 
 func (i *MailboxParam) Pipeline() mongo.Pipeline {

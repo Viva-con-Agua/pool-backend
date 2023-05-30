@@ -12,6 +12,9 @@ import (
 )
 
 func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.AccessToken) (result *models.Event, err error) {
+	if err = models.EventPermission(token); err != nil {
+		return
+	}
 	taking := models.TakingDatabase{
 		ID:       uuid.NewString(),
 		Name:     i.Name,
@@ -43,11 +46,8 @@ func EventInsert(ctx context.Context, i *models.EventDatabase, token *vcapool.Ac
 
 func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListEvent, err error) {
 	filter := i.PermittedFilter(token)
-
-	pipeline := models.EventPipeline(token).Match(filter).Pipe
 	result = new([]models.ListEvent)
-
-	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, models.EventPipeline(token).Match(filter).Pipe, result); err != nil {
 		return
 	}
 	return
@@ -94,22 +94,18 @@ func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models
 
 func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.EventPublic, err error) {
 	filter := i.Match()
-	pipeline := models.EventPipelinePublic().Match(filter).Pipe
 	result = new([]models.EventPublic)
-
-	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Pipe, result); err != nil {
 		return
 	}
 	return
 }
 
-func EmailEvents(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.EventPublic, err error) {
+func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.EventPublic, err error) {
 	filter := i.FilterEmailEvents(token)
-
-	pipeline := models.EventPipelinePublic().Match(filter).Pipe
 	result = new([]models.EventPublic)
 
-	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Pipe, result); err != nil {
 		return
 	}
 	return
@@ -117,11 +113,8 @@ func EmailEvents(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 
 func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListDetailsEvent, err error) {
 	filter := i.FilterAsp(token)
-
-	pipeline := models.EventPipeline(token).Match(filter).Pipe
 	result = new([]models.ListDetailsEvent)
-
-	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, models.EventPipeline(token).Match(filter).Pipe, result); err != nil {
 		return
 	}
 
@@ -131,7 +124,6 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
 	filter := i.PermittedFilter(token)
 	result = new(models.Event)
-
 	if err = EventCollection.UpdateOneAggregate(
 		ctx,
 		filter,
@@ -145,6 +137,9 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 }
 
 func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (err error) {
+	if err = models.EventDeletePermission(token); err != nil {
+		return
+	}
 	if err = EventCollection.DeleteOne(ctx, i.Match()); err != nil {
 		return
 	}
@@ -152,12 +147,6 @@ func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.Acces
 		return
 	}
 	return
-}
-
-func rolePipeline() *vmdb.Pipeline {
-	pipe := vmdb.NewPipeline()
-	pipe.LookupUnwindMatch(models.PoolRoleCollection, "user_id", "user_id", "user", bson.D{{Key: "name", Value: "operation"}})
-	return pipe
 }
 
 func EventImport(ctx context.Context, event *models.EventImport) (result *models.Event, err error) {
@@ -187,7 +176,7 @@ func EventImport(ctx context.Context, event *models.EventImport) (result *models
 
 	if i.CrewID != "" {
 		aspRole := new(models.RoleDatabase)
-		if err = UserCrewCollection.AggregateOne(ctx, rolePipeline().Match(bson.D{{Key: "crew_id", Value: i.CrewID}}).Pipe, aspRole); err != nil {
+		if err = UserCrewCollection.AggregateOne(ctx, models.EventRolePipeline().Match(bson.D{{Key: "crew_id", Value: i.CrewID}}).Pipe, aspRole); err != nil {
 			return
 		}
 		i.EventASPID = aspRole.UserID
@@ -209,10 +198,9 @@ func EventImport(ctx context.Context, event *models.EventImport) (result *models
 	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
-	pipe := models.EventImportPipeline().Match(i.Match()).Pipe
 
 	result = new(models.Event)
-	if err = EventCollection.AggregateOne(ctx, pipe, result); err != nil {
+	if err = EventCollection.AggregateOne(ctx, models.EventImportPipeline().Match(i.Match()).Pipe, result); err != nil {
 		return
 	}
 

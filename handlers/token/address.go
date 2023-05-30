@@ -19,9 +19,9 @@ var Address = &AddressHandler{*vcago.NewHandler("address")}
 func (i *AddressHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
-	group.PUT("", i.Update, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
@@ -45,6 +45,23 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 		}
 	}()
 	return c.Created(result)
+}
+
+func (i *AddressHandler) Get(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.AddressQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new([]models.Address)
+	if result, err = dao.AddressGet(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Selected(result)
 }
 
 func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
@@ -109,21 +126,4 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 		}
 	}()
 	return c.Deleted(body.ID)
-}
-
-func (i *AddressHandler) Get(cc echo.Context) (err error) {
-	c := cc.(vcago.Context)
-	body := new(models.AddressQuery)
-	if err = c.BindAndValidate(body); err != nil {
-		return
-	}
-	token := new(vcapool.AccessToken)
-	if err = c.AccessToken(token); err != nil {
-		return
-	}
-	result := new([]models.Address)
-	if result, err = dao.AddressGet(c.Ctx(), body, token); err != nil {
-		return
-	}
-	return c.Selected(result)
 }

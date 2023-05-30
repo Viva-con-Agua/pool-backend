@@ -30,7 +30,7 @@ func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models
 func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
 	result = new(models.NVM)
 	if err = models.NVMRejectPermission(token); err != nil {
-		return nil, vcago.NewPermissionDenied("nvm", nil)
+		return nil, vcago.NewPermissionDenied("nvm")
 	}
 	if err = NVMCollection.UpdateOne(
 		ctx,
@@ -47,7 +47,7 @@ func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.Ac
 func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
 	result = new(models.NVM)
 	if err = models.NVMRejectPermission(token); err != nil {
-		return nil, vcago.NewPermissionDenied("nvm", nil)
+		return nil, vcago.NewPermissionDenied("nvm")
 	}
 
 	if err = NVMCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: i.ID}}, result); err != nil {

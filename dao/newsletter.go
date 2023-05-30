@@ -43,7 +43,7 @@ func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vca
 	}
 	if !token.Roles.Validate("employee;admin") {
 		if token.ID != newletter.UserID {
-			return nil, vcago.NewPermissionDenied("newsletter", i.ID)
+			return nil, vcago.NewPermissionDenied("newsletter")
 		}
 	}
 	if err = NewsletterCollection.DeleteOne(ctx, filter); err != nil {

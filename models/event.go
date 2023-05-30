@@ -369,16 +369,22 @@ func EventPipelinePublic() (pipe *vmdb.Pipeline) {
 	return
 }
 
+func EventRolePipeline() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwindMatch(PoolRoleCollection, "user_id", "user_id", "user", bson.D{{Key: "name", Value: "operation"}})
+	return pipe
+}
+
 func EventPermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("crew", nil)
+		return vcago.NewPermissionDenied("crew")
 	}
 	return
 }
 
 func EventDeletePermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("event", nil)
+		return vcago.NewPermissionDenied("event")
 	}
 	return
 }

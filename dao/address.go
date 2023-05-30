@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func AddressInsert(ctx context.Context, address *models.AddressCreate, token *vcapool.AccessToken) (result *models.Address, err error) {
-	result = address.Address(token.ID)
+func AddressInsert(ctx context.Context, i *models.AddressCreate, token *vcapool.AccessToken) (result *models.Address, err error) {
+	result = i.Address(token.ID)
 	if err = AddressesCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
@@ -37,7 +37,8 @@ func AddressGetByID(ctx context.Context, i *models.AddressParam, token *vcapool.
 
 func AddressUpdate(ctx context.Context, i *models.AddressUpdate, token *vcapool.AccessToken) (result *models.Address, err error) {
 	filter := i.PermittedFilter(token)
-	if err = AddressesCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), token); err != nil {
+	result = new(models.Address)
+	if err = AddressesCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), result); err != nil {
 		return
 	}
 	return

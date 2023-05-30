@@ -1,17 +1,13 @@
 package token
 
 import (
-	"log"
 	"net/http"
 	"pool-backend/dao"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type MessageHandler struct {
@@ -39,8 +35,8 @@ func (i *MessageHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := body.MessageSub(token)
-	if result, err = dao.MessageInsert(c.Ctx(), result, token); err != nil {
+	result := new(models.Message)
+	if result, err = dao.MessageInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Created(result)
@@ -56,13 +52,8 @@ func (i *MessageHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	crew := new(models.Crew)
-	if err = dao.CrewsCollection.FindOne(c.Ctx(), bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
-		log.Print("No crew for user")
-	}
-
 	result := new(models.Message)
-	if err = dao.MessageCollection.FindOne(c.Ctx(), body.PermittedFilter(token, crew), result); err != nil {
+	if result, err = dao.MessageGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)
@@ -78,20 +69,11 @@ func (i *MessageHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	crew := new(models.Crew)
-	if err = dao.CrewsCollection.FindOne(c.Ctx(), bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
-		log.Print("No crew for user")
-	}
 	result := new(models.Message)
-	if err = dao.MessageCollection.UpdateOne(
-		c.Ctx(),
-		body.PermittedFilter(token, crew),
-		vmdb.UpdateSet(body),
-		result,
-	); err != nil {
+	if result, err = dao.MessageUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Updated(body)
+	return c.Updated(result)
 }
 
 func (i *MessageHandler) Delete(cc echo.Context) (err error) {
@@ -104,11 +86,7 @@ func (i *MessageHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	crew := new(models.Crew)
-	if err = dao.CrewsCollection.FindOne(c.Ctx(), bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
-		log.Print("No crew for user")
-	}
-	if err = dao.MessageCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token, crew)); err != nil {
+	if err = dao.MessageDelete(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
@@ -116,7 +94,7 @@ func (i *MessageHandler) Delete(cc echo.Context) (err error) {
 
 func (i *MessageHandler) SendCycular(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(vmod.IDParam)
+	body := new(models.MessageParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
