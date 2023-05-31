@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -267,7 +265,6 @@ func (i *ParticipationUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D
 	if token.PoolRoles.Validate("network;operation;education") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
-	fmt.Printf("%v\n", filter)
 	return filter.Bson()
 }
 
