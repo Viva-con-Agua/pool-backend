@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type (
@@ -79,6 +78,7 @@ func (i *AddressCreate) Address(userID string) (r *Address) {
 		CountryCode: i.CountryCode,
 		Additional:  i.Additional,
 		UserID:      userID,
+		Modified:    vmod.NewModified(),
 	}
 }
 
@@ -94,15 +94,6 @@ func (i *AddressImport) Address(userID string) (r *Address) {
 		Additional:  i.Additional,
 		UserID:      userID,
 	}
-}
-
-func (i *AddressParam) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
-	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
-		filter.EqualString("user_id", token.ID)
-	}
-	return vmdb.NewPipeline().Match(filter.Bson()).Pipe
 }
 
 func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
@@ -132,5 +123,11 @@ func (i *AddressParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
+}
+
+func (i *AddressImport) FilterUser() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("drops_id", i.DropsID)
 	return filter.Bson()
 }

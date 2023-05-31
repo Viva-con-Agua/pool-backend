@@ -35,6 +35,22 @@ type (
 	}
 )
 
+var OrganizerCollection = "organizers"
+
+func OrganizerPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		return vcago.NewPermissionDenied(OrganizerCollection)
+	}
+	return
+}
+
+func OrganizerDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied(OrganizerCollection)
+	}
+	return
+}
+
 func (i *OrganizerCreate) Organizer() *Organizer {
 	return &Organizer{
 		ID:       uuid.NewString(),
@@ -43,26 +59,16 @@ func (i *OrganizerCreate) Organizer() *Organizer {
 	}
 }
 
-func (i *OrganizerParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func (i *OrganizerParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
-func (i *OrganizerUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
-}
-
-func OrganizerPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		return vcago.NewBadRequest("organizer", "permission denied")
-	}
-	return
-}
-
-func OrganizerDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewBadRequest("organizer", "permission denied")
-	}
-	return
+func (i *OrganizerUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *OrganizerQuery) Filter() bson.D {
@@ -73,5 +79,5 @@ func (i *OrganizerQuery) Filter() bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
-	return bson.D(*filter)
+	return filter.Bson()
 }

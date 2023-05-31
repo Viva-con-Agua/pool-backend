@@ -8,8 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-var ProfilesCollection = "profiles"
-
 type (
 	ProfileCreate struct {
 		Gender     string `bson:"gender" json:"gender"`
@@ -33,6 +31,10 @@ type (
 		UserID     string        `bson:"user_id" json:"user_id"`
 		Modified   vmod.Modified `bson:"modified" json:"modified"`
 	}
+	ProfileMinimal struct {
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		UserID     string `bson:"user_id" json:"user_id"`
+	}
 	ProfileImport struct {
 		Gender     string `bson:"gender" json:"gender"`
 		Phone      string `bson:"phone" json:"phone"`
@@ -42,7 +44,21 @@ type (
 	}
 )
 
+var ProfileCollection = "profiles"
+
 func (i *ProfileCreate) Profile(userID string) *Profile {
+	return &Profile{
+		ID:         uuid.NewString(),
+		Gender:     i.Gender,
+		Phone:      i.Phone,
+		Mattermost: i.Mattermost,
+		Birthdate:  i.Birthdate,
+		UserID:     userID,
+		Modified:   vmod.NewModified(),
+	}
+}
+
+func (i *ProfileImport) Profile(userID string) *Profile {
 	return &Profile{
 		ID:         uuid.NewString(),
 		Gender:     i.Gender,
@@ -59,16 +75,4 @@ func (i *ProfileUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)
 	return filter.Bson()
-}
-
-func (i *ProfileImport) Profile(userID string) *Profile {
-	return &Profile{
-		ID:         uuid.NewString(),
-		Gender:     i.Gender,
-		Phone:      i.Phone,
-		Mattermost: i.Mattermost,
-		Birthdate:  i.Birthdate,
-		UserID:     userID,
-		Modified:   vmod.NewModified(),
-	}
 }

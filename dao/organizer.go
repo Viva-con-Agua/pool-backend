@@ -29,7 +29,7 @@ func OrganizerGet(ctx context.Context, i *models.OrganizerQuery) (result *[]mode
 }
 
 func OrganizerGetByID(ctx context.Context, i *models.OrganizerParam) (result *models.Organizer, err error) {
-	filter := i.Filter()
+	filter := i.Match()
 	if err = OrganizerCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
@@ -40,7 +40,7 @@ func OrganizerUpdate(ctx context.Context, i *models.OrganizerUpdate, token *vcap
 	if err = models.OrganizerPermission(token); err != nil {
 		return
 	}
-	filter := i.Filter()
+	filter := i.Match()
 	if err = OrganizerCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
@@ -51,7 +51,7 @@ func OrganizerDelete(ctx context.Context, i *models.OrganizerParam, token *vcapo
 	if err = models.OrganizerDeletePermission(token); err != nil {
 		return
 	}
-	filter := i.Filter()
+	filter := i.Match()
 	if err = OrganizerCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}

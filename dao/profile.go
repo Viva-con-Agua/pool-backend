@@ -12,7 +12,7 @@ import (
 
 func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.AccessToken) (result *models.Profile, err error) {
 	result = i.Profile(token.ID)
-	if err = ProfilesCollection.InsertOne(ctx, result); err != nil {
+	if err = ProfileCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
 	return
@@ -20,11 +20,11 @@ func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.
 
 func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
 	filter := i.PermittedFilter(token)
-	if err = ProfilesCollection.UpdateOne(
+	if err = ProfileCollection.UpdateOne(
 		ctx,
 		filter,
 		vmdb.UpdateSet(i),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -48,7 +48,7 @@ func ProfileImport(ctx context.Context, profile *models.ProfileImport) (result *
 		return
 	}
 	result = profile.Profile(user.ID)
-	if err = ProfilesCollection.InsertOne(ctx, result); err != nil {
+	if err = ProfileCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
 	return

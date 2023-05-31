@@ -29,7 +29,7 @@ func ArtistGet(ctx context.Context, i *models.ArtistQuery) (result *[]models.Art
 }
 
 func ArtistGetByID(ctx context.Context, i *models.ArtistParam) (result *models.Artist, err error) {
-	filter := i.Filter()
+	filter := i.Match()
 	if err = ArtistCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
@@ -40,7 +40,7 @@ func ArtistUpdate(ctx context.Context, i *models.ArtistUpdate, token *vcapool.Ac
 	if err = models.ArtistPermission(token); err != nil {
 		return
 	}
-	filter := i.Filter()
+	filter := i.Match()
 	if err = ArtistCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
@@ -51,7 +51,7 @@ func ArtistDelete(ctx context.Context, i *models.ArtistParam, token *vcapool.Acc
 	if err = models.ArtistDeletePermission(token); err != nil {
 		return
 	}
-	filter := i.Filter()
+	filter := i.Match()
 	if err = ArtistCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}

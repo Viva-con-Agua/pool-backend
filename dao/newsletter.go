@@ -35,16 +35,13 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vc
 	return
 }
 
-func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vcapool.AccessToken) (newletter *models.Newsletter, err error) {
-	newletter = new(models.Newsletter)
-	filter := bson.D{{Key: "_id", Value: i.ID}}
-	if err = NewsletterCollection.FindOne(ctx, filter, newletter); err != nil {
+func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vcapool.AccessToken) (result *models.Newsletter, err error) {
+	filter := i.Match()
+	if err = NewsletterCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
-	if !token.Roles.Validate("employee;admin") {
-		if token.ID != newletter.UserID {
-			return nil, vcago.NewPermissionDenied("newsletter")
-		}
+	if err = result.DeletePermission(token); err != nil {
+		return
 	}
 	if err = NewsletterCollection.DeleteOne(ctx, filter); err != nil {
 		return

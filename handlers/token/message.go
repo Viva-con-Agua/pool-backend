@@ -102,8 +102,8 @@ func (i *MessageHandler) SendCycular(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Message
-	var mail *vcago.CycularMail
+	result := new(models.Message)
+	mail := new(vcago.CycularMail)
 	if result, mail, err = dao.MessageSendCycular(c.Ctx(), body, token); err != nil {
 		return
 	}

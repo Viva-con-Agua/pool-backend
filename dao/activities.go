@@ -21,7 +21,7 @@ func SystemActivity(ctx context.Context, activity string, modelID string, userID
 }
 
 func ActivityInsert(ctx context.Context, userID string, model string, modelID string, message, status string) (err error) {
-	activity := models.NewActivityDB(userID, model, modelID, message, status)
+	activity := models.NewActivity(userID, model, modelID, message, status)
 	err = ActivityCollection.InsertOne(ctx, activity)
 	return
 }

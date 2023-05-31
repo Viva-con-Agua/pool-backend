@@ -4,13 +4,12 @@ import (
 	"context"
 	"pool-backend/models"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcapool"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func UserInsert(ctx context.Context, i *models.UserDatabase) (r *models.User, err error) {
+func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.User, err error) {
 	//create mailbox
 	mailbox := models.NewMailboxDatabase("user")
 	if err = MailboxCollection.InsertOne(ctx, mailbox); err != nil {
@@ -22,44 +21,39 @@ func UserInsert(ctx context.Context, i *models.UserDatabase) (r *models.User, er
 	if err = UserCollection.InsertOne(ctx, i); err != nil {
 		return
 	}
-	// initial r.
-	r = new(models.User)
 	//select user from database
 	if err = UserCollection.AggregateOne(
 		ctx,
 		models.UserPipeline(false).Match(models.UserMatch(i.ID)).Pipe,
-		r,
+		&result,
 	); err != nil {
 		return
 	}
 	return
 }
 
-// TODO SPLIT THIS INTO 2 SEPERATED AND KICK PROJECTION
-// ONE ONLY FOR ADMINS AND ASPS
-// ONE ONLY FOR USERS
 func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.User, err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
-		if i.CrewID != "" && i.CrewID != token.CrewID {
-			return nil, vcago.NewPermissionDenied("users")
-		}
-		// TODO ADD THIS TO NEW FILTER FUNCTION THEN
-		i.PoolRoles = []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"}
-		filter := i.PermittedFilter(token)
-		pipeline := models.UserPipelinePublic().Match(filter).Pipe
-		pipeline = append(pipeline, models.UserProjection())
-		result = new([]models.User)
-		if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
-			return
-		}
-		return
-	} else {
-		filter := i.PermittedFilter(token)
-		if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, result); err != nil {
-			return
-		}
+	if err = models.UsersPermission(token); err != nil {
 		return
 	}
+	filter := i.PermittedFilter(token)
+	result = new([]models.User)
+	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, result); err != nil {
+		return
+	}
+	return
+}
+
+func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserBasic, err error) {
+	if err = i.CrewUsersPermission(token); err != nil {
+		return
+	}
+	filter := i.PermittedUserFilter(token)
+	result = new([]models.UserBasic)
+	if err = UserCollection.Aggregate(ctx, models.UserPipelinePublic().Match(filter).Pipe, result); err != nil {
+		return
+	}
+	return
 }
 
 func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserMinimal, err error) {
@@ -80,7 +74,7 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = AddressesCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	if err = ProfilesCollection.TryDeleteOne(ctx, delete); err != nil {
+	if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
 	if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {

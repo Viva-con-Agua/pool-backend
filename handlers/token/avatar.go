@@ -88,10 +88,10 @@ func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.AvatarCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token)); err != nil {
 		return
 	}
-	if err = dao.FSChunkCollection.DeleteOne(c.Ctx(), body.FilterChunk()); err != nil {
+	if err = dao.FSChunkCollection.DeleteOne(c.Ctx(), body.MatchChunk()); err != nil {
 		return
 	}
-	if err = dao.FSFilesCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+	if err = dao.FSFilesCollection.DeleteOne(c.Ctx(), body.Match()); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)

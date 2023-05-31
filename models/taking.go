@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -74,6 +75,47 @@ type (
 	}
 )
 
+var TakingCollection = "takings"
+
+func TakingPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return vcago.NewPermissionDenied(DepositCollection)
+	}
+	return
+}
+
+func TakingPipeline() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.Lookup(DepositUnitTakingView, "_id", "taking_id", "deposit_units")
+	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
+	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "confirmed", bson.D{{Key: "deposit.status", Value: "confirmed"}})
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.confirmed.amount", Value: bson.D{{Key: "$sum", Value: "$confirmed.money.amount"}}},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.amount", Value: bson.D{{Key: "$sum", Value: "$sources.money.amount"}}}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.amount", Value: bson.D{
+		{Key: "$subtract", Value: bson.A{"$money.amount", bson.D{{Key: "$add", Value: bson.A{"$state.wait.amount", "$state.confirmed.amount"}}}}},
+	}}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.wait.currency", Value: "$currency"},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.confirmed.currency", Value: "$currency"},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
+	pipe.Lookup(ActivityUserView, "_id", "model_id", "activities")
+	pipe.LookupUnwindMatch(ActivityUserView, "_id", "model_id", "dummy", bson.D{{Key: "status", Value: "created"}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "creator", Value: "$dummy.user"}}}})
+	return pipe
+}
+
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
 		ID:       uuid.NewString(),
@@ -106,7 +148,16 @@ func (i *TakingUpdate) SourceList(id string) *SourceList {
 	return r
 }
 
-func (i *TakingQuery) Filter(token *vcapool.AccessToken) bson.D {
+/*
+Should this be used somewhere?
+func (i *TakingUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+*/
+
+func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {
@@ -142,16 +193,7 @@ func (i *TakingQuery) Filter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *TakingUpdate) Filter() bson.D {
-	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	return filter.Bson()
-}
-
-func (i *TakingUpdate) Update() bson.D {
-	return vmdb.UpdateSet(i)
-}
-func (i *TakingParam) Filter(token *vcapool.AccessToken) bson.D {
+func (i *TakingParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {

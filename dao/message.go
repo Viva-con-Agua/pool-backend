@@ -39,8 +39,7 @@ func MessageGetByID(ctx context.Context, i *models.MessageParam, token *vcapool.
 		log.Print("No crew for user")
 	}
 	filter := i.PermittedFilter(token, crew)
-	result = new(models.Message)
-	if err = MessageCollection.FindOne(ctx, filter, result); err != nil {
+	if err = MessageCollection.FindOne(ctx, filter, &result); err != nil {
 		return
 	}
 	return
@@ -93,7 +92,7 @@ func MessageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcapo
 
 func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
 	event := new(models.Event)
-	filter := bson.D{{Key: "_id", Value: i.EventID}}
+	filter := i.FilterEvent()
 	if err = EventCollection.FindOne(ctx, filter, event); err != nil {
 		return
 	}

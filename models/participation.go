@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -97,6 +99,56 @@ type (
 	}
 )
 
+var ParticipationCollection = "participations"
+var ParticipationEventView = "participations_event"
+
+func ParticipationPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		return vcago.NewPermissionDenied(ParticipationCollection)
+	}
+	return
+}
+
+func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied(ParticipationCollection)
+	}
+	return
+}
+
+func ParticipationUpdatePermission(token *vcapool.AccessToken, participation *Participation) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) && token.ID != participation.Event.EventASPID {
+		return vcago.NewPermissionDenied(ParticipationCollection)
+	}
+	return
+}
+
+func ParticipationPipeline() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind(UserCollection, "user_id", "_id", "user")
+	pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
+	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
+	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
+	pipe.LookupUnwind(UserCollection, "event.internal_asp_id", "_id", "event.internal_asp")
+	pipe.LookupUnwind(ProfileCollection, "event.internal_asp_id", "user_id", "event.internal_asp.profile")
+	pipe.LookupUnwind(UserCollection, "event.creator_id", "_id", "event.creator")
+	pipe.LookupUnwind(ProfileCollection, "event.creator_id", "user_id", "event.creator.profile")
+	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
+	pipe.LookupUnwind(OrganizerCollection, "event.organizer_id", "_id", "event.organizer")
+	pipe.LookupUnwind(CrewCollection, "event.crew_id", "_id", "event.crew")
+	return
+}
+
+func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
+	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
+	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
+	return
+}
+
 func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
 	return &ParticipationDatabase{
 		ID:       uuid.NewString(),
@@ -117,45 +169,29 @@ func (i *ParticipationImport) ParticipationDatabase() *ParticipationDatabase {
 		Modified: vmod.NewModified(),
 	}
 }
-
-func ParticipationPipeline() (pipe *vmdb.Pipeline) {
-	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind("users", "user_id", "_id", "user")
-	pipe.LookupUnwind("profiles", "user_id", "user_id", "user.profile")
-	pipe.LookupUnwind("events", "event_id", "_id", "event")
-	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
-	pipe.LookupUnwind("users", "event.event_asp_id", "_id", "event.event_asp")
-	pipe.LookupUnwind("profiles", "event.event_asp_id", "user_id", "event.event_asp.profile")
-	pipe.LookupUnwind("users", "event.internal_asp_id", "_id", "event.internal_asp")
-	pipe.LookupUnwind("profiles", "event.internal_asp_id", "user_id", "event.internal_asp.profile")
-	pipe.LookupUnwind("users", "event.creator_id", "_id", "event.creator")
-	pipe.LookupUnwind("profiles", "event.creator_id", "user_id", "event.creator.profile")
-	pipe.Lookup("artists", "event.artist_ids", "_id", "event.artists")
-	pipe.LookupUnwind("organizers", "event.organizer_id", "_id", "event.organizer")
-	pipe.LookupUnwind("crews", "event.crew_id", "_id", "event.crew")
-	return
-}
-
-func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
-	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind("events", "event_id", "_id", "event")
-	pipe.LookupUnwind("users", "event.event_asp_id", "_id", "event.event_asp")
-	pipe.LookupUnwind("profiles", "event.event_asp_id", "user_id", "event.event_asp.profile")
-	return
-}
-
-func ParticipationPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		return vcago.NewPermissionDenied("participations")
+func (i *ParticipationStateRequest) IsRequested() bool {
+	if i.Status == "requested" {
+		return true
 	}
-	return
+	return false
 }
-
-func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("participations")
+func (i *ParticipationStateRequest) IsConfirmed() bool {
+	if i.Status == "confirmed" {
+		return true
 	}
-	return
+	return false
+}
+func (i *ParticipationStateRequest) IsWithdrawn() bool {
+	if i.Status == "withdrawn" {
+		return true
+	}
+	return false
+}
+func (i *ParticipationStateRequest) IsRejected() bool {
+	if i.Status == "rejected" {
+		return true
+	}
+	return false
 }
 
 func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
@@ -219,14 +255,19 @@ func (i *ParticipationUpdate) Match() bson.D {
 	return filter.Bson()
 }
 
+func (i *ParticipationStateRequest) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
 func (i *ParticipationUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		filter.EqualString("user_id", token.ID)
-	} else if !token.Roles.Validate("employee;admin") {
+	if token.PoolRoles.Validate("network;operation;education") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
+	fmt.Printf("%v\n", filter)
 	return filter.Bson()
 }
 
@@ -244,20 +285,14 @@ func (i *ParticipationParam) PermittedFilter(token *vcapool.AccessToken) bson.D 
 func (i *ParticipationStateRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if i.Status == "withdrawn" {
+	if i.IsWithdrawn() {
 		filter.EqualString("user_id", token.ID)
-	} else if i.Status == "confirmed" || i.Status == "rejected" {
+	} else if i.IsConfirmed() || i.IsRejected() {
 		if !token.Roles.Validate("employee;admin") {
 			filter.EqualString("crew_id", token.CrewID)
 		}
 	} else {
-		return bson.D{{Key: "_id", Value: "not_defined"}}
+		filter.EqualString("_id", "not_defined")
 	}
-	return filter.Bson()
-}
-
-func (i *ParticipationStateRequest) Match() bson.D {
-	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }

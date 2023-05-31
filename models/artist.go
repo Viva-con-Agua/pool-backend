@@ -35,6 +35,22 @@ type (
 	}
 )
 
+var ArtistCollection = "artists"
+
+func ArtistPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return vcago.NewPermissionDenied(ArtistCollection)
+	}
+	return
+}
+
+func ArtistDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied(ArtistCollection)
+	}
+	return
+}
+
 func (i *ArtistCreate) Artist() *Artist {
 	return &Artist{
 		ID:       uuid.NewString(),
@@ -43,30 +59,16 @@ func (i *ArtistCreate) Artist() *Artist {
 	}
 }
 
-func (i *ArtistParam) Filter() bson.D {
+func (i *ArtistParam) Match() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
 
-func (i *ArtistUpdate) Filter() bson.D {
+func (i *ArtistUpdate) Match() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
-}
-
-func ArtistPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		return vcago.NewBadRequest("artist", "permission denied")
-	}
-	return
-}
-
-func ArtistDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewBadRequest("artist", "permission denied")
-	}
-	return
 }
 
 func (i *ArtistQuery) Filter() bson.D {

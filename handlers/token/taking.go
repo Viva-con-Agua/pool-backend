@@ -34,7 +34,7 @@ func (i *TakingHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Taking
+	result := new(models.Taking)
 	if result, err = dao.TakingInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *[]models.Taking
+	result := new([]models.Taking)
 	if result, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -85,7 +85,7 @@ func (i TakingHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Taking
+	result := new(models.Taking)
 	if result, err = dao.TakingGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}

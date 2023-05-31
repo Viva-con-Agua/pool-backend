@@ -267,6 +267,17 @@ type (
 	}
 )
 
+var EventCollection = "events"
+
+func (i *EventDatabase) TakingDatabase() *TakingDatabase {
+	return &TakingDatabase{
+		ID:       uuid.NewString(),
+		Name:     i.Name,
+		CrewID:   i.CrewID,
+		Type:     "automatically",
+		Modified: vmod.NewModified(),
+	}
+}
 func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 	return &EventDatabase{
 		ID:                    uuid.NewString(),
@@ -328,44 +339,44 @@ func (i *EventImport) EventDatabase() *EventDatabase {
 
 func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind("profiles", "event_asp_id", "user_id", "event_asp.profile")
-	pipe.LookupUnwind("users", "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind("profiles", "internal_asp_id", "user_id", "internal_asp.profile")
-	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
-	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
-	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
+	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
+	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
+	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
+	pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
+	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
+	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
+	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
 	if token.Roles.Validate("employee;admin") {
-		pipe.Lookup("participations", "_id", "event_id", "participations")
+		pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	} else if token.PoolRoles.Validate("network;operation;education") {
-		pipe.LookupMatch("participations_event", "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
+		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
 	} else {
-		pipe.LookupMatch("participations_event", "_id", "event_id", "participations", bson.D{{Key: "event.event_asp_id", Value: token.ID}})
+		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.event_asp_id", Value: token.ID}})
 	}
-	pipe.LookupList("artists", "artist_ids", "_id", "artists")
-	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	pipe.LookupList(ArtistCollection, "artist_ids", "_id", "artists")
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	return
 }
 
 func EventImportPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind("users", "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind("profiles", "event_asp_id", "user_id", "event_asp.profile")
-	pipe.LookupUnwind("users", "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind("profiles", "internal_asp_id", "user_id", "internal_asp.profile")
-	pipe.LookupUnwind("users", "creator_id", "_id", "creator")
-	pipe.LookupUnwind("profiles", "creator_id", "user_id", "creator.profile")
-	pipe.Lookup("participations", "_id", "event_id", "participations")
-	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
+	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
+	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
+	pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
+	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
+	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
+	pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	return
 }
 
 func EventPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.Lookup("participations", "_id", "event_id", "participations")
-	pipe.LookupUnwind("organizers", "organizer_id", "_id", "organizer")
-	pipe.LookupList("artists", "artist_ids", "_id", "artists")
-	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
+	pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
+	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
+	pipe.LookupList(ArtistCollection, "artist_ids", "_id", "artists")
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	return
 }
 
@@ -377,113 +388,113 @@ func EventRolePipeline() *vmdb.Pipeline {
 
 func EventPermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("crew")
+		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
 func EventDeletePermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("event")
+		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
 }
 
 func (i *EventDatabase) Match() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *EventParam) Match() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 func (i *EventUpdate) Match() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		match.EqualString("event_asp_id", token.ID)
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("event_asp_id", token.ID)
+		filter.EqualString("crew_id", token.CrewID)
 	} else if !token.Roles.Validate("employee;admin") {
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("crew_id", token.CrewID)
 	}
 
-	return match.Bson()
+	return filter.Bson()
 }
 
 func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		match.EqualString("event_asp_id", token.ID)
-		match.EqualString("crew_id", token.CrewID)
-		match.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+		filter.EqualString("event_asp_id", token.ID)
+		filter.EqualString("crew_id", token.CrewID)
+		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	} else if !token.Roles.Validate("employee;admin") {
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("crew_id", token.CrewID)
 	}
-	return match.Bson()
+	return filter.Bson()
 }
 
-func (i *EventQuery) Match() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualStringList("_id", i.ID)
-	match.LikeString("name", i.Name)
-	match.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
-	match.EqualString("crew_id", i.CrewID)
-	match.GteInt64("modified.updated", i.UpdatedFrom)
-	match.GteInt64("modified.created", i.CreatedFrom)
-	match.LteInt64("modified.updated", i.UpdatedTo)
-	match.LteInt64("modified.created", i.CreatedTo)
-	return match.Bson()
+func (i *EventQuery) PublicFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("_id", i.ID)
+	filter.LikeString("name", i.Name)
+	filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+	filter.EqualString("crew_id", i.CrewID)
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
 }
 
 func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("event_asp_id", token.ID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("event_asp_id", token.ID)
+	return filter.Bson()
 }
 
 func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
+	filter := vmdb.NewFilter()
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		match.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	} else if !token.Roles.Validate("employee;admin") {
 		noCrewMatch := vmdb.NewFilter()
 		crewMatch := vmdb.NewFilter()
 		crewMatch.EqualString("crew_id", token.CrewID)
 		noCrewMatch.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
-		match.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
+		filter.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
 	}
-	match.EqualStringList("_id", i.ID)
-	match.LikeString("name", i.Name)
-	match.EqualString("internal_asp_id", i.InternalASPID)
-	match.EqualString("event_asp_id", i.EventASPID)
-	match.EqualStringList("event_state.state", i.EventState)
-	match.EqualString("crew_id", i.CrewID)
-	match.GteInt64("modified.updated", i.UpdatedFrom)
-	match.GteInt64("modified.created", i.CreatedFrom)
-	match.LteInt64("modified.updated", i.UpdatedTo)
-	match.LteInt64("modified.created", i.CreatedTo)
-	return match.Bson()
+	filter.EqualStringList("_id", i.ID)
+	filter.LikeString("name", i.Name)
+	filter.EqualString("internal_asp_id", i.InternalASPID)
+	filter.EqualString("event_asp_id", i.EventASPID)
+	filter.EqualStringList("event_state.state", i.EventState)
+	filter.EqualString("crew_id", i.CrewID)
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
 }
 
 func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
+	filter := vmdb.NewFilter()
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		match.EqualString("event_asp_id", token.ID)
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("event_asp_id", token.ID)
+		filter.EqualString("crew_id", token.CrewID)
 	} else if !token.Roles.Validate("employee;admin") {
-		match.EqualString("crew_id", token.CrewID)
+		filter.EqualString("crew_id", token.CrewID)
 	}
 
-	return match.Bson()
+	return filter.Bson()
 }

@@ -31,23 +31,6 @@ type (
 	}
 )
 
-func NewNVM(userID string) *NVM {
-	return &NVM{
-		ID:       uuid.NewString(),
-		Status:   "not_requested",
-		Since:    time.Now().Unix(),
-		UserID:   userID,
-		Modified: vmod.NewModified(),
-	}
-}
-
-func NewNVMRejected() *NVMUpdate {
-	return &NVMUpdate{
-		Status: "rejected",
-		Since:  time.Now().Unix(),
-	}
-}
-
 func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 	if token.ActiveState != "confirmed" {
 		return vcago.NewBadRequest("user_nvm", "active required")
@@ -63,9 +46,26 @@ func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 
 func NVMPermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("nvm")
+		return vcago.NewPermissionDenied(NVMCollection)
 	}
 	return
+}
+
+func NewNVM(userID string) *NVM {
+	return &NVM{
+		ID:       uuid.NewString(),
+		Status:   "not_requested",
+		Since:    time.Now().Unix(),
+		UserID:   userID,
+		Modified: vmod.NewModified(),
+	}
+}
+
+func NewNVMRejected() *NVMUpdate {
+	return &NVMUpdate{
+		Status: "rejected",
+		Since:  time.Now().Unix(),
+	}
 }
 
 func NVMConfirm() *NVMUpdate {
@@ -87,23 +87,4 @@ func NVMWithdraw() *NVMUpdate {
 		Status: "withdrawn",
 		Since:  time.Now().Unix(),
 	}
-}
-
-func (i *NVM) IsConfirmed() bool {
-	if i.Status == "confirmed" {
-		return true
-	}
-	return false
-}
-func (i *NVM) IsWithdrawn() bool {
-	if i.Status == "withdrawn" {
-		return true
-	}
-	return false
-}
-func (i *NVM) IsRejected() bool {
-	if i.Status == "rejected" {
-		return true
-	}
-	return false
 }

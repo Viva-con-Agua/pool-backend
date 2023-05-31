@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// TODO CHECK RESULT new Model shit IN EVERY FILE remove new(Model) and keep new([]Model)
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
 	database := i.ParticipationDatabase(token)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
@@ -96,6 +95,17 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 }
 
 func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *vcapool.AccessToken) (result *models.Participation, err error) {
+	event := new(models.Participation)
+	if err = ParticipationCollection.AggregateOne(
+		ctx,
+		models.ParticipationPipeline().Match(i.Match()).Pipe,
+		event,
+	); err != nil {
+		return
+	}
+	if err = models.ParticipationUpdatePermission(token, event); err != nil {
+		return
+	}
 	filter := i.PermittedFilter(token)
 	if err = ParticipationCollection.UpdateOneAggregate(
 		ctx,

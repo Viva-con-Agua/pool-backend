@@ -86,6 +86,20 @@ type (
 
 var MessageCollection = "messages"
 
+func MessageCrewPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate(ASPRole)) {
+		return vcago.NewPermissionDenied(MessageCollection)
+	}
+	return
+}
+
+func MessageEventPermission(token *vcapool.AccessToken, event *Event) (err error) {
+	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
+		return vcago.NewPermissionDenied(MessageCollection)
+	}
+	return
+}
+
 func (i *MessageCreate) MessageSub(token *vcapool.AccessToken) *Message {
 	return &Message{
 		ID:             uuid.NewString(),
@@ -115,20 +129,6 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 		Read:           i.Read,
 		RecipientGroup: i.RecipientGroup,
 	}
-}
-
-func MessageCrewPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate(ASPRole)) {
-		return vcago.NewBadRequest("message", "not allowed to send message")
-	}
-	return
-}
-
-func MessageEventPermission(token *vcapool.AccessToken, event *Event) (err error) {
-	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
-		return vcago.NewBadRequest("message", "not allowed to send message")
-	}
-	return
 }
 
 func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
@@ -165,6 +165,12 @@ func (i *RecipientGroup) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	if !i.IgnoreNewsletter {
 		filter.EqualString("newsletter.value", "regional")
 	}
+	return filter.Bson()
+}
+
+func (i *RecipientGroup) FilterEvent() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.EventID)
 	return filter.Bson()
 }
 

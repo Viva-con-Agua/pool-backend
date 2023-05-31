@@ -57,28 +57,28 @@ func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) 
 	} else if token.CrewID == mailbox.ID {
 		return
 	}
-	return vcago.NewPermissionDenied("mailbox")
+	return vcago.NewPermissionDenied(MailboxCollection)
 }
 
 func (i *MailboxParam) Pipeline() mongo.Pipeline {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	pipe := MailboxPipeline()
-	pipe.Match(match.Bson())
+	pipe.Match(filter.Bson())
 	return pipe.Pipe
 }
 
 func (i *MailboxParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;asp;")) {
-		match.EqualString("user._id", token.ID)
-		match.EqualString("type", "user")
+		filter.EqualString("user._id", token.ID)
+		filter.EqualString("type", "user")
 	} else if !token.Roles.Validate("employee;admin") {
 		status := bson.A{}
 		status = append(status, bson.D{{Key: "user._id", Value: token.ID}})
 		status = append(status, bson.D{{Key: "crew._id", Value: token.CrewID}})
-		match.Append(bson.E{Key: "$or", Value: status})
+		filter.Append(bson.E{Key: "$or", Value: status})
 	}
-	return match.Bson()
+	return filter.Bson()
 }

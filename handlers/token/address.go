@@ -113,7 +113,7 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.NVM
+	result := new(models.NVM)
 	if result, err = dao.AddressDelete(c.Ctx(), body, token); err != nil {
 		return
 	}

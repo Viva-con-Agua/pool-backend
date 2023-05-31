@@ -4,52 +4,19 @@ import (
 	"context"
 	"pool-backend/models"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 var (
-	TakingCreatedActivity = &models.ActivityDB{ModelType: "taking", Comment: "Successfully created", Status: "created"}
-	TakingUpdatedActivity = &models.ActivityDB{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
+	TakingCreatedActivity = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully created", Status: "created"}
+	TakingUpdatedActivity = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
 )
 
-func newTakingsPipeline() *vmdb.Pipeline {
-	pipe := vmdb.NewPipeline()
-	pipe.Lookup("deposit_unit_taking", "_id", "taking_id", "deposit_units")
-	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
-	pipe.LookupMatch("deposit_unit_taking", "_id", "taking_id", "confirmed", bson.D{{Key: "deposit.status", Value: "confirmed"}})
-	pipe.Lookup("sources", "_id", "taking_id", "sources")
-	pipe.LookupUnwind("crews", "crew_id", "_id", "crew")
-	pipe.LookupUnwind("events", "_id", "taking_id", "event")
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
-		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
-	}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
-		{Key: "state.confirmed.amount", Value: bson.D{{Key: "$sum", Value: "$confirmed.money.amount"}}},
-	}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.amount", Value: bson.D{{Key: "$sum", Value: "$sources.money.amount"}}}}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.amount", Value: bson.D{
-		{Key: "$subtract", Value: bson.A{"$money.amount", bson.D{{Key: "$add", Value: bson.A{"$state.wait.amount", "$state.confirmed.amount"}}}}},
-	}}}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
-		{Key: "state.wait.currency", Value: "$currency"},
-	}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
-		{Key: "state.confirmed.currency", Value: "$currency"},
-	}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
-	pipe.Lookup("activity_user", "_id", "model_id", "activities")
-	pipe.LookupUnwindMatch("activity_user", "_id", "model_id", "dummy", bson.D{{Key: "status", Value: "created"}})
-	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "creator", Value: "$dummy.user"}}}})
-
-	return pipe
-}
-func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (r *models.Taking, err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
-		return nil, vcago.NewPermissionDenied("takings")
+func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (result *models.Taking, err error) {
+	if err = models.TakingPermission(token); err != nil {
+		return
 	}
 	//create taking model form i.
 	taking := i.TakingDatabase()
@@ -62,14 +29,13 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 			return
 		}
 	}
-	r = new(models.Taking)
 	if err = ActivityCollection.InsertOne(ctx, TakingCreatedActivity.New(token.ID, taking.ID)); err != nil {
 		return
 	}
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
-		r,
+		models.TakingPipeline().Match(bson.D{{Key: "_id", Value: taking.ID}}).Pipe,
+		&result,
 	); err != nil {
 		return
 	}
@@ -77,9 +43,9 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	return
 }
 
-func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.AccessToken) (r *models.Taking, err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
-		return nil, vcago.NewPermissionDenied("takings")
+func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.AccessToken) (result *models.Taking, err error) {
+	if err = models.TakingPermission(token); err != nil {
+		return
 	}
 	takingDatabase := new(models.TakingDatabase)
 	if err = TakingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, takingDatabase); err != nil {
@@ -120,17 +86,15 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			}
 		}
 	}
-	r = new(models.Taking)
 	if err = ActivityCollection.InsertOne(ctx, TakingUpdatedActivity.New(token.ID, takingDatabase.ID)); err != nil {
 		return
 	}
-	r = new(models.Taking)
 	if err = TakingCollection.UpdateOneAggregate(
 		ctx,
 		bson.D{{Key: "_id", Value: i.ID}},
 		vmdb.UpdateSet(i),
-		r,
-		newTakingsPipeline().Match(bson.D{{Key: "_id", Value: i.ID}}).Pipe,
+		&result,
+		models.TakingPipeline().Match(bson.D{{Key: "_id", Value: i.ID}}).Pipe,
 	); err != nil {
 		return
 	}
@@ -158,13 +122,13 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 }
 
 func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
-		return nil, vcago.NewPermissionDenied("takings")
+	if err = models.TakingPermission(token); err != nil {
+		return
 	}
 	result = new([]models.Taking)
 	if err = TakingCollection.Aggregate(
 		ctx,
-		newTakingsPipeline().Match(query.Filter(token)).Pipe,
+		models.TakingPipeline().Match(query.PermittedFilter(token)).Pipe,
 		result,
 	); err != nil {
 		return
@@ -173,14 +137,14 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.Ac
 }
 
 func TakingGetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
-		return nil, vcago.NewPermissionDenied("takings")
+	if err = models.TakingPermission(token); err != nil {
+		return
 	}
-	result = new(models.Taking)
+	filter := param.PermittedFilter(token)
 	if err = TakingCollection.AggregateOne(
 		ctx,
-		newTakingsPipeline().Match(param.Filter(token)).Pipe,
-		result,
+		models.TakingPipeline().Match(filter).Pipe,
+		&result,
 	); err != nil {
 		return
 	}
@@ -188,9 +152,9 @@ func TakingGetByID(ctx context.Context, param *models.TakingParam, token *vcapoo
 }
 
 func TakingDeletetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
-		return vcago.NewPermissionDenied("takings")
+	if err = models.TakingPermission(token); err != nil {
+		return
 	}
-	err = TakingCollection.DeleteOne(ctx, param.Filter(token))
+	err = TakingCollection.DeleteOne(ctx, param.PermittedFilter(token))
 	return
 }

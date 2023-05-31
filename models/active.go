@@ -70,31 +70,6 @@ func ActiveRequest() *ActiveUpdate {
 	}
 }
 
-func (i *Active) IsRequested() bool {
-	if i.Status == "requested" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsConfirmed() bool {
-	if i.Status == "confirmed" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsWithdrawn() bool {
-	if i.Status == "withdrawn" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsRejected() bool {
-	if i.Status == "rejected" {
-		return true
-	}
-	return false
-}
-
 func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 	if token.CrewID == "" {
 		return vcago.NewBadRequest("active", "not an crew member")

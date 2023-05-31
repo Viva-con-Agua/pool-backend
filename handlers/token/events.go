@@ -42,7 +42,7 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Event)
-	if result, err = dao.EventInsert(c.Ctx(), body.EventDatabase(token), token); err != nil {
+	if result, err = dao.EventInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	result.EditorID = token.ID

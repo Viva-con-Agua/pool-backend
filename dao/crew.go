@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// TODO CHECK ALL INSERTS FOR USAGE OF CREATION TYPES WITH MODIFIED
 func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.AccessToken) (result *models.Crew, err error) {
 
 	if err = models.CrewPermission(token); err != nil {
@@ -40,7 +39,6 @@ func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToke
 	if err = CrewsCollection.Find(ctx, filter, result); err != nil {
 		return
 	}
-
 	return
 }
 
@@ -58,7 +56,6 @@ func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.C
 	if err = CrewsCollection.Find(ctx, filter, result); err != nil {
 		return
 	}
-
 	return
 }
 
@@ -70,7 +67,6 @@ func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.Ac
 	return
 }
 
-// TODO CHECK ALL UPDATE METHODS IN ALL FILES FOR USAGE OF vmdb.UpdateSet()
 func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
 	if err = models.CrewUpdatePermission(token); err != nil {
 		return
@@ -108,17 +104,17 @@ func CrewDelete(ctx context.Context, i *models.CrewParam, token *vcapool.AccessT
 	return
 }
 
-func CrewImport(ctx context.Context, i *models.CrewCreate) (r *models.Crew, err error) {
+func CrewImport(ctx context.Context, i *models.CrewCreate) (result *models.Crew, err error) {
 	//create mailbox
 	mailbox := models.NewMailboxDatabase("crew")
 	if err = MailboxCollection.InsertOne(ctx, mailbox); err != nil {
 		return
 	}
-	r = i.Crew()
+	result = i.Crew()
 	// refer the mailbox.ID
-	r.MailboxID = mailbox.ID
+	result.MailboxID = mailbox.ID
 	// insert user
-	if err = CrewsCollection.InsertOne(ctx, r); err != nil {
+	if err = CrewsCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
 	//select user from database

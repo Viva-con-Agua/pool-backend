@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -56,14 +57,11 @@ func NewUserCrew(userID string, crewID string, name string, email string, mailbo
 	}
 }
 
-func (i *UserCrewCreate) CrewFilter() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.CrewID)
-	return bson.D(*match)
-}
-
-func (i *UserCrewUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *UserCrewUpdate) UserCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+	if token.ID != i.UserID {
+		return vcago.NewPermissionDenied(CrewCollection)
+	}
+	return
 }
 
 func (i *UserCrewImport) ToActive(userID string) (result *Active) {
@@ -114,4 +112,17 @@ func (i *UserCrewImport) ToRoles(userID string) (result []vmod.Role) {
 		}
 	}
 	return
+}
+
+func (i *UserCrewCreate) CrewFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.CrewID)
+	return filter.Bson()
+}
+
+func (i *UserCrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }

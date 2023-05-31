@@ -33,7 +33,7 @@ func (i *DepositHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Deposit
+	result := new(models.Deposit)
 	if result, err = dao.DepositInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -46,7 +46,7 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	var result *[]models.Deposit
+	result := new([]models.Deposit)
 	token := new(vcapool.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
@@ -67,7 +67,7 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Deposit
+	result := new(models.Deposit)
 	if result, err = dao.DepositGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -84,7 +84,7 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Deposit
+	result := new(models.Deposit)
 	if result, err = dao.DepositUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}

@@ -6,7 +6,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func AddressInsert(ctx context.Context, i *models.AddressCreate, token *vcapool.AccessToken) (result *models.Address, err error) {
@@ -53,13 +52,13 @@ func AddressDelete(ctx context.Context, i *models.AddressParam, token *vcapool.A
 	return
 }
 
-func AddressImport(ctx context.Context, address *models.AddressImport) (result *models.Address, err error) {
+func AddressImport(ctx context.Context, i *models.AddressImport) (result *models.Address, err error) {
 	user := new(models.UserDatabase)
-	userFilter := bson.D{{Key: "drops_id", Value: address.DropsID}}
-	if err = UserCollection.FindOne(ctx, userFilter, user); err != nil {
+	filter := i.FilterUser()
+	if err = UserCollection.FindOne(ctx, filter, user); err != nil {
 		return
 	}
-	result = address.Address(user.ID)
+	result = i.Address(user.ID)
 	if err = AddressesCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
