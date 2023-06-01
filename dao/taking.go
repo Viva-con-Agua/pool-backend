@@ -47,8 +47,9 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	takingDatabase := new(models.TakingDatabase)
-	if err = TakingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, takingDatabase); err != nil {
+	takingDatabase := new(models.Taking)
+	filter := i.PermittedFilter(token)
+	if err = TakingCollection.AggregateOne(ctx, models.TakingPipeline().Match(filter).Pipe, takingDatabase); err != nil {
 		return
 	}
 	i.State = &takingDatabase.State
@@ -148,6 +149,24 @@ func TakingGetByID(ctx context.Context, param *models.TakingParam, token *vcapoo
 	); err != nil {
 		return
 	}
+	return
+}
+
+func TakingGetByIDSystem(ctx context.Context, id string) (result *models.Taking, err error) {
+	filter := bson.D{{Key: "_id", Value: id}}
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		models.TakingPipeline().Match(filter).Pipe,
+		&result,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func TakingDeletetByIDSystem(ctx context.Context, id string) (err error) {
+	filter := bson.D{{Key: "_id", Value: id}}
+	err = TakingCollection.DeleteOne(ctx, filter)
 	return
 }
 

@@ -193,11 +193,21 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
+func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("_id", []string{i.ID})
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualStringList("crew_id", []string{token.CrewID})
+	}
+	return filter.Bson()
+}
+
 func (i *TakingParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
+	filter.EqualStringList("event.event_state.state", []string{"published", "finished"})
 	return filter.Bson()
 }
