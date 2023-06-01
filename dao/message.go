@@ -52,9 +52,8 @@ func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 		return nil, vcago.NewBadRequest("message", "not allowed to send message")
 	}
 	pFilter := i.FilterMailParticipations(event)
-	pPipeline := models.ParticipationPipeline().Match(pFilter)
 	participations := new([]models.Participation)
-	if err = ParticipationCollection.Aggregate(ctx, pPipeline.Pipe, participations); err != nil {
+	if err = ParticipationCollection.Aggregate(ctx, models.ParticipationPipeline().Match(pFilter).Pipe, participations); err != nil {
 		return
 	}
 	result = []models.TOData{}
