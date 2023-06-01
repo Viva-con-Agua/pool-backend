@@ -51,7 +51,7 @@ func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 	if !token.PoolRoles.Validate(models.ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
 		return nil, vcago.NewBadRequest("message", "not allowed to send message")
 	}
-	pFilter := bson.D{{Key: "event_id", Value: event.ID}}
+	pFilter := i.FilterMailParticipations(event)
 	pPipeline := models.ParticipationPipeline().Match(pFilter)
 	participations := new([]models.Participation)
 	if err = ParticipationCollection.Aggregate(ctx, pPipeline.Pipe, participations); err != nil {
