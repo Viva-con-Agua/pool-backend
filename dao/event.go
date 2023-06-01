@@ -201,7 +201,6 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 		participation.EventID = result.ID
 		participation.UserID = participant.ID
 		participation.CrewID = result.CrewID
-
 		if err = ParticipationCollection.InsertOne(ctx, participation); err != nil {
 			return
 		}
