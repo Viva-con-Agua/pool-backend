@@ -35,7 +35,7 @@ func (i *ActiveHandler) Request(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Active
+	result := new(models.Active)
 	if result, err = dao.ActiveRequest(c.Ctx(), token); err != nil {
 		return
 	}
@@ -56,7 +56,7 @@ func (i *ActiveHandler) Confirm(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Active
+	result := new(models.Active)
 	if result, err = dao.ActiveConfirm(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -74,7 +74,7 @@ func (i *ActiveHandler) Reject(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Active
+	result := new(models.Active)
 	if result, err = dao.ActiveReject(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -88,9 +88,9 @@ func (i *ActiveHandler) Withdraw(cc echo.Context) (err error) {
 		return
 	}
 	//reject nvm state
-	var result *models.Active
+	result := new(models.Active)
 	if result, err = dao.ActiveWithdraw(c.Ctx(), token); err != nil {
 		return
 	}
-	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "active", result)
+	return c.SuccessResponse(http.StatusOK, "successfully_withdrawn", "active", result)
 }

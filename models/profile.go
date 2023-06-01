@@ -1,13 +1,12 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
-
-var ProfilesCollection = "profiles"
 
 type (
 	ProfileCreate struct {
@@ -32,6 +31,10 @@ type (
 		UserID     string        `bson:"user_id" json:"user_id"`
 		Modified   vmod.Modified `bson:"modified" json:"modified"`
 	}
+	ProfileMinimal struct {
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		UserID     string `bson:"user_id" json:"user_id"`
+	}
 	ProfileImport struct {
 		Gender     string `bson:"gender" json:"gender"`
 		Phone      string `bson:"phone" json:"phone"`
@@ -40,6 +43,8 @@ type (
 		DropsID    string `bson:"drops_id" json:"drops_id"`
 	}
 )
+
+var ProfileCollection = "profiles"
 
 func (i *ProfileCreate) Profile(userID string) *Profile {
 	return &Profile{
@@ -53,10 +58,6 @@ func (i *ProfileCreate) Profile(userID string) *Profile {
 	}
 }
 
-func (i *ProfileUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
-}
-
 func (i *ProfileImport) Profile(userID string) *Profile {
 	return &Profile{
 		ID:         uuid.NewString(),
@@ -67,4 +68,11 @@ func (i *ProfileImport) Profile(userID string) *Profile {
 		UserID:     userID,
 		Modified:   vmod.NewModified(),
 	}
+}
+
+func (i *ProfileUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }

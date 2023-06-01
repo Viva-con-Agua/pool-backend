@@ -58,6 +58,8 @@ type (
 	}
 )
 
+var SourceCollection = "sources"
+
 func (i *SourceList) InsertMany() []interface{} {
 	var interfaceSlice []interface{} = make([]interface{}, len(*i))
 	for n, d := range *i {
@@ -85,16 +87,19 @@ func (i *SourceUpdate) Source() *Source {
 		PaymentType: i.PaymentType,
 		TakingID:    i.TakingID,
 		Money:       i.Money,
-		Modified:    vmod.NewModified(),
 	}
 }
 
 func (i *SourceParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *SourceUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *SourceQuery) Filter() bson.D {
@@ -104,5 +109,5 @@ func (i *SourceQuery) Filter() bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
-	return bson.D(*filter)
+	return filter.Bson()
 }

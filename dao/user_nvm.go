@@ -4,14 +4,12 @@ import (
 	"context"
 	"pool-backend/models"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models.NVM, err error) {
-	result = new(models.NVM)
 	if err = models.NVMConfirmedPermission(token); err != nil {
 		return
 	}
@@ -19,7 +17,7 @@ func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},
 		vmdb.UpdateSet(models.NVMConfirm()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -28,15 +26,14 @@ func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models
 }
 
 func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
-	result = new(models.NVM)
-	if err = models.NVMRejectPermission(token); err != nil {
-		return nil, vcago.NewPermissionDenied("nvm", nil)
+	if err = models.NVMPermission(token); err != nil {
+		return
 	}
 	if err = NVMCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: i.ID}},
 		vmdb.UpdateSet(models.NVMConfirm()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -45,19 +42,14 @@ func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.Ac
 }
 
 func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
-	result = new(models.NVM)
-	if err = models.NVMRejectPermission(token); err != nil {
-		return nil, vcago.NewPermissionDenied("nvm", nil)
-	}
-
-	if err = NVMCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: i.ID}}, result); err != nil {
+	if err = models.NVMPermission(token); err != nil {
 		return
 	}
 	if err = NVMCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: i.ID}},
 		vmdb.UpdateSet(models.NVMReject()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -72,12 +64,11 @@ func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.Acc
 }
 
 func NVMWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *models.NVM, err error) {
-	result = new(models.NVM)
 	if err = NVMCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},
 		vmdb.UpdateSet(models.NVMWithdraw()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}

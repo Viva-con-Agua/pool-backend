@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -100,6 +101,48 @@ type (
 	}
 )
 
+var DepositCollection = "deposits"
+var DepositUnitCollection = "deposit_units"
+var DepositUnitTakingView = "deposit_unit_taking"
+
+func DepositPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return vcago.NewPermissionDenied(DepositCollection)
+	}
+	return
+}
+
+func DepositPipeline() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
+	pipe.LookupUnwind(TakingCollection, "deposit_units.taking_id", "_id", "deposit_units.taking")
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
+				{Key: "$push", Value: "$deposit_units"},
+			}},
+		}},
+	})
+	pipe.LookupUnwind(DepositCollection, "_id", "_id", "deposits")
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
+	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	return pipe
+}
+
+func Match(id string) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", id)
+	return filter.Bson()
+}
+
+/*
+Should this be used somewhere?
+func UpdateWaitTaking(amount int64) bson.D {
+	return bson.D{{Key: "$inc", Value: bson.D{{Key: "state.open.amount", Value: -amount}, {Key: "state.wait.amount", Value: amount}}}}
+}
+*/
+
 func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositDatabase, d []DepositUnit) {
 	dIDs := []string{}
 	d = []DepositUnit{}
@@ -138,7 +181,7 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 	return
 }
 
-func (i *DepositQuery) Filter(token *vcapool.AccessToken) bson.D {
+func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	if !token.Roles.Validate("admin;employee") {
@@ -150,5 +193,14 @@ func (i *DepositQuery) Filter(token *vcapool.AccessToken) bson.D {
 	filter.EqualBool("has_external", i.HasExternal)
 	filter.LikeString("deposit_units.taking.name", i.Name)
 	filter.LikeString("reason_for_payment", i.ReasonForPayment)
+	return filter.Bson()
+}
+
+func (i *DepositParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("admin;employee") {
+		filter.EqualString("crew_id", token.CrewID)
+	}
 	return filter.Bson()
 }

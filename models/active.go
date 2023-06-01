@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
@@ -69,31 +70,6 @@ func ActiveRequest() *ActiveUpdate {
 	}
 }
 
-func (i *Active) IsRequested() bool {
-	if i.Status == "requested" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsConfirmed() bool {
-	if i.Status == "confirmed" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsWithdrawn() bool {
-	if i.Status == "withdrawn" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsRejected() bool {
-	if i.Status == "rejected" {
-		return true
-	}
-	return false
-}
-
 func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 	if token.CrewID == "" {
 		return vcago.NewBadRequest("active", "not an crew member")
@@ -108,10 +84,11 @@ func ActivePermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
-func (i *ActiveParam) Filter(token *vcapool.AccessToken) bson.D {
-	if token.Roles.Validate("employee;admin") {
-		return bson.D{{Key: "user_id", Value: i.UserID}}
-
+func (i *ActiveParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("user_id", i.UserID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
 	}
-	return bson.D{{Key: "user_id", Value: i.UserID}, {Key: "crew_id", Value: token.CrewID}}
+	return filter.Bson()
 }

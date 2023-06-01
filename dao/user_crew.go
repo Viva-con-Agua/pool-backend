@@ -5,8 +5,58 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
+		return
+	}
+	result = models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
+		return
+	}
+	if err = ActiveCollection.InsertOne(ctx, models.NewActive(token.ID, crew.ID)); err != nil {
+		return
+	}
+	if err = NVMCollection.InsertOne(ctx, models.NewNVM(token.ID)); err != nil {
+		return
+	}
+	return
+}
+
+func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+	if err = i.UserCrewUpdatePermission(token); err != nil {
+		return
+	}
+
+	if err = UserCrewCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &result); err != nil {
+		return
+	}
+	//reset active and nvm
+	if err = ActiveCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "user_id", Value: i.UserID}},
+		vmdb.UpdateSet(models.ActiveWithdraw()),
+		nil,
+	); err != nil && vmdb.ErrNoDocuments(err) {
+		return
+	}
+	//reject nvm state
+	if err = NVMCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "user_id", Value: i.UserID}},
+		vmdb.UpdateSet(models.NVMWithdraw()),
+		nil,
+	); err != nil && vmdb.ErrNoDocuments(err) {
+		return
+	}
+
+	return
+}
 
 func UserCrewDelete(ctx context.Context, id string) (err error) {
 	if err = UserCrewCollection.DeleteOne(ctx, bson.D{{Key: "user_id", Value: id}}); err != nil {

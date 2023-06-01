@@ -10,12 +10,11 @@ import (
 )
 
 func ActiveWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *models.Active, err error) {
-	result = new(models.Active)
 	if err = ActiveCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},
 		vmdb.UpdateSet(models.ActiveWithdraw()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -38,18 +37,16 @@ func ActiveWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *mo
 }
 
 func ActiveReject(ctx context.Context, i *models.ActiveParam, token *vcapool.AccessToken) (result *models.Active, err error) {
-	result = new(models.Active)
-
 	//check permissions for update an other users active model.
 	if err = models.ActivePermission(token); err != nil {
 		return
 	}
-	//update active model.
+	filter := i.PermittedFilter(token)
 	if err = ActiveCollection.UpdateOne(
 		ctx,
-		i.Filter(token),
+		filter,
 		vmdb.UpdateSet(models.ActiveReject()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -61,6 +58,7 @@ func ActiveReject(ctx context.Context, i *models.ActiveParam, token *vcapool.Acc
 	); err != nil {
 		return
 	}
+	//Delete Pool Roles
 	if err = PoolRoleCollection.TryDeleteMany(
 		ctx,
 		bson.D{{Key: "user_id", Value: i.UserID}},
@@ -71,17 +69,16 @@ func ActiveReject(ctx context.Context, i *models.ActiveParam, token *vcapool.Acc
 }
 
 func ActiveConfirm(ctx context.Context, i *models.ActiveParam, token *vcapool.AccessToken) (result *models.Active, err error) {
-	result = new(models.Active)
 	//check permissions for update an other users active model.
 	if err = models.ActivePermission(token); err != nil {
 		return
 	}
-	//update active model.
+	filter := i.PermittedFilter(token)
 	if err = ActiveCollection.UpdateOne(
 		ctx,
-		i.Filter(token),
+		filter,
 		vmdb.UpdateSet(models.ActiveConfirm()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
@@ -89,7 +86,6 @@ func ActiveConfirm(ctx context.Context, i *models.ActiveParam, token *vcapool.Ac
 }
 
 func ActiveRequest(ctx context.Context, token *vcapool.AccessToken) (result *models.Active, err error) {
-	result = new(models.Active)
 	//check permissions for active request
 	if err = models.ActiveRequestPermission(token); err != nil {
 		return
@@ -98,7 +94,7 @@ func ActiveRequest(ctx context.Context, token *vcapool.AccessToken) (result *mod
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},
 		vmdb.UpdateSet(models.ActiveRequest()),
-		result,
+		&result,
 	); err != nil {
 		return
 	}
