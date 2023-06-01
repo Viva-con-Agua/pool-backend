@@ -1,5 +1,10 @@
 package models
 
+import (
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"go.mongodb.org/mongo-driver/bson"
+)
+
 // RecipientGroup represents
 type RecipientGroup struct {
 	Type             string   `json:"type" bson:"type"`                 // can be crew or event
@@ -17,4 +22,11 @@ func (i *RecipientGroup) UserQuery() *UserQuery {
 	query.ActiveState = i.Active
 	query.NVMState = i.NVM
 	return query
+}
+
+func (i *RecipientGroup) FilterMailParticipations(event *Event) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("event_id", event.ID)
+	filter.EqualStringList("status", i.State)
+	return filter.Bson()
 }
