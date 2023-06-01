@@ -31,7 +31,7 @@ func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.NVM
+	result := new(models.NVM)
 	if result, err = dao.NVMConfirm(c.Ctx(), token); err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (i *NVMHandler) ConfirmUser(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.NVM
+	result := new(models.NVM)
 	if result, err = dao.NVMConfirmUser(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -76,7 +76,7 @@ func (i *NVMHandler) RejectUser(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.NVM
+	result := new(models.NVM)
 	if result, err = dao.NVMRejectUser(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -94,7 +94,7 @@ func (i *NVMHandler) Withdraw(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.NVM
+	result := new(models.NVM)
 	if result, err = dao.NVMWithdraw(c.Ctx(), token); err != nil {
 		return
 	}
@@ -103,5 +103,5 @@ func (i *NVMHandler) Withdraw(cc echo.Context) (err error) {
 			log.Print(err)
 		}
 	}()
-	return c.SuccessResponse(http.StatusOK, "successfully_withdrawed", "nvm", result)
+	return c.SuccessResponse(http.StatusOK, "successfully_withdrawn", "nvm", result)
 }

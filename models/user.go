@@ -9,7 +9,6 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type (
@@ -90,6 +89,25 @@ type (
 		PoolRoles vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
 		Modified  vmod.Modified `json:"modified" bson:"modified"`
 	}
+	UserMinimal struct {
+		ID          string `json:"id,omitempty" bson:"_id"`
+		FirstName   string `bson:"first_name" json:"first_name" validate:"required"`
+		LastName    string `bson:"last_name" json:"last_name" validate:"required"`
+		FullName    string `bson:"full_name" json:"full_name"`
+		DisplayName string `bson:"display_name" json:"display_name"`
+	}
+	UserBasic struct {
+		ID          string         `json:"id,omitempty" bson:"_id"`
+		FirstName   string         `bson:"first_name" json:"first_name" validate:"required"`
+		LastName    string         `bson:"last_name" json:"last_name" validate:"required"`
+		FullName    string         `bson:"full_name" json:"full_name"`
+		Profile     ProfileMinimal `bson:"profile" json:"profile"`
+		DisplayName string         `bson:"display_name" json:"display_name"`
+		Roles       vmod.RoleList  `json:"system_roles" bson:"system_roles"`
+		Avatar      Avatar         `bson:"avatar,omitempty" json:"avatar"`
+		PoolRoles   vmod.RoleList  `json:"pool_roles" bson:"pool_roles,omitempty"`
+		NVM         NVM            `json:"nvm" bson:"nvm,omitempty"`
+	}
 	UserParam struct {
 		ID string `param:"id"`
 	}
@@ -149,23 +167,6 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 	}
 }
 
-func UserProjection() bson.D {
-	return bson.D{{
-		Key: "$project", Value: bson.D{
-			{Key: "_id", Value: 1},
-			{Key: "first_name", Value: 1},
-			{Key: "full_name", Value: 1},
-			{Key: "display_name", Value: 1},
-			{Key: "last_name", Value: 1},
-			{Key: "profile", Value: 1},
-			{Key: "pool_roles", Value: 1},
-			{Key: "system_roles", Value: 1},
-			{Key: "nvm", Value: 1},
-			{Key: "avatar", Value: 1},
-			{Key: "crew", Value: 1}},
-	}}
-}
-
 func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	if user == true {
@@ -174,12 +175,12 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
-	pipe.LookupUnwind(ProfilesCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.Lookup("newsletters", "_id", "user_id", "newsletter")
+	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
@@ -195,19 +196,15 @@ func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 }
 
 func UserMatch(userID string) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", userID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", userID)
+	return filter.Bson()
 }
 
 func UserMatchEmail(email string) bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("email", email)
-	return match.Bson()
-}
-
-func (i *UserUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("email", email)
+	return filter.Bson()
 }
 
 func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
@@ -249,49 +246,95 @@ func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 	return vcago.NewAuthToken(accessToken, refreshToken)
 }
 
-func (i UserParam) Pipeline() mongo.Pipeline {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
-	return UserPipeline(false).Match(match.Bson()).Pipe
-}
-
-func (i *UserParam) Filter(token *vcapool.AccessToken) bson.D {
-	if token.Roles.Validate("employee;admin") {
-		return bson.D{{Key: "_id", Value: i.ID}}
-	} else {
-		return bson.D{{Key: "_id", Value: token.ID}}
+func UsersPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
+		return vcago.NewPermissionDenied(UserCollection)
 	}
+	return
 }
 
-func (i *UserParam) FilterAdmin() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
-
+func (i *UserQuery) CrewUsersPermission(token *vcapool.AccessToken) (err error) {
+	if i.CrewID != "" && i.CrewID != token.CrewID {
+		return vcago.NewPermissionDenied(UserCollection)
+	}
+	return
 }
 
-func (i *UserQuery) Match() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualBool("confirmed", "true")
-	match.LikeString("first_name", i.FirstName)
-	match.LikeString("last_name", i.LastName)
-	match.LikeString("full_name", i.FullName)
-	match.LikeString("display_name", i.DisplayName)
-	match.EqualString("crew.crew_id", i.CrewID)
-	match.ElemMatchList("system_roles", "name", i.SystemRoles)
-	match.ElemMatchList("pool_roles", "name", i.PoolRoles)
-	match.EqualBool("privacy_policy", i.PrivacyPolicy)
-	match.EqualStringList("active.status", i.ActiveState)
-	match.EqualStringList("nvm.status", i.NVMState)
-	match.EqualString("crew.crew_id", i.CrewID)
-	match.EqualString("country", i.Country)
-	match.EqualBool("confirmed", i.Confirmed)
-	match.GteInt64("modified.updated", i.UpdatedFrom)
-	match.GteInt64("modified.created", i.CreatedFrom)
-	match.LteInt64("modified.updated", i.UpdatedTo)
-	match.LteInt64("modified.created", i.CreatedTo)
-	return match.Bson()
+func (i UserParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
-func (i *UserQuery) Pipeline() mongo.Pipeline {
-	match := i.Match()
-	return UserPipeline(false).Match(match).Pipe
+func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualBool("confirmed", "true")
+	filter.LikeString("first_name", i.FirstName)
+	filter.LikeString("last_name", i.LastName)
+	filter.LikeString("full_name", i.FullName)
+	filter.LikeString("display_name", i.DisplayName)
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("system_roles", "name", i.SystemRoles)
+	filter.ElemMatchList("pool_roles", "name", i.PoolRoles)
+	filter.EqualBool("privacy_policy", i.PrivacyPolicy)
+	filter.EqualStringList("active.status", i.ActiveState)
+	filter.EqualStringList("nvm.status", i.NVMState)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew.crew_id", token.CrewID)
+	} else {
+		filter.EqualString("crew.crew_id", i.CrewID)
+	}
+	filter.EqualString("country", i.Country)
+	filter.EqualBool("confirmed", i.Confirmed)
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
+}
+
+func (i *UserQuery) PermittedUserFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("crew.crew_id", token.CrewID)
+	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"})
+	filter.EqualBool("confirmed", "true")
+	filter.LikeString("first_name", i.FirstName)
+	filter.LikeString("last_name", i.LastName)
+	filter.LikeString("full_name", i.FullName)
+	filter.LikeString("display_name", i.DisplayName)
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("system_roles", "name", i.SystemRoles)
+	filter.EqualBool("privacy_policy", i.PrivacyPolicy)
+	filter.EqualStringList("active.status", i.ActiveState)
+	filter.EqualStringList("nvm.status", i.NVMState)
+	filter.EqualString("country", i.Country)
+	filter.EqualBool("confirmed", i.Confirmed)
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
+}
+
+func (i *UserQuery) Filter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualBool("confirmed", "true")
+	filter.LikeString("first_name", i.FirstName)
+	filter.LikeString("last_name", i.LastName)
+	filter.LikeString("full_name", i.FullName)
+	filter.LikeString("display_name", i.DisplayName)
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("system_roles", "name", i.SystemRoles)
+	filter.ElemMatchList("pool_roles", "name", i.PoolRoles)
+	filter.EqualBool("privacy_policy", i.PrivacyPolicy)
+	filter.EqualStringList("active.status", i.ActiveState)
+	filter.EqualStringList("nvm.status", i.NVMState)
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.EqualString("country", i.Country)
+	filter.EqualBool("confirmed", i.Confirmed)
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
 }

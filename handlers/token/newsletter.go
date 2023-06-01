@@ -32,7 +32,7 @@ func (i *NewsletterHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Newsletter
+	result := new(models.Newsletter)
 	if result, err = dao.NewsletterCreate(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (i *NewsletterHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	var result *models.Newsletter
+	result := new(models.Newsletter)
 	if result, err = dao.NewsletterDelete(c.Ctx(), body, token); err != nil {
 		return
 	}

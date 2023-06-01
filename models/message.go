@@ -1,6 +1,8 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
@@ -84,6 +86,20 @@ type (
 
 var MessageCollection = "messages"
 
+func MessageCrewPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate(ASPRole)) {
+		return vcago.NewPermissionDenied(MessageCollection)
+	}
+	return
+}
+
+func MessageEventPermission(token *vcapool.AccessToken, event *Event) (err error) {
+	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
+		return vcago.NewPermissionDenied(MessageCollection)
+	}
+	return
+}
+
 func (i *MessageCreate) MessageSub(token *vcapool.AccessToken) *Message {
 	return &Message{
 		ID:             uuid.NewString(),
@@ -115,22 +131,73 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 	}
 }
 
-func (i *MessageParam) Filter(token *vcapool.AccessToken, crew *Crew) bson.D {
-	return bson.D{
-		{Key: "_id", Value: i.ID},
-		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
-			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
-		}}}
+func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		filter.EqualString("mailbox_id", token.MailboxID)
+	} else {
+		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
+	}
+	return filter.Bson()
 }
 
-func (i *MessageUpdate) Filter(token *vcapool.AccessToken, crew *Crew) bson.D {
-	return bson.D{
-		{Key: "_id", Value: i.ID},
-		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
-			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
-		}}}
+func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		filter.EqualString("mailbox_id", token.MailboxID)
+	} else {
+		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
+	}
+	return filter.Bson()
+}
+
+func (i *RecipientGroup) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	if !token.Roles.Validate("admin;employee") {
+		filter.EqualString("crew.crew_id", token.CrewID)
+	} else {
+		filter.EqualString("crew.crew_id", i.CrewID)
+	}
+	filter.EqualStringList("active.status", i.Active)
+	filter.EqualStringList("nvm.status", i.NVM)
+	if !i.IgnoreNewsletter {
+		filter.EqualString("newsletter.value", "regional")
+	}
+	return filter.Bson()
+}
+
+func (i *RecipientGroup) FilterEvent() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.EventID)
+	return filter.Bson()
+}
+
+func (i *Message) PermittedCreate(token *vcapool.AccessToken, crew *Crew, event *Event) *Message {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+		if !(i.RecipientGroup.Type == "event" || token.ID == event.EventASPID) { // USER
+			i.MailboxID = token.MailboxID
+			i.From = token.Email
+		} else { // EVENT ASP
+			i.MailboxID = crew.MailboxID
+			if !(i.From == token.Email || i.From == crew.Email) {
+				i.From = token.Email
+			}
+		}
+	} else if !(token.Roles.Validate("employee;admin")) { // ASP
+		if i.MailboxID == crew.MailboxID {
+			i.RecipientGroup.CrewID = crew.ID
+			if !(i.From == token.Email || i.From == crew.Email) {
+				i.From = token.Email
+			}
+		} else {
+			i.MailboxID = token.MailboxID
+			i.From = token.Email
+		}
+	}
+	// ADMIN
+	return i
 }
 
 func (i *Message) Inbox() *[]interface{} {

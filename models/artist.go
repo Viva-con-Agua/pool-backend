@@ -1,8 +1,10 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -33,6 +35,22 @@ type (
 	}
 )
 
+var ArtistCollection = "artists"
+
+func ArtistPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+		return vcago.NewPermissionDenied(ArtistCollection)
+	}
+	return
+}
+
+func ArtistDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied(ArtistCollection)
+	}
+	return
+}
+
 func (i *ArtistCreate) Artist() *Artist {
 	return &Artist{
 		ID:       uuid.NewString(),
@@ -41,12 +59,16 @@ func (i *ArtistCreate) Artist() *Artist {
 	}
 }
 
-func (i *ArtistParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func (i *ArtistParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
-func (i *ArtistUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func (i *ArtistUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
 }
 
 func (i *ArtistQuery) Filter() bson.D {

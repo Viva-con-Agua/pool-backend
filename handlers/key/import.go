@@ -31,7 +31,7 @@ func (i *ImportHandler) ImportCrew(cc echo.Context) (err error) {
 		return
 	}
 	var result *models.Crew
-	if result, err = dao.CrewInsert(c.Ctx(), body); err != nil {
+	if result, err = dao.CrewImport(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Created(result)

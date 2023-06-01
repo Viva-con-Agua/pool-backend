@@ -31,7 +31,7 @@ func (i *MailboxHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Mailbox)
-	if result, err = dao.MailboxGetByID(c.Ctx(), body.ID, token); err != nil {
+	if result, err = dao.MailboxGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

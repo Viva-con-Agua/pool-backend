@@ -4,6 +4,7 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -33,7 +34,7 @@ type RoleDatabase struct {
 
 var PoolRoleCollection = "pool_roles"
 
-func (i *RoleRequest) New() (r *vmod.Role, err error) {
+func (i *RoleRequest) NewRole() (r *vmod.Role, err error) {
 	switch i.Role {
 	case "asp":
 		return RoleASP(i.UserID), err
@@ -57,6 +58,23 @@ func (i *RoleRequest) New() (r *vmod.Role, err error) {
 }
 
 var ASPRole = "asp;finance;operation;education;network;socialmedia;awareness"
+
+func RolesPermission(result *vmod.Role, user *User, token *vcapool.AccessToken) (err error) {
+	if user.NVM.Status != "confirmed" {
+		return vcago.NewBadRequest("role", "nvm required", nil)
+	}
+	if !(token.Roles.CheckRoot(result) || token.PoolRoles.CheckRoot(result)) {
+		return vcago.NewPermissionDenied(PoolRoleCollection)
+	}
+	return
+}
+
+func RolesDeletePermission(result *vmod.Role, token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.CheckRoot((*vmod.Role)(result)) || token.PoolRoles.CheckRoot((*vmod.Role)(result))) {
+		return vcago.NewPermissionDenied(PoolRoleCollection)
+	}
+	return
+}
 
 func RoleASP(userID string) *vmod.Role {
 	return &vmod.Role{
@@ -144,11 +162,14 @@ func RoleOther(userID string) *vmod.Role {
 }
 
 func (i *RoleRequest) MatchUser() bson.D {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.UserID)
-	return match.Bson()
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.UserID)
+	return filter.Bson()
 }
 
 func (i *RoleRequest) Filter() bson.D {
-	return bson.D{{Key: "name", Value: i.Role}, {Key: "user_id", Value: i.UserID}}
+	filter := vmdb.NewFilter()
+	filter.EqualString("name", i.Role)
+	filter.EqualString("user_id", i.UserID)
+	return filter.Bson()
 }

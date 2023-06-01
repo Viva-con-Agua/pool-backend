@@ -6,10 +6,8 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserCrewHandler struct {
@@ -35,18 +33,8 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	crew := new(models.Crew)
-	if err = dao.CrewsCollection.FindOne(c.Ctx(), body.CrewFilter(), crew); err != nil {
-		return
-	}
-	result := models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
-	if err = dao.UserCrewCollection.InsertOne(c.Ctx(), result); err != nil {
-		return
-	}
-	if err = dao.ActiveCollection.InsertOne(c.Ctx(), models.NewActive(token.ID, crew.ID)); err != nil {
-		return
-	}
-	if err = dao.NVMCollection.InsertOne(c.Ctx(), models.NewNVM(token.ID)); err != nil {
+	result := new(models.UserCrew)
+	if result, err = dao.UserCrewInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
@@ -67,29 +55,8 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if token.ID != body.UserID {
-		return vcago.NewPermissionDenied("crew")
-	}
 	result := new(models.UserCrew)
-	if err = dao.UserCrewCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.UpdateSet(body), result); err != nil {
-		return
-	}
-	//reset active and nvm
-	if err = dao.ActiveCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.UpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	//reject nvm state
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if result, err = dao.UserCrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Updated(result)
