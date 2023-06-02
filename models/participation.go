@@ -208,7 +208,7 @@ func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D 
 	return filter.Bson()
 }
 
-func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) *vmdb.Filter {
+func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.EqualStringList("event_id", i.EventID)
@@ -217,20 +217,20 @@ func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) *vmdb.Filter
 	filter.EqualStringList("crew.name", i.CrewName)
 	filter.EqualStringList("crew_id", i.CrewId)
 	filter.EqualString("user_id", token.ID)
-	return filter
+	return filter.Bson()
 }
 
-func (i *ParticipationQuery) FilterAspInformation(token *vcapool.AccessToken) *vmdb.Filter {
+func (i *ParticipationQuery) FilterAspInformation(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("event_id", i.EventID)
 	if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("status", "confirmed")
 		filter.EqualString("user_id", token.ID)
 	}
-	return filter
+	return filter.Bson()
 }
 
-func (i *EventParam) FilterEvent(token *vcapool.AccessToken) *vmdb.Filter {
+func (i *EventParam) FilterEvent(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
@@ -238,7 +238,7 @@ func (i *EventParam) FilterEvent(token *vcapool.AccessToken) *vmdb.Filter {
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("event.crew_id", token.CrewID)
 	}
-	return filter
+	return filter.Bson()
 }
 
 func (i *ParticipationDatabase) Match() bson.D {

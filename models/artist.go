@@ -38,7 +38,7 @@ type (
 var ArtistCollection = "artists"
 
 func ArtistPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return

@@ -387,7 +387,7 @@ func EventRolePipeline() *vmdb.Pipeline {
 }
 
 func EventPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
@@ -454,6 +454,13 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
+}
+
+func (i *EventParam) PublicFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	return filter.Bson()
 }
 

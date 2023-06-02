@@ -58,7 +58,7 @@ func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, tok
 	result = new([]models.UserParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
-		models.ParticipationPipeline().Match(filter.Bson()).Pipe,
+		models.ParticipationPipeline().Match(filter).Pipe,
 		result,
 	); err != nil {
 		return
@@ -72,7 +72,7 @@ func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, toke
 	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
-		models.ParticipationAspPipeline().Match(filter.Bson()).Pipe,
+		models.ParticipationAspPipeline().Match(filter).Pipe,
 		participation,
 	); err != nil {
 		return
@@ -86,7 +86,7 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 	result = new([]models.EventParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
-		models.ParticipationPipeline().Match(filter.Bson()).Pipe,
+		models.ParticipationPipeline().Match(filter).Pipe,
 		result,
 	); err != nil {
 		return

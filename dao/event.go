@@ -16,7 +16,7 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.Acce
 	event := i.EventDatabase(token)
 	taking := event.TakingDatabase()
 	event.TakingID = taking.ID
-	if err = EventCollection.InsertOne(ctx, i); err != nil {
+	if err = EventCollection.InsertOne(ctx, event); err != nil {
 		return
 	}
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
@@ -71,7 +71,7 @@ func EventAspGetByID(ctx context.Context, i *models.EventParam, token *vcapool.A
 }
 
 func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models.EventPublic, err error) {
-	filter := i.Match()
+	filter := i.PublicFilter()
 	if err = EventCollection.AggregateOne(
 		ctx,
 		models.EventPipelinePublic().Match(filter).Pipe,
