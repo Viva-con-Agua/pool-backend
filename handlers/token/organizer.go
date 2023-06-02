@@ -5,7 +5,7 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,11 +30,28 @@ func (i *OrganizerHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
 	}
-	result := body.Organizer()
-	if err = dao.OrganizerCollection.InsertOne(c.Ctx(), result); err != nil {
-		return c.ErrorResponse(err)
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new(models.Organizer)
+	if result, err = dao.OrganizerInsert(c.Ctx(), body, token); err != nil {
+		return
 	}
 	return c.Created(result)
+}
+
+func (i *OrganizerHandler) Get(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.OrganizerQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return c.ErrorResponse(err)
+	}
+	result := new([]models.Organizer)
+	if result, err = dao.OrganizerGet(c.Ctx(), body); err != nil {
+		return
+	}
+	return c.Selected(result)
 }
 
 func (i *OrganizerHandler) GetByID(cc echo.Context) (err error) {
@@ -44,8 +61,8 @@ func (i *OrganizerHandler) GetByID(cc echo.Context) (err error) {
 		return c.ErrorResponse(err)
 	}
 	result := new(models.Organizer)
-	if err = dao.OrganizerCollection.FindOne(c.Ctx(), body.Filter(), result); err != nil {
-		return c.ErrorResponse(err)
+	if result, err = dao.OrganizerGetByID(c.Ctx(), body); err != nil {
+		return
 	}
 	return c.Selected(result)
 }
@@ -56,11 +73,15 @@ func (i *OrganizerHandler) Update(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
 	}
-	result := new(models.Organizer)
-	if err = dao.OrganizerCollection.UpdateOne(c.Ctx(), body.Filter(), vmdb.UpdateSet(body), result); err != nil {
-		return c.ErrorResponse(err)
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
 	}
-	return c.Updated(body)
+	result := new(models.Organizer)
+	if result, err = dao.OrganizerUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Updated(result)
 }
 
 func (i *OrganizerHandler) Delete(cc echo.Context) (err error) {
@@ -69,21 +90,12 @@ func (i *OrganizerHandler) Delete(cc echo.Context) (err error) {
 	if c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
 	}
-	if err = dao.OrganizerCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
-		return c.ErrorResponse(err)
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = dao.OrganizerDelete(c.Ctx(), body, token); err != nil {
+		return
 	}
 	return c.Deleted(body.ID)
-}
-
-func (i *OrganizerHandler) Get(cc echo.Context) (err error) {
-	c := cc.(vcago.Context)
-	body := new(models.OrganizerQuery)
-	if err = c.BindAndValidate(body); err != nil {
-		return c.ErrorResponse(err)
-	}
-	result := new([]models.Organizer)
-	if err = dao.OrganizerCollection.Find(c.Ctx(), body.Filter(), result); err != nil {
-		return c.ErrorResponse(err)
-	}
-	return c.Selected(result)
 }

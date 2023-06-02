@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	ActivityDB struct {
+	ActivityDatabase struct {
 		ID        string        `json:"id" bson:"_id"`
 		UserID    string        `json:"user_id" bson:"user_id"`
 		Comment   string        `json:"comment" bson:"comment"`
@@ -27,10 +27,8 @@ type (
 	}
 )
 
-
-
-func NewActivityDB(userID string, modelType string, modelID string, comment string, status string) *ActivityDB {
-	return &ActivityDB{
+func NewActivity(userID string, modelType string, modelID string, comment string, status string) *ActivityDatabase {
+	return &ActivityDatabase{
 		ID:        uuid.NewString(),
 		UserID:    userID,
 		Comment:   comment,
@@ -41,7 +39,7 @@ func NewActivityDB(userID string, modelType string, modelID string, comment stri
 	}
 }
 
-func (i *ActivityDB) New(userID string, modelID string) *ActivityDB {
+func (i *ActivityDatabase) New(userID string, modelID string) *ActivityDatabase {
 	i.ID = uuid.NewString()
 	i.UserID = userID
 	i.ModelID = modelID

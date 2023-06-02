@@ -1,9 +1,12 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type (
@@ -25,6 +28,15 @@ type (
 		DropsID string `json:"drops_id"`
 	}
 )
+
+var NewsletterCollection = "newsletters"
+
+func NewsletterDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied(ArtistCollection)
+	}
+	return
+}
 
 func (i *NewsletterCreate) Newsletter(token *vcapool.AccessToken) *Newsletter {
 	return &Newsletter{
@@ -51,4 +63,17 @@ func (i *NewsletterImport) ToNewsletter(userID string) *Newsletter {
 		UserID:   userID,
 		Modified: vmod.NewModified(),
 	}
+}
+
+func (i *NewsletterParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
+func (i *Newsletter) DeletePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") && token.ID != i.UserID {
+		return vcago.NewPermissionDenied(NewsletterCollection)
+	}
+	return
 }

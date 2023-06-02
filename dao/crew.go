@@ -4,48 +4,92 @@ import (
 	"context"
 	"pool-backend/models"
 
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func CrewInsert(ctx context.Context, i *models.CrewCreate) (r *models.Crew, err error) {
+func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+
+	if err = models.CrewPermission(token); err != nil {
+		return
+	}
 	//create mailbox
 	mailbox := models.NewMailboxDatabase("crew")
 	if err = MailboxCollection.InsertOne(ctx, mailbox); err != nil {
 		return
 	}
-	r = i.Crew()
+	result = i.Crew()
 	// refer the mailbox.ID
-	r.MailboxID = mailbox.ID
+	result.MailboxID = mailbox.ID
 	// insert user
-	if err = CrewsCollection.InsertOne(ctx, r); err != nil {
+	if err = CrewsCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
 	//select user from database
 	return
 }
 
-func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other") {
-		return nil, vcago.NewPermissionDenied("crew", nil)
+func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *[]models.Crew, err error) {
+	if err = models.CrewPermission(token); err != nil {
+		return
 	}
+	filter := i.Filter()
+	result = new([]models.Crew)
+	if err = CrewsCollection.Find(ctx, filter, result); err != nil {
+		return
+	}
+	return
+}
+
+func CrewGetByID(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (result *models.Crew, err error) {
+	filter := i.PermittedFilter(token)
+	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
+		return
+	}
+	return
+}
+
+func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.CrewPublic, err error) {
+	filter := i.ActiveFilter()
+	result = new([]models.CrewPublic)
+	if err = CrewsCollection.Find(ctx, filter, result); err != nil {
+		return
+	}
+	return
+}
+
+func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *models.Crew, err error) {
+	filter := i.PermittedFilter(token)
+	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
+		return
+	}
+	return
+}
+
+func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+	if err = models.CrewUpdatePermission(token); err != nil {
+		return
+	}
+	filter := i.PermittedFilter(token)
 	if !token.Roles.Validate("employee;admin") {
-		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i.ToCrewUpdateASP()), token); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), &result); err != nil {
 			return
 		}
 	} else {
-		if err = CrewsCollection.UpdateOne(ctx, i.Filter(), vmdb.UpdateSet(i), token); err != nil {
+		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 			return
 		}
 	}
 	return
 }
 
-func CrewDelete(ctx context.Context, id string) (err error) {
+func CrewDelete(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (err error) {
+	if err = models.CrewPermission(token); err != nil {
+		return
+	}
 	crew := new(models.Crew)
-	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}, crew); err != nil {
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, crew); err != nil {
 		return
 	}
 	if err = MailboxCollection.TryDeleteOne(ctx, bson.D{{Key: "_id", Value: crew.MailboxID}}); err != nil {
@@ -54,8 +98,25 @@ func CrewDelete(ctx context.Context, id string) (err error) {
 	if err = MessageCollection.TryDeleteMany(ctx, bson.D{{Key: "mailbox_id", Value: crew.MailboxID}}); err != nil {
 		return
 	}
-	if err = CrewsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
+	if err = CrewsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {
 		return
 	}
+	return
+}
+
+func CrewImport(ctx context.Context, i *models.CrewCreate) (result *models.Crew, err error) {
+	//create mailbox
+	mailbox := models.NewMailboxDatabase("crew")
+	if err = MailboxCollection.InsertOne(ctx, mailbox); err != nil {
+		return
+	}
+	result = i.Crew()
+	// refer the mailbox.ID
+	result.MailboxID = mailbox.ID
+	// insert user
+	if err = CrewsCollection.InsertOne(ctx, result); err != nil {
+		return
+	}
+	//select user from database
 	return
 }

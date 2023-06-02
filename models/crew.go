@@ -7,7 +7,6 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type (
@@ -47,6 +46,16 @@ type (
 		Status       string        `json:"status" bson:"status"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
+	CrewPublic struct {
+		ID         string `json:"id,omitempty" bson:"_id"`
+		Name       string `json:"name" bson:"name"`
+		Cities     []City `json:"cities" bson:"cities"`
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+	}
+	CrewName struct {
+		ID   string `json:"id,omitempty" bson:"_id"`
+		Name string `json:"name" bson:"name"`
+	}
 	City struct {
 		City        string        `json:"city" bson:"city"`
 		Country     string        `json:"country" bson:"country"`
@@ -73,6 +82,20 @@ type (
 
 var CrewCollection = "crews"
 
+func CrewPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
+		return vcago.NewPermissionDenied(CrewCollection)
+	}
+	return
+}
+
+func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
+		return vcago.NewPermissionDenied(CrewCollection)
+	}
+	return
+}
+
 func (i *CrewCreate) Crew() *Crew {
 	return &Crew{
 		ID:           uuid.NewString(),
@@ -95,32 +118,47 @@ func (i *CrewUpdate) ToCrewUpdateASP() *CrewUpdateASP {
 	}
 }
 
-func (i *CrewParam) Pipeline() mongo.Pipeline {
-	match := vmdb.NewFilter()
-	match.EqualString("_id", i.ID)
-	return vmdb.NewPipeline().Match(match.Bson()).Pipe
-}
-
 func (i *CrewQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.LikeString("email", i.Email)
 	filter.LikeString("status", i.Status)
 	filter.LikeString("name", i.Name)
-	return bson.D(*filter)
+	return filter.Bson()
 }
 
-func CrewPermission(token *vcapool.AccessToken) (err error) {
+func (i *CrewQuery) ActiveFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("_id", i.ID)
+	filter.LikeString("email", i.Email)
+	filter.LikeString("status", "active")
+	filter.LikeString("name", i.Name)
+	return filter.Bson()
+}
+
+func (i *CrewQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", token.CrewID)
+	filter.LikeString("status", "active")
+	return filter.Bson()
+}
+
+func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("employee;admin") {
-		return vcago.NewPermissionDenied("crew", nil)
+		filter.EqualString("_id", token.CrewID)
+	} else {
+		filter.EqualString("_id", i.ID)
 	}
-	return
+	return filter.Bson()
 }
 
-func (i *CrewUpdate) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
-}
-
-func (i *CrewParam) Filter() bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}}
+func (i *CrewParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("_id", token.CrewID)
+	} else {
+		filter.EqualString("_id", i.ID)
+	}
+	return filter.Bson()
 }

@@ -7,3 +7,5 @@ type ReasonForPayment struct {
 	Count        int    `bson:"count"`
 	Year         string `bson:"year"`
 }
+
+var ReasonForPaymentCollection = "reason_for_payment"

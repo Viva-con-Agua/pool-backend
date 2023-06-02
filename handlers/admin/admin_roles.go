@@ -36,7 +36,7 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 		return
 	}
 	var result *vmod.Role
-	if result, err = body.New(); err != nil {
+	if result, err = body.NewRole(); err != nil {
 		return
 	}
 	if err = dao.PoolRoleCollection.InsertOne(c.Ctx(), result); err != nil {

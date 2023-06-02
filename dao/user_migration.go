@@ -102,7 +102,7 @@ func (i *UserMigrate) MigrateUser(ctx context.Context) (err error) {
 	}
 	err = nil
 	profile := i.Profile.Profile(user.ID)
-	if err = ProfilesCollection.InsertOne(ctx, profile); err != nil && !vcago.MongoConfict(err) {
+	if err = ProfileCollection.InsertOne(ctx, profile); err != nil && !vcago.MongoConfict(err) {
 		return
 	}
 	err = nil

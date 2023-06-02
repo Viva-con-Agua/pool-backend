@@ -33,8 +33,8 @@ var (
 	// CrewsCollection represents the database collection of the Crew model.
 	CrewsCollection *vmdb.Collection
 
-	// ProfilesCollection represents the database collection of the Profile model.
-	ProfilesCollection *vmdb.Collection
+	// ProfileCollection represents the database collection of the Profile model.
+	ProfileCollection *vmdb.Collection
 
 	// AvatarCollection represents the database collection of the Avatar model.
 	AvatarCollection *vmdb.Collection
@@ -91,8 +91,8 @@ func InitialDatabase() {
 	// CrewsCollection represents the database collection of the Crew model.
 	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true)
 
-	// ProfilesCollection represents the database collection of the Profile model.
-	ProfilesCollection = Database.Collection(models.ProfilesCollection).CreateIndex("user_id", true)
+	// ProfileCollection represents the database collection of the Profile model.
+	ProfileCollection = Database.Collection(models.ProfileCollection).CreateIndex("user_id", true)
 
 	// AvatarCollection represents the database collection of the Avatar model.
 	AvatarCollection = Database.Collection(models.AvatarCollection).CreateIndex("user_id", true)
@@ -104,49 +104,49 @@ func InitialDatabase() {
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection)
-	ArtistCollection = Database.Collection("artists").CreateIndex("name", true)
-	ParticipationCollection = Database.Collection("participations").CreateMultiIndex(
+	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
+	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateMultiIndex(
 		bson.D{
 			{Key: "user_id", Value: 1},
 			{Key: "event_id", Value: 1},
 		}, true)
-	OrganizerCollection = Database.Collection("organizers").CreateIndex("name", true)
-	EventCollection = Database.Collection("events")
-	SourceCollection = Database.Collection("sources")
-	TakingCollection = Database.Collection("takings")
-	DepositCollection = Database.Collection("deposits")
-	DepositUnitCollection = Database.Collection("deposit_units").CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true)
+	OrganizerCollection = Database.Collection(models.OrganizerCollection).CreateIndex("name", true)
+	EventCollection = Database.Collection(models.EventCollection)
+	SourceCollection = Database.Collection(models.SourceCollection)
+	TakingCollection = Database.Collection(models.TakingCollection)
+	DepositCollection = Database.Collection(models.DepositCollection)
+	DepositUnitCollection = Database.Collection(models.DepositUnitCollection).CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true)
 
-	FSChunkCollection = Database.Collection("fs.chunks")
-	FSFilesCollection = Database.Collection("fs.files")
-	ActivityCollection = Database.Collection("activities")
+	FSChunkCollection = Database.Collection(models.FSChunkCollection)
+	FSFilesCollection = Database.Collection(models.FSFilesCollection)
+	ActivityCollection = Database.Collection(models.ActivityCollection)
 
-	NewsletterCollection = Database.Collection("newsletters").CreateMultiIndex(
+	NewsletterCollection = Database.Collection(models.NewsletterCollection).CreateMultiIndex(
 		bson.D{{Key: "user_id", Value: 1}, {Key: "value", Value: 1}},
 		true,
 	)
 
-	ReasonForPaymentCollection = Database.Collection("reason_for_payment")
-	DepositUnitTakingPipe.LookupUnwind("deposits", "deposit_id", "_id", "deposit")
+	ReasonForPaymentCollection = Database.Collection(models.ReasonForPaymentCollection)
+	DepositUnitTakingPipe.LookupUnwind(models.DepositCollection, "deposit_id", "_id", "deposit")
 	Database.Database.CreateView(
 		context.Background(),
-		"deposit_unit_taking",
-		"deposit_units",
+		models.DepositUnitTakingView,
+		models.DepositUnitCollection,
 		DepositUnitTakingPipe.Pipe,
 	)
 
-	ParticipationEventPipe.LookupUnwind("events", "event_id", "_id", "event")
+	ParticipationEventPipe.LookupUnwind(models.EventCollection, "event_id", "_id", "event")
 	Database.Database.CreateView(
 		context.Background(),
-		"participations_event",
-		"participations",
+		models.ParticipationEventView,
+		models.ParticipationCollection,
 		ParticipationEventPipe.Pipe,
 	)
-	ActitityUserPipe.LookupUnwind("users", "user_id", "_id", "user")
+	ActitityUserPipe.LookupUnwind(models.UserCollection, "user_id", "_id", "user")
 	Database.Database.CreateView(
 		context.Background(),
-		"activity_user",
-		"activities",
+		models.ActivityUserView,
+		models.ActivityCollection,
 		ActitityUserPipe.Pipe,
 	)
 	UpdateCollection = Database.Collection("updates").CreateIndex("name", true)

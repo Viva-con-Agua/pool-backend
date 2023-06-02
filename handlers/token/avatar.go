@@ -21,36 +21,11 @@ var Avatar = &AvatarHandler{*vcago.NewHandler("avatar")}
 
 func (i *AvatarHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	//group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 	group.POST("/upload", i.Upload, accessCookie)
 	group.GET("/img/:id", i.GetByID, accessCookie)
 	group.DELETE("/img/:id", i.Delete, accessCookie)
 }
-
-/*
-func (i *AvatarHandler) Update(cc echo.Context) (err error) {
-	c := cc.(vcago.Context)
-	body := new(models.AvatarUpdate)
-	if err = c.BindAndValidate(body); err != nil {
-		return
-	}
-	token := new(vcapool.AccessToken)
-	if err = c.AccessToken(token); err != nil {
-		return
-	}
-	result := new(models.Avatar)
-	if err = dao.AvatarCollection.UpdateOne(
-		c.Ctx(),
-		body.Filter(token),
-		vmdb.UpdateSet(body),
-		result,
-	); err != nil {
-		return
-	}
-	return c.Updated(result)
-
-}*/
 
 func (i *AvatarHandler) Upload(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
@@ -110,13 +85,13 @@ func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.AvatarCollection.DeleteOne(c.Ctx(), body.Permission(token)); err != nil {
+	if err = dao.AvatarCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token)); err != nil {
 		return
 	}
-	if err = dao.FSChunkCollection.DeleteOne(c.Ctx(), body.FilterChunk()); err != nil {
+	if err = dao.FSChunkCollection.DeleteOne(c.Ctx(), body.MatchChunk()); err != nil {
 		return
 	}
-	if err = dao.FSFilesCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
+	if err = dao.FSFilesCollection.DeleteOne(c.Ctx(), body.Match()); err != nil {
 		return
 	}
 	return c.Deleted(body.ID)
