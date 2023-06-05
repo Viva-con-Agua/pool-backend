@@ -431,6 +431,14 @@ func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
+func (i *Event) FilterCrew() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualBool("confirmed", "true")
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("pool_roles", "name", []string{"education", "network", "operation"})
+	return filter.Bson()
+}
+
 func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
@@ -504,4 +512,12 @@ func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
 	}
 
 	return filter.Bson()
+}
+
+func (i *Event) ToContent() *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Event"] = i
+	return content
 }

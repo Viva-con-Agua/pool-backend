@@ -16,6 +16,7 @@ func InitialNats() {
 	vcago.Nats.Subscribe("system.user.updated", SubscribeUserUpdate)
 	vcago.Nats.Subscribe("system.user.import", SubscribeUserImport)
 	vcago.Nats.Subscribe("system.user.deleted", SubscribeUserDelete)
+	vcago.Nats.Subscribe("system.notification.publish", SubscribeNotificationPublish)
 }
 
 func SubscribeUserUpdate(m *models.UserUpdate) {
@@ -47,4 +48,18 @@ func SubscribeUserDelete(m *vmod.DeletedResponse) {
 	if err := UserDelete(context.Background(), m.ID); err != nil {
 		log.Print(err)
 	}
+}
+
+func SubscribeNotificationPublish(m *vcago.NotificationResponse) {
+	var err error
+	message := new(models.Message)
+	user := new(models.User)
+	if user, err = UsersGetByID(context.Background(), &models.UserParam{ID: m.User.ID}); err != nil {
+		return
+	}
+	result := message.NotificationMessage(m, user)
+	if err := MessageCollection.InsertOne(context.Background(), result); err != nil {
+		return
+	}
+	return
 }

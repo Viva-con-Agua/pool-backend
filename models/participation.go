@@ -147,6 +147,14 @@ func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
 	return
 }
 
+func (i *Participation) ToContent() *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Event"] = i.Event
+	return content
+}
+
 func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
 	return &ParticipationDatabase{
 		ID:       uuid.NewString(),
@@ -217,6 +225,13 @@ func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) bson.D {
 	filter.EqualStringList("crew.name", i.CrewName)
 	filter.EqualStringList("crew_id", i.CrewId)
 	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
+}
+
+func (i *Event) FilterParticipants() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("event_id", i.ID)
+	filter.EqualStringList("status", []string{"confirmed", "requested"})
 	return filter.Bson()
 }
 

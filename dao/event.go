@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
@@ -206,5 +207,82 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 		}
 	}
 
+	return
+}
+
+func EventParticipantsNotification(ctx context.Context, i *models.Event, template string) (err error) {
+	filter := i.FilterParticipants()
+
+	participants := new([]models.Participation)
+	if err = ParticipationCollection.Aggregate(
+		ctx,
+		models.ParticipationPipeline().Match(filter).Pipe,
+		participants,
+	); err != nil {
+		return
+	}
+
+	for _, participant := range *participants {
+		mail := vcago.NewMailData(participant.User.Email, "pool-backend", template, participant.User.Country)
+		mail.AddUser(participant.User.User())
+		mail.AddContent(participant.ToContent())
+		vcago.Nats.Publish("system.mail.job", mail)
+		//notification := vcago.NewMNotificationData(participant.User.Email, "pool-backend", template, participant.User.Country, token.ID)
+		//notification.AddUser(participant.User.User())
+		//notification.AddContent(participant.ToContent())
+		//vcago.Nats.Publish("system.notification.job", notification)
+	}
+
+	return
+}
+
+func EventASPNotification(ctx context.Context, i *models.Event, template string) (err error) {
+
+	user := new(models.User)
+	if user, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
+		return
+	}
+
+	mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+	mail.AddUser(user.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
+
+	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
+	//notification.AddUser(user.User())
+	//notification.AddContent(i.ToContent())
+	//vcago.Nats.Publish("system.notification.job", notification)
+	return
+}
+
+func EventStateNotification(ctx context.Context, i *models.Event, template string) (err error) {
+
+	users := new([]models.User)
+	filter := i.FilterCrew()
+	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, users); err != nil {
+		return
+	}
+	eventAps := new(models.User)
+	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
+		return
+	}
+
+	for _, user := range *users {
+		if user.ID != eventAps.ID {
+			mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+			mail.AddUser(user.User())
+			mail.AddContent(i.ToContent())
+			vcago.Nats.Publish("system.mail.job", mail)
+		}
+	}
+
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail.AddUser(eventAps.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
+	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
+	//notification.AddUser(user.User())
+	//notification.AddContent(i.ToContent())
+	//vcago.Nats.Publish("system.notification.job", notification)
 	return
 }

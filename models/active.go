@@ -92,3 +92,11 @@ func (i *ActiveParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	}
 	return filter.Bson()
 }
+
+func (i *Active) ToContent(crew *Crew) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Crew"] = crew
+	return content
+}
