@@ -400,6 +400,16 @@ func EventDeletePermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
+func (i *EventUpdate) EventStateValidation(token *vcapool.AccessToken, event *Event) (err error) {
+	if i.EventState.State == "canceled" && (event.EventState.State == "finished" || event.EventState.State == "closed") {
+		return vcago.NewBadRequest("event", "event can not be canceled, it is already "+event.EventState.State, i)
+	}
+	if !token.Roles.Validate("employee;admin") && (event.EventState.State == "finished" || event.EventState.State == "closed") {
+		return vcago.NewBadRequest("event", "event can not be updated, it is already "+event.EventState.State, i)
+	}
+	return
+}
+
 func (i *EventDatabase) Match() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)

@@ -56,15 +56,15 @@ type (
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	EventParticipation struct {
-		ID      string    `json:"id" bson:"_id"`
-		UserID  string    `json:"user_id" bson:"user_id"`
-		User    User      `json:"user" bson:"user"`
-		EventID string    `json:"event_id" bson:"event_id"`
-		Comment string    `json:"comment" bson:"comment"`
-		Status  string    `json:"status" bson:"status"`
-		Event   ListEvent `json:"event" bson:"event"`
-		CrewID  string    `json:"crew_id" bson:"crew_id"`
-		Crew    Crew      `json:"crew" bson:"crew"`
+		ID      string          `json:"id" bson:"_id"`
+		UserID  string          `json:"user_id" bson:"user_id"`
+		User    UserParticipant `json:"user" bson:"user"`
+		EventID string          `json:"event_id" bson:"event_id"`
+		Comment string          `json:"comment" bson:"comment"`
+		Status  string          `json:"status" bson:"status"`
+		Event   ListEvent       `json:"event" bson:"event"`
+		CrewID  string          `json:"crew_id" bson:"crew_id"`
+		Crew    Crew            `json:"crew" bson:"crew"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -125,6 +125,8 @@ func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "user_id", "_id", "user")
 	pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
+	pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "user.crew")
+	pipe.LookupUnwind(ActiveCollection, "user_id", "user_id", "user.active")
 	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")

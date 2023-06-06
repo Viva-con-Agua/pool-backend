@@ -112,6 +112,17 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 }
 
 func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
+	event := new(models.Event)
+	if err = UserCollection.FindOne(
+		ctx,
+		i.Match(),
+		event,
+	); err != nil {
+		return
+	}
+	if err = i.EventStateValidation(token, event); err != nil {
+		return
+	}
 	filter := i.PermittedFilter(token)
 	if err = EventCollection.UpdateOneAggregate(
 		ctx,
