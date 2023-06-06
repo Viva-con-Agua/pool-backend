@@ -265,6 +265,38 @@ type (
 		Participations        []ParticipationImport `json:"participations"`
 		Modified              vmod.Modified         `json:"modified"`
 	}
+	EventValidate struct {
+		ID                    string           `json:"id" bson:"_id"`
+		Name                  string           `json:"name" bson:"name"`
+		TypeOfEvent           string           `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string           `json:"additional_information" bson:"additional_information"`
+		Website               string           `json:"website" bson:"website"`
+		TourID                string           `json:"tour_id" bson:"tour_id"`
+		Location              Location         `json:"location" bson:"location"`
+		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
+		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
+		Artists               []Artist         `json:"artists" bson:"artists"`
+		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
+		Organizer             Organizer        `json:"organizer" bson:"organizer"`
+		StartAt               int64            `json:"start_at" bson:"start_at"`
+		EndAt                 int64            `json:"end_at" bson:"end_at"`
+		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew             `json:"crew" bson:"crew"`
+		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
+		EventASP              User             `json:"event_asp" bson:"event_asp"`
+		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
+		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
+		Application           EventApplication `json:"application" bson:"application"`
+		Participation         []Participation  `json:"participations" bson:"participations"`
+		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
+		Creator               User             `json:"creator" bson:"creator"`
+		EventState            EventState       `json:"event_state" bson:"event_state"`
+		TakingID              string           `json:"taking_id" bson:"taking_id"`
+		Taking                Taking           `json:"taking" bson:"taking"`
+		EditorID              string           `json:"editor_id" bson:"editor_id"`
+		Modified              vmod.Modified    `json:"modified" bson:"modified"`
+	}
 )
 
 var EventCollection = "events"
@@ -504,4 +536,14 @@ func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
 	}
 
 	return filter.Bson()
+}
+
+func (i *EventValidate) ValidateCanceled() (err error) {
+	if i.EventState.State == "finished" || i.EventState.State == "closed" {
+		return vcago.NewBadRequest("event", "event_state_failure", nil)
+	}
+	if i.Taking.Money.Amount != 0 {
+		return vcago.NewBadRequest("event", "taking_failure", nil)
+	}
+	return
 }
