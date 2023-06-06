@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -193,6 +195,15 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
+func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+	}
+	return filter.Bson()
+}
+
 func (i *TakingParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
@@ -200,4 +211,18 @@ func (i *TakingParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
+}
+
+func (i *Taking) UpdatePermission(token *vcapool.AccessToken) error {
+	if i.Event.ID != "" {
+		if !token.Roles.Validate("employee;admin") {
+			if !token.PoolRoles.Validate("finance") {
+				return vcago.NewPermissionDenied("taking")
+			}
+			if !strings.Contains("published finished", i.Event.EventState.State) {
+				return vcago.NewBadRequest("taking", "event_failure")
+			}
+		}
+	}
+	return nil
 }

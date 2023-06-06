@@ -112,18 +112,22 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 }
 
 func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
-	event := new(models.Event)
-	if err = UserCollection.FindOne(
-		ctx,
-		i.Match(),
-		event,
-	); err != nil {
+
+	event := new(models.EventValidate)
+	filter := i.PermittedFilter(token)
+	if err = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Pipe, event); err != nil {
 		return
 	}
+	taking := new(models.Taking)
+	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
+		if !vmdb.ErrNoDocuments(err) {
+			return
+		}
+	}
+	event.Taking = *taking
 	if err = i.EventStateValidation(token, event); err != nil {
 		return
 	}
-	filter := i.PermittedFilter(token)
 	if err = EventCollection.UpdateOneAggregate(
 		ctx,
 		filter,
