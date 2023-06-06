@@ -197,9 +197,9 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualStringList("_id", []string{i.ID})
+	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {
-		filter.EqualStringList("crew_id", []string{token.CrewID})
+		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }

@@ -52,6 +52,9 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	if err = TakingCollection.AggregateOne(ctx, models.TakingPipeline().Match(filter).Pipe, takingDatabase); err != nil {
 		return
 	}
+	if err = takingDatabase.UpdatePermission(token); err != nil {
+		return
+	}
 	i.State = &takingDatabase.State
 	for _, v := range i.Sources {
 		//create new sources
