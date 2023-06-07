@@ -18,16 +18,47 @@ func RoleInsert(ctx context.Context, i *models.RoleRequest, token *vcapool.Acces
 	); err != nil {
 		return
 	}
-	if result, err = i.NewRole(); err != nil {
+	if err = models.RolesPermission(result, user, token); err != nil {
 		return
 	}
-	if err = models.RolesPermission(result, user, token); err != nil {
+	if result, err = i.NewRole(); err != nil {
 		return
 	}
 	if err = PoolRoleCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
 	return
+}
+
+func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {
+
+	// TODO FIND ALL CURRENT ROLES
+	// MATCH EACH BULK AND NOTIFY IF USER GETS NEW ROLE
+	// IMPLEMENT BULK REQUEST FOR IROBERT THEN
+
+	for _, role := range i.Roles {
+		filter := role.MatchUser()
+		user := new(models.User)
+		if err = UserCollection.AggregateOne(
+			ctx,
+			models.UserPipeline(false).Match(filter).Pipe,
+			user,
+		); err != nil {
+			return
+		}
+		if err = models.RolesPermission(result, user, token); err != nil {
+			return
+		}
+		if result, err = role.NewRole(); err != nil {
+			return
+		}
+		if err = PoolRoleCollection.InsertOne(ctx, result); err != nil {
+			return
+		}
+		return
+	}
+	return
+
 }
 
 func RoleDelete(ctx context.Context, i *models.RoleRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {

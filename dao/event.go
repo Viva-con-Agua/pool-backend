@@ -7,6 +7,7 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
+	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -144,11 +145,32 @@ func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.Acces
 	if err = models.EventDeletePermission(token); err != nil {
 		return
 	}
+	event := new(models.Event)
 	filter := i.Match()
-	if err = EventCollection.DeleteOne(ctx, filter); err != nil {
+	if err = EventCollection.FindOne(
+		ctx,
+		filter,
+		event,
+	); err != nil {
 		return
 	}
+	deposit_unit := new(models.DepositUnit)
+	if err = DepositUnitCollection.FindOne(
+		ctx,
+		bson.D{{Key: "taking_id", Value: event.TakingID}},
+		deposit_unit,
+	); err != nil {
+		log.Info("No deposit units found")
+	}
 	if err = ParticipationCollection.TryDeleteMany(ctx, bson.D{{Key: "event_id", Value: i.ID}}); err != nil {
+		return
+	}
+	if err = TakingCollection.TryDeleteMany(ctx, bson.D{{Key: "_id", Value: event.TakingID}}); err != nil {
+		return
+	}
+	DepositCollection.TryDeleteMany(ctx, bson.D{{Key: "_id", Value: deposit_unit.DepositID}})
+	DepositUnitCollection.TryDeleteMany(ctx, bson.D{{Key: "taking_id", Value: event.TakingID}})
+	if err = EventCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}
 	return

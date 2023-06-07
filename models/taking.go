@@ -217,10 +217,10 @@ func (i *Taking) UpdatePermission(token *vcapool.AccessToken) error {
 	if i.Event.ID != "" {
 		if !token.Roles.Validate("employee;admin") {
 			if !token.PoolRoles.Validate("finance") {
-				return vcago.NewPermissionDenied("taking")
+				return vcago.NewPermissionDenied(TakingCollection)
 			}
 			if !strings.Contains("published finished", i.Event.EventState.State) {
-				return vcago.NewBadRequest("taking", "event_failure")
+				return vcago.NewBadRequest(TakingCollection, "event_failure")
 			}
 		}
 	}

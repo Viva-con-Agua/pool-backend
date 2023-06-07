@@ -33,13 +33,13 @@ type (
 
 func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 	if token.ActiveState != "confirmed" {
-		return vcago.NewBadRequest("user_nvm", "active required")
+		return vcago.NewBadRequest(NVMCollection, "active required")
 	}
 	if token.AddressID == "" {
-		return vcago.NewBadRequest("user_nvm", "address required")
+		return vcago.NewBadRequest(NVMCollection, "address required")
 	}
 	if token.Birthdate == 0 {
-		return vcago.NewBadRequest("user_nvm", "birthdate required")
+		return vcago.NewBadRequest(NVMCollection, "birthdate required")
 	}
 	return
 }

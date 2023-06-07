@@ -14,6 +14,10 @@ type RoleRequest struct {
 	Role   string `json:"role"`
 }
 
+type RoleBulkRequest struct {
+	Roles []RoleRequest `json:"roles"`
+}
+
 type RoleAdminRequest struct {
 	Email string `json:"email"`
 	Role  string `json:"role"`
@@ -61,7 +65,7 @@ var ASPRole = "asp;finance;operation;education;network;socialmedia;awareness"
 
 func RolesPermission(result *vmod.Role, user *User, token *vcapool.AccessToken) (err error) {
 	if user.NVM.Status != "confirmed" {
-		return vcago.NewBadRequest("role", "nvm required", nil)
+		return vcago.NewBadRequest(PoolRoleCollection, "nvm required", nil)
 	}
 	if !(token.Roles.CheckRoot(result) || token.PoolRoles.CheckRoot(result)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)

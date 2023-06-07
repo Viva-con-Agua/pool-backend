@@ -180,6 +180,8 @@ type (
 		EventASP              User             `json:"event_asp" bson:"event_asp"`
 		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
+		TakingID              string           `json:"taking_id" bson:"taking_id"`
+		DepositID             string           `json:"deposit_id" bson:"deposit_id"`
 		Application           EventApplication `json:"application" bson:"application"`
 		Participation         []Participation  `json:"participations" bson:"participations"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
@@ -556,13 +558,13 @@ func (i *Event) ToContent() *vmod.Content {
 
 func (i *EventUpdate) EventStateValidation(token *vcapool.AccessToken, event *EventValidate) (err error) {
 	if i.EventState.State == "canceled" && (event.EventState.State == "finished" || event.EventState.State == "closed") {
-		return vcago.NewBadRequest("event", "event can not be canceled, it is already "+event.EventState.State, i)
+		return vcago.NewBadRequest(EventCollection, "event can not be canceled, it is already "+event.EventState.State, i)
 	}
 	if !token.Roles.Validate("employee;admin") && (event.EventState.State == "finished" || event.EventState.State == "closed") {
-		return vcago.NewBadRequest("event", "event can not be updated, it is already "+event.EventState.State, i)
+		return vcago.NewBadRequest(EventCollection, "event can not be updated, it is already "+event.EventState.State, i)
 	}
 	if event.Taking.Money.Amount != 0 {
-		return vcago.NewBadRequest("event", "taking_failure", nil)
+		return vcago.NewBadRequest(EventCollection, "taking_failure", nil)
 	}
 	return
 }
