@@ -65,6 +65,16 @@ func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *vcapool.Ac
 	return
 }
 
+func UsersDeleteUser(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (err error) {
+	if err = i.UsersDeletePermission(token); err != nil {
+		return
+	}
+	if err = UserDelete(ctx, i.ID); err != nil {
+		return
+	}
+	return
+}
+
 func UserDelete(ctx context.Context, id string) (err error) {
 	user := new(models.User)
 	if err = UserCollection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}, user); err != nil {

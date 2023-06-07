@@ -253,6 +253,13 @@ func UsersPermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
+func (i *UserParam) UsersDeletePermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || i.ID == token.ID) {
+		return vcago.NewPermissionDenied(UserCollection)
+	}
+	return
+}
+
 func (i *UserQuery) CrewUsersPermission(token *vcapool.AccessToken) (err error) {
 	if i.CrewID != "" && i.CrewID != token.CrewID {
 		return vcago.NewPermissionDenied(UserCollection)

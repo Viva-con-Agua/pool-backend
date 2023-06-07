@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -20,6 +21,7 @@ func (i *UserHandler) Routes(group *echo.Group) {
 	group.GET("", i.Get, accessCookie)
 	group.GET("/crew", i.GetUsersByCrew, accessCookie)
 	group.GET("/crew/public", i.GetMinimal, accessCookie)
+	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
 func (i *UserHandler) Get(cc echo.Context) (err error) {
@@ -71,4 +73,26 @@ func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
 		return
 	}
 	return c.Selected(result)
+}
+
+func (i *UserHandler) Delete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = dao.UsersDeleteUser(c.Ctx(), body, token); err != nil {
+		return
+	}
+	vcago.Nats.Publish("user.delete", body)
+	go func() {
+		if err = dao.IDjango.Post(&models.Profile{UserID: body.ID}, "/v1/pool/profile/delete/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return c.Deleted(body.ID)
 }
