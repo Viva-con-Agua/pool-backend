@@ -4,8 +4,10 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
+	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -111,6 +113,7 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 }
 
 func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
+
 	event := new(models.EventValidate)
 	filter := i.PermittedFilter(token)
 	if err = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Pipe, event); err != nil {
@@ -123,7 +126,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 		}
 	}
 	event.Taking = *taking
-	if err = event.ValidateCanceled(); err != nil {
+	if err = i.EventStateValidation(token, event); err != nil {
 		return
 	}
 	if err = EventCollection.UpdateOneAggregate(
@@ -142,11 +145,32 @@ func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.Acces
 	if err = models.EventDeletePermission(token); err != nil {
 		return
 	}
+	event := new(models.Event)
 	filter := i.Match()
-	if err = EventCollection.DeleteOne(ctx, filter); err != nil {
+	if err = EventCollection.FindOne(
+		ctx,
+		filter,
+		event,
+	); err != nil {
 		return
 	}
+	deposit_unit := new(models.DepositUnit)
+	if err = DepositUnitCollection.FindOne(
+		ctx,
+		bson.D{{Key: "taking_id", Value: event.TakingID}},
+		deposit_unit,
+	); err != nil {
+		log.Info("No deposit units found")
+	}
 	if err = ParticipationCollection.TryDeleteMany(ctx, bson.D{{Key: "event_id", Value: i.ID}}); err != nil {
+		return
+	}
+	if err = TakingCollection.TryDeleteMany(ctx, bson.D{{Key: "_id", Value: event.TakingID}}); err != nil {
+		return
+	}
+	DepositCollection.TryDeleteMany(ctx, bson.D{{Key: "_id", Value: deposit_unit.DepositID}})
+	DepositUnitCollection.TryDeleteMany(ctx, bson.D{{Key: "taking_id", Value: event.TakingID}})
+	if err = EventCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}
 	return
@@ -220,5 +244,82 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 		}
 	}
 
+	return
+}
+
+func EventParticipantsNotification(ctx context.Context, i *models.Event, template string) (err error) {
+	filter := i.FilterParticipants()
+
+	participants := new([]models.Participation)
+	if err = ParticipationCollection.Aggregate(
+		ctx,
+		models.ParticipationPipeline().Match(filter).Pipe,
+		participants,
+	); err != nil {
+		return
+	}
+
+	for _, participant := range *participants {
+		mail := vcago.NewMailData(participant.User.Email, "pool-backend", template, participant.User.Country)
+		mail.AddUser(participant.User.User())
+		mail.AddContent(participant.ToContent())
+		vcago.Nats.Publish("system.mail.job", mail)
+		//notification := vcago.NewMNotificationData(participant.User.Email, "pool-backend", template, participant.User.Country, token.ID)
+		//notification.AddUser(participant.User.User())
+		//notification.AddContent(participant.ToContent())
+		//vcago.Nats.Publish("system.notification.job", notification)
+	}
+
+	return
+}
+
+func EventASPNotification(ctx context.Context, i *models.Event, template string) (err error) {
+
+	user := new(models.User)
+	if user, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
+		return
+	}
+
+	mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+	mail.AddUser(user.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
+
+	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
+	//notification.AddUser(user.User())
+	//notification.AddContent(i.ToContent())
+	//vcago.Nats.Publish("system.notification.job", notification)
+	return
+}
+
+func EventStateNotification(ctx context.Context, i *models.Event, template string) (err error) {
+
+	users := new([]models.User)
+	filter := i.FilterCrew()
+	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, users); err != nil {
+		return
+	}
+	eventAps := new(models.User)
+	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
+		return
+	}
+
+	for _, user := range *users {
+		if user.ID != eventAps.ID {
+			mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+			mail.AddUser(user.User())
+			mail.AddContent(i.ToContent())
+			vcago.Nats.Publish("system.mail.job", mail)
+		}
+	}
+
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail.AddUser(eventAps.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
+	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
+	//notification.AddUser(user.User())
+	//notification.AddContent(i.ToContent())
+	//vcago.Nats.Publish("system.notification.job", notification)
 	return
 }

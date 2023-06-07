@@ -19,7 +19,7 @@ func (i *Check) Return() error {
 
 func (i *Check) ASP(token *vcapool.AccessToken) *Check {
 	if !token.PoolRoles.Validate("finance;network;education;") {
-		i.Error = vcago.NewBadRequest("permission", "permission_denied", nil)
+		i.Error = vcago.NewPermissionDenied("permission_denied", nil)
 	}
 	return i
 }

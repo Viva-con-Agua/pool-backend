@@ -56,6 +56,13 @@ func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.Acc
 	return
 }
 
+func UsersGetByID(ctx context.Context, i *models.UserParam) (result *models.User, err error) {
+	if err = UserCollection.AggregateOne(ctx, models.UserPipelinePublic().Match(i.Match()).Pipe, &result); err != nil {
+		return
+	}
+	return
+}
+
 func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserMinimal, err error) {
 	filter := i.PermittedFilter(token)
 	result = new([]models.UserMinimal)
