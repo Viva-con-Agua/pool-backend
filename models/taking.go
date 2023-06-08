@@ -64,6 +64,7 @@ type (
 	TakingQuery struct {
 		ID              []string `query:"id"`
 		Name            string   `query:"name"`
+		Search          string   `query:"search"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
 		EventState      []string `query:"event_state"`
