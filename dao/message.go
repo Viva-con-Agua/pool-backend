@@ -122,7 +122,7 @@ func MessageSendCycular(ctx context.Context, i *models.MessageParam, token *vcap
 			return
 		}
 	} else {
-		return nil, nil, vcago.NewBadRequest("message", "type is not supported", result.RecipientGroup)
+		return nil, nil, vcago.NewBadRequest(models.MessageCollection, "type is not supported", result.RecipientGroup)
 	}
 	//create new cycular mail
 	mail = vcago.NewCycularMail(result.From, result.ToEmails(), result.Subject, result.Message)

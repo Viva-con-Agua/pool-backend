@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/base64"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -113,6 +115,21 @@ func (i *MessageCreate) MessageSub(token *vcapool.AccessToken) *Message {
 		Modified:       vmod.NewModified(),
 		Type:           "draft",
 		UserID:         token.ID,
+	}
+}
+
+func (i *Message) NotificationMessage(response *vcago.NotificationResponse, user *User) *Message {
+	return &Message{
+		ID:             uuid.NewString(),
+		From:           response.From,
+		Subject:        response.Subject,
+		Message:        base64.StdEncoding.EncodeToString([]byte(response.Body)),
+		MailboxID:      user.MailboxID,
+		Read:           true,
+		RecipientGroup: i.RecipientGroup,
+		Modified:       vmod.NewModified(),
+		Type:           "inbox",
+		UserID:         response.User.ID,
 	}
 }
 

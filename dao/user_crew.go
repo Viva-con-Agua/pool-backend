@@ -94,15 +94,15 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	user := new(models.UserDatabase)
 	userFilter := bson.D{{Key: "drops_id", Value: imp.DropsID}}
 	if err = UserCollection.FindOne(ctx, userFilter, user); err != nil {
-		return nil, vcago.NewBadRequest("user", err.Error(), userFilter)
+		return nil, vcago.NewBadRequest(models.UserCollection, err.Error(), userFilter)
 	}
 	crew := new(models.Crew)
 	crewFilter := bson.D{{Key: "_id", Value: imp.CrewID}}
 	if err = CrewsCollection.FindOne(ctx, crewFilter, crew); err != nil {
-		return nil, vcago.NewBadRequest("crew", err.Error(), crewFilter)
+		return nil, vcago.NewBadRequest(models.CrewCollection, err.Error(), crewFilter)
 	}
 	if crew.Status != "active" {
-		return nil, vcago.NewBadRequest("crew", "crew_is_dissolved", nil)
+		return nil, vcago.NewBadRequest(models.CrewCollection, "crew_is_dissolved", nil)
 	}
 	result = models.NewUserCrew(user.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {

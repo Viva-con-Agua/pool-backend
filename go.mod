@@ -3,7 +3,7 @@ module pool-backend
 go 1.17
 
 require (
-	github.com/Viva-con-Agua/vcago v1.4.27
+	github.com/Viva-con-Agua/vcago v1.4.37
 	github.com/Viva-con-Agua/vcapool v0.3.4
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
@@ -21,7 +21,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/klauspost/compress v1.15.1 // indirect
-	github.com/labstack/gommon v0.3.1 // indirect
+	github.com/labstack/gommon v0.3.1
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

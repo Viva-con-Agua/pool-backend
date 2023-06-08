@@ -43,5 +43,6 @@ func (i *ActivityDatabase) New(userID string, modelID string) *ActivityDatabase 
 	i.ID = uuid.NewString()
 	i.UserID = userID
 	i.ModelID = modelID
+	i.Modified = vmod.NewModified()
 	return i
 }
