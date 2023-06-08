@@ -23,7 +23,6 @@ func (i *ParticipationHandler) Routes(group *echo.Group) {
 	group.GET("/event/:id", i.GetByEvent, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
 	group.PUT("", i.Update, accessCookie)
-	group.PUT("/status", i.UpdateStatus, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 
 }
@@ -42,6 +41,7 @@ func (i *ParticipationHandler) Create(cc echo.Context) (err error) {
 	if result, err = dao.ParticipationInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
+	dao.ParticipationCreateNotification(c.Ctx(), result)
 	return c.Created(result)
 }
 
@@ -127,24 +127,10 @@ func (i *ParticipationHandler) Update(cc echo.Context) (err error) {
 	if result, err = dao.ParticipationUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
+	if result.Status == "confirmed" || result.Status == "rejected" {
+		dao.ParticipationNotification(c.Ctx(), result)
+	}
 	return c.Updated(result)
-}
-
-func (i *ParticipationHandler) UpdateStatus(cc echo.Context) (err error) {
-	c := cc.(vcago.Context)
-	body := new(models.ParticipationStateRequest)
-	if err = c.BindAndValidate(body); err != nil {
-		return
-	}
-	token := new(vcapool.AccessToken)
-	if err = c.AccessToken(token); err != nil {
-		return
-	}
-	result := new(models.Participation)
-	if result, err = dao.ParticipationUpdateStatus(c.Ctx(), body, token); err != nil {
-		return
-	}
-	return c.Selected(result)
 }
 
 func (i *ParticipationHandler) Delete(cc echo.Context) (err error) {

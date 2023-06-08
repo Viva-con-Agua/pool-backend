@@ -11,15 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func MessageFilter1(id string, crew *models.Crew, token *vcapool.AccessToken) bson.D {
-	return bson.D{
-		{Key: "_id", Value: id},
-		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "mailbox_id", Value: token.MailboxID}},
-			bson.D{{Key: "mailbox_id", Value: crew.MailboxID}},
-		}}}
-}
-
 func MessageInsert(ctx context.Context, i *models.MessageCreate, token *vcapool.AccessToken) (result *models.Message, err error) {
 	crew := new(models.Crew)
 	CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew)
@@ -99,7 +90,7 @@ func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 	if err = models.MessageEventPermission(token, event); err != nil {
 		return
 	}
-	pFilter := bson.D{{Key: "event_id", Value: event.ID}}
+	pFilter := i.FilterMailParticipations(event)
 	participations := new([]models.Participation)
 	if err = ParticipationCollection.Aggregate(ctx, models.ParticipationPipeline().Match(pFilter).Pipe, participations); err != nil {
 		return
@@ -131,7 +122,7 @@ func MessageSendCycular(ctx context.Context, i *models.MessageParam, token *vcap
 			return
 		}
 	} else {
-		return nil, nil, vcago.NewBadRequest("message", "type is not supported", result.RecipientGroup)
+		return nil, nil, vcago.NewBadRequest(models.MessageCollection, "type is not supported", result.RecipientGroup)
 	}
 	//create new cycular mail
 	mail = vcago.NewCycularMail(result.From, result.ToEmails(), result.Subject, result.Message)

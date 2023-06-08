@@ -72,14 +72,14 @@ func ActiveRequest() *ActiveUpdate {
 
 func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 	if token.CrewID == "" {
-		return vcago.NewBadRequest("active", "not an crew member")
+		return vcago.NewBadRequest(ActiveCollection, "not an crew member")
 	}
 	return
 }
 
 func ActivePermission(token *vcapool.AccessToken) (err error) {
 	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation") {
-		return vcago.NewBadRequest("active", "permission denied")
+		return vcago.NewBadRequest(ActiveCollection, "permission denied")
 	}
 	return
 }
@@ -91,4 +91,12 @@ func (i *ActiveParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
+}
+
+func (i *Active) ToContent(crew *Crew) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Crew"] = crew
+	return content
 }

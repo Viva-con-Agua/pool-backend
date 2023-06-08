@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
@@ -58,7 +59,7 @@ func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, tok
 	result = new([]models.UserParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
-		models.ParticipationPipeline().Match(filter.Bson()).Pipe,
+		models.ParticipationPipeline().Match(filter).Pipe,
 		result,
 	); err != nil {
 		return
@@ -72,7 +73,7 @@ func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, toke
 	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
-		models.ParticipationAspPipeline().Match(filter.Bson()).Pipe,
+		models.ParticipationAspPipeline().Match(filter).Pipe,
 		participation,
 	); err != nil {
 		return
@@ -86,7 +87,7 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 	result = new([]models.EventParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
-		models.ParticipationPipeline().Match(filter.Bson()).Pipe,
+		models.ParticipationPipeline().Match(filter).Pipe,
 		result,
 	); err != nil {
 		return
@@ -119,20 +120,6 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	return
 }
 
-func ParticipationUpdateStatus(ctx context.Context, i *models.ParticipationStateRequest, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	filter := i.PermittedFilter(token)
-	if err = ParticipationCollection.UpdateOneAggregate(
-		ctx,
-		filter,
-		vmdb.UpdateSet(i),
-		&result,
-		models.ParticipationPipeline().Match(i.Match()).Pipe,
-	); err != nil {
-		return
-	}
-	return
-}
-
 func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (err error) {
 	if err = models.ParticipationDeletePermission(token); err != nil {
 		return
@@ -140,5 +127,52 @@ func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, toke
 	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {
 		return
 	}
+	return
+}
+
+func ParticipationNotification(ctx context.Context, i *models.Participation) (err error) {
+
+	template := "participation_confirm"
+	if i.Status == "rejected" {
+		template = "participation_reject"
+	}
+	mail := vcago.NewMailData(i.User.Email, "pool-backend", template, i.User.Country)
+	mail.AddUser(i.User.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
+	//notification := vcago.NewMNotificationData(result.User.Email, "pool-backend", template, result.User.Country, token.ID)
+	//notification.AddUser(result.User.User())
+	//notification.AddContent(result.ToContent())
+	//vcago.Nats.Publish("system.notification.job", notification)
+	return
+}
+
+func ParticipationCreateNotification(ctx context.Context, i *models.Participation) (err error) {
+
+	template := "participation_create"
+
+	users := new([]models.User)
+	filter := i.Event.FilterCrew()
+	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, users); err != nil {
+		return
+	}
+	eventAps := new(models.User)
+	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.Event.EventASPID}); err != nil {
+		return
+	}
+
+	for _, user := range *users {
+		if user.ID != eventAps.ID {
+			mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+			mail.AddUser(user.User())
+			mail.AddContent(i.ToContent())
+			vcago.Nats.Publish("system.mail.job", mail)
+		}
+	}
+
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail.AddUser(eventAps.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
 	return
 }

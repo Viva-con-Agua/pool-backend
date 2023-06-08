@@ -56,15 +56,15 @@ type (
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	EventParticipation struct {
-		ID      string    `json:"id" bson:"_id"`
-		UserID  string    `json:"user_id" bson:"user_id"`
-		User    User      `json:"user" bson:"user"`
-		EventID string    `json:"event_id" bson:"event_id"`
-		Comment string    `json:"comment" bson:"comment"`
-		Status  string    `json:"status" bson:"status"`
-		Event   ListEvent `json:"event" bson:"event"`
-		CrewID  string    `json:"crew_id" bson:"crew_id"`
-		Crew    Crew      `json:"crew" bson:"crew"`
+		ID      string          `json:"id" bson:"_id"`
+		UserID  string          `json:"user_id" bson:"user_id"`
+		User    UserParticipant `json:"user" bson:"user"`
+		EventID string          `json:"event_id" bson:"event_id"`
+		Comment string          `json:"comment" bson:"comment"`
+		Status  string          `json:"status" bson:"status"`
+		Event   ListEvent       `json:"event" bson:"event"`
+		CrewID  string          `json:"crew_id" bson:"crew_id"`
+		Crew    Crew            `json:"crew" bson:"crew"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -125,6 +125,8 @@ func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "user_id", "_id", "user")
 	pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
+	pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "user.crew")
+	pipe.LookupUnwind(ActiveCollection, "user_id", "user_id", "user.active")
 	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
@@ -145,6 +147,14 @@ func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
 	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
 	return
+}
+
+func (i *Participation) ToContent() *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Event"] = i.Event
+	return content
 }
 
 func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
@@ -208,7 +218,7 @@ func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D 
 	return filter.Bson()
 }
 
-func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) *vmdb.Filter {
+func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.EqualStringList("event_id", i.EventID)
@@ -217,20 +227,27 @@ func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) *vmdb.Filter
 	filter.EqualStringList("crew.name", i.CrewName)
 	filter.EqualStringList("crew_id", i.CrewId)
 	filter.EqualString("user_id", token.ID)
-	return filter
+	return filter.Bson()
 }
 
-func (i *ParticipationQuery) FilterAspInformation(token *vcapool.AccessToken) *vmdb.Filter {
+func (i *Event) FilterParticipants() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("event_id", i.ID)
+	filter.EqualStringList("status", []string{"confirmed", "requested"})
+	return filter.Bson()
+}
+
+func (i *ParticipationQuery) FilterAspInformation(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("event_id", i.EventID)
 	if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("status", "confirmed")
 		filter.EqualString("user_id", token.ID)
 	}
-	return filter
+	return filter.Bson()
 }
 
-func (i *EventParam) FilterEvent(token *vcapool.AccessToken) *vmdb.Filter {
+func (i *EventParam) FilterEvent(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
@@ -238,7 +255,7 @@ func (i *EventParam) FilterEvent(token *vcapool.AccessToken) *vmdb.Filter {
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("event.crew_id", token.CrewID)
 	}
-	return filter
+	return filter.Bson()
 }
 
 func (i *ParticipationDatabase) Match() bson.D {

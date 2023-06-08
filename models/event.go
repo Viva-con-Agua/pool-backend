@@ -180,6 +180,8 @@ type (
 		EventASP              User             `json:"event_asp" bson:"event_asp"`
 		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
+		TakingID              string           `json:"taking_id" bson:"taking_id"`
+		DepositID             string           `json:"deposit_id" bson:"deposit_id"`
 		Application           EventApplication `json:"application" bson:"application"`
 		Participation         []Participation  `json:"participations" bson:"participations"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
@@ -419,7 +421,7 @@ func EventRolePipeline() *vmdb.Pipeline {
 }
 
 func EventPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
@@ -463,6 +465,14 @@ func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
+func (i *Event) FilterCrew() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualBool("confirmed", "true")
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("pool_roles", "name", []string{"education", "network", "operation"})
+	return filter.Bson()
+}
+
 func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
@@ -486,6 +496,13 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
+}
+
+func (i *EventParam) PublicFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	return filter.Bson()
 }
 
@@ -531,12 +548,23 @@ func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *EventValidate) ValidateCanceled() (err error) {
-	if i.EventState.State == "finished" || i.EventState.State == "closed" {
-		return vcago.NewBadRequest("event", "event_state_failure", nil)
+func (i *Event) ToContent() *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
 	}
-	if i.Taking.Money.Amount != 0 {
-		return vcago.NewBadRequest("event", "taking_failure", nil)
+	content.Fields["Event"] = i
+	return content
+}
+
+func (i *EventUpdate) EventStateValidation(token *vcapool.AccessToken, event *EventValidate) (err error) {
+	if i.EventState.State == "canceled" && (event.EventState.State == "finished" || event.EventState.State == "closed") {
+		return vcago.NewBadRequest(EventCollection, "event can not be canceled, it is already "+event.EventState.State, i)
+	}
+	if !token.Roles.Validate("employee;admin") && (event.EventState.State == "finished" || event.EventState.State == "closed") {
+		return vcago.NewBadRequest(EventCollection, "event can not be updated, it is already "+event.EventState.State, i)
+	}
+	if event.Taking.Money.Amount != 0 {
+		return vcago.NewBadRequest(EventCollection, "taking_failure", nil)
 	}
 	return
 }
