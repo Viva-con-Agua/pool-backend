@@ -162,3 +162,9 @@ func (i *CrewParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	}
 	return filter.Bson()
 }
+
+func (i *CrewParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}

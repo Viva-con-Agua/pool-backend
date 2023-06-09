@@ -385,3 +385,11 @@ func (i *User) RoleContent(roles *BulkUserRoles) *vmod.Content {
 	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
 	return content
 }
+
+func RoleAdminContent(crew *Crew) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Crew"] = crew
+	return content
+}

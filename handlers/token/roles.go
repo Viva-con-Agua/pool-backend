@@ -69,6 +69,9 @@ func (i *RoleHandler) CreateBulk(cc echo.Context) (err error) {
 	if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
 		return
 	}
+	if !token.Roles.Validate("employee;admin") {
+		dao.RoleAdminNotification(c.Ctx(), &models.CrewParam{ID: body.CrewID})
+	}
 	return c.Created(result)
 }
 
