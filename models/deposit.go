@@ -12,7 +12,7 @@ import (
 type (
 	DepositCreate struct {
 		DepositUnit []DepositUnitCreate `json:"deposit_units"`
-		CrewID      string              `json:"crew_id"`
+		CrewID      string              `json:"crew_id" validate:"required"`
 		HasExternal bool                `json:"has_external"`
 		External    External            `json:"external"`
 	}
@@ -53,6 +53,7 @@ type (
 		DepositUnit []DepositUnitUpdate `json:"deposit_units" bson:"-"`
 		HasExternal bool                `json:"has_external" bson:"has_external"`
 		External    External            `json:"external" bson:"external"`
+		UpdateState string              `json:"update_state" bson:"-"`
 		Money       vmod.Money          `json:"money" bson:"money"`
 	}
 	DepositDatabase struct {
@@ -144,7 +145,6 @@ func UpdateWaitTaking(amount int64) bson.D {
 */
 
 func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositDatabase, d []DepositUnit) {
-	dIDs := []string{}
 	d = []DepositUnit{}
 	var amount int64 = 0
 	id := uuid.NewString()
@@ -157,7 +157,6 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 			Status:    "open",
 			Modified:  vmod.NewModified(),
 		}
-		dIDs = append(dIDs, depositUnit.ID)
 		d = append(d, *depositUnit)
 		amount += depositUnit.Money.Amount
 	}
@@ -178,6 +177,43 @@ func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositD
 		External:    i.External,
 		Modified:    vmod.NewModified(),
 	}
+	return
+}
+
+func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, create []DepositUnit, update []DepositUnitUpdate, delete []DepositUnit) {
+	create = []DepositUnit{}
+	update = []DepositUnitUpdate{}
+	delete = []DepositUnit{}
+	var amount int64 = 0
+	for _, value_current := range current.DepositUnit {
+		contains := false
+		for _, value_update := range i.DepositUnit {
+			if value_update.ID == value_current.ID {
+				contains = true
+			}
+		}
+		if contains == false {
+			delete = append(delete, value_current)
+		}
+	}
+	for _, value := range i.DepositUnit {
+		if value.ID == "" {
+			create = append(create, DepositUnit{
+				ID:        uuid.NewString(),
+				TakingID:  value.TakingID,
+				Money:     value.Money,
+				DepositID: i.ID,
+				Status:    "open",
+				Modified:  vmod.NewModified(),
+			})
+			amount += value.Money.Amount
+		} else {
+			update = append(update, value)
+			amount += value.Money.Amount
+		}
+	}
+	r = i
+	r.Money.Amount = amount
 	return
 }
 

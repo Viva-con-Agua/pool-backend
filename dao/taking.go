@@ -66,9 +66,10 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			}
 		}
 		if v.UpdateState == "deleted" {
-			deleteSource := new(models.Source)
-			if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: v.ID}}, deleteSource); err != nil {
-				return
+			if models.SourceDeletePermission(takingDatabase, token) {
+				if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: v.ID}}); err != nil {
+					return
+				}
 			}
 		}
 		if v.UpdateState == "updated" {

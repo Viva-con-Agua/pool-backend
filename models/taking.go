@@ -34,6 +34,7 @@ type (
 		Type     string        `json:"type" bson:"type"`
 		Comment  string        `json:"comment" bson:"comment"`
 		State    TakingState   `json:"state" bson:"state"`
+		Currency string        `json:"-" bson:"currency"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Taking struct {
@@ -125,6 +126,7 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 		Name:     i.Name,
 		CrewID:   i.CrewID,
 		Type:     "manually",
+		Currency: i.NewSource[0].Money.Currency,
 		Comment:  i.Comment,
 		Modified: vmod.NewModified(),
 	}
@@ -169,6 +171,7 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 		filter.EqualStringList("crew_id", i.CrewID)
 	}
 	filter.LikeString("name", i.Name)
+	filter.SearchString([]string{"name", "event.name"}, i.Search)
 	filter.EqualStringList("event.event_state.state", i.EventState)
 	filter.LikeString("event.name", i.EventName)
 	filter.GteInt64("event.end_at", i.EventEndFrom)
