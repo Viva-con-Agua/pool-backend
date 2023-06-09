@@ -15,7 +15,18 @@ type RoleRequest struct {
 }
 
 type RoleBulkRequest struct {
-	Roles []RoleRequest `json:"roles"`
+	CrewID       string        `json:"crew_id"`
+	AddedRoles   []RoleRequest `json:"created"`
+	DeletedRoles []RoleRequest `json:"removed"`
+}
+
+type RoleBulkExport struct {
+	CrewID string       `bson:"crew_id" json:"crew_id"`
+	Users  []ExportRole `json:"users"`
+}
+type ExportRole struct {
+	UserID string `json:"uuid"`
+	Role   string `json:"role"`
 }
 
 type RoleAdminRequest struct {
@@ -34,6 +45,11 @@ type RoleDatabase struct {
 	UserID string `bson:"user_id" json:"user_id"`
 	Label  string `bson:"label" json:"label"`
 	Root   string `bson:"root" json:"root"`
+}
+
+type BulkUserRoles struct {
+	AddedRoles   []string `bson:"created" json:"created"`
+	DeletedRoles []string `bson:"deleted" json:"deleted"`
 }
 
 var PoolRoleCollection = "pool_roles"
@@ -63,18 +79,25 @@ func (i *RoleRequest) NewRole() (r *vmod.Role, err error) {
 
 var ASPRole = "asp;finance;operation;education;network;socialmedia;awareness"
 
-func RolesPermission(result *vmod.Role, user *User, token *vcapool.AccessToken) (err error) {
+func RolesPermission(role string, user *User, token *vcapool.AccessToken) (err error) {
 	if user.NVM.Status != "confirmed" {
 		return vcago.NewBadRequest(PoolRoleCollection, "nvm required", nil)
 	}
-	if !(token.Roles.CheckRoot(result) || token.PoolRoles.CheckRoot(result)) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(role)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
 	return
 }
 
-func RolesDeletePermission(result *vmod.Role, token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.CheckRoot((*vmod.Role)(result)) || token.PoolRoles.CheckRoot((*vmod.Role)(result))) {
+func RolesBulkPermission(token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("finance;operation;education;network;socialmedia;awareness;other")) {
+		return vcago.NewPermissionDenied(PoolRoleCollection)
+	}
+	return
+}
+
+func RolesDeletePermission(role string, token *vcapool.AccessToken) (err error) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(role)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
 	return
@@ -109,6 +132,7 @@ func RoleFinance(userID string) *vmod.Role {
 		UserID: userID,
 	}
 }
+
 func RoleAction(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
@@ -175,5 +199,17 @@ func (i *RoleRequest) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("name", i.Role)
 	filter.EqualString("user_id", i.UserID)
+	return filter.Bson()
+}
+
+func (i *RoleBulkRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew.crew_id", token.CrewID)
+		filter.ElemMatchList("pool_roles", "name", token.PoolRoles)
+	} else {
+		filter.EqualString("crew.crew_id", i.CrewID)
+		filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"})
+	}
 	return filter.Bson()
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -374,4 +375,13 @@ func (i *UserQuery) Filter() bson.D {
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
 	return filter.Bson()
+}
+
+func (i *User) RoleContent(roles *BulkUserRoles) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["AddedRoles"] = strings.Join(roles.AddedRoles, ", ")
+	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
+	return content
 }

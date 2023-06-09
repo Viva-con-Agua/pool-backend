@@ -2,6 +2,7 @@ package main
 
 import (
 	"pool-backend/dao"
+	"pool-backend/handlers/admin"
 	"pool-backend/handlers/key"
 	"pool-backend/handlers/token"
 
@@ -55,6 +56,9 @@ func main() {
 
 	key.Import.Routes(api.Group("/import"))
 
+	admin.Crew.Routes(e.Group("/admin/crews"))
+	admin.Role.Routes(e.Group("/admin/users/role"))
+	admin.User.Routes(e.Group("/admin/users"))
 	//server
 	e.Run()
 }
