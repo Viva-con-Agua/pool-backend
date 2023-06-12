@@ -10,6 +10,27 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+	if err = i.UsersCrewCreatePermission(token); err != nil {
+		return
+	}
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
+		return
+	}
+	result = models.NewUserCrew(i.UserID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
+		return
+	}
+	if err = ActiveCollection.InsertOne(ctx, models.NewActive(i.UserID, crew.ID)); err != nil {
+		return
+	}
+	if err = NVMCollection.InsertOne(ctx, models.NewNVM(i.UserID)); err != nil {
+		return
+	}
+	return
+}
+
 func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
@@ -34,6 +55,36 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapoo
 	}
 
 	if err = UserCrewCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &result); err != nil {
+		return
+	}
+	//reset active and nvm
+	if err = ActiveCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "user_id", Value: i.UserID}},
+		vmdb.UpdateSet(models.ActiveWithdraw()),
+		nil,
+	); err != nil && vmdb.ErrNoDocuments(err) {
+		return
+	}
+	//reject nvm state
+	if err = NVMCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "user_id", Value: i.UserID}},
+		vmdb.UpdateSet(models.NVMWithdraw()),
+		nil,
+	); err != nil && vmdb.ErrNoDocuments(err) {
+		return
+	}
+
+	return
+}
+
+func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+	if err = i.UsersCrewUpdatePermission(token); err != nil {
+		return
+	}
+
+	if err = UserCrewCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
 	//reset active and nvm

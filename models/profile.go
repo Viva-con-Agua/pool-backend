@@ -76,3 +76,9 @@ func (i *ProfileUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.EqualString("user_id", token.ID)
 	return filter.Bson()
 }
+
+func (i *ProfileUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
