@@ -19,11 +19,11 @@ var UserCrew = &UserCrewHandler{*vcago.NewHandler("user_crew")}
 func (i *UserCrewHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
-	group.POST("/create", i.CreateUser, accessCookie)
+	group.POST("/create", i.UsersCreate, accessCookie)
 	group.PUT("", i.Update, accessCookie)
-	group.PUT("/update", i.UpdateUser, accessCookie)
+	group.PUT("/update", i.UsersUpdate, accessCookie)
 	group.DELETE("", i.Delete, accessCookie)
-	group.DELETE("/:id", i.DeleteUser, accessCookie)
+	group.DELETE("/:id", i.UsersDelete, accessCookie)
 }
 
 func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
@@ -48,7 +48,7 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
-func (i *UserCrewHandler) CreateUser(cc echo.Context) (err error) {
+func (i *UserCrewHandler) UsersCreate(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UsersCrewCreate)
 	if err = c.BindAndValidate(body); err != nil {
@@ -87,7 +87,7 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
-func (i *UserCrewHandler) UpdateUser(cc echo.Context) (err error) {
+func (i *UserCrewHandler) UsersUpdate(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UserCrewUpdate)
 	if err = c.BindAndValidate(body); err != nil {
@@ -104,7 +104,7 @@ func (i *UserCrewHandler) UpdateUser(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
-func (i *UserCrewHandler) DeleteUser(cc echo.Context) (err error) {
+func (i *UserCrewHandler) UsersDelete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UserParam)
 	if err = c.BindAndValidate(body); err != nil {

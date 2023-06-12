@@ -41,7 +41,7 @@ func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.
 	return
 }
 
-func UserProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
+func UsersProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
 	if err = models.UsersEditPermission(token); err != nil {
 		return
 	}

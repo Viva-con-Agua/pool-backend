@@ -53,7 +53,7 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.User)
-	if result, err = dao.UserGetByID(c.Ctx(), body, token); err != nil {
+	if result, err = dao.UsersUserGetByID(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Selected(result)

@@ -304,7 +304,6 @@ func (i *ProfileUpdate) ToUserUpdate() *ProfileUpdate {
 		Phone:      i.Phone,
 		Gender:     i.Gender,
 		Birthdate:  i.Birthdate,
-		// TODO
 	}
 }
 

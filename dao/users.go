@@ -56,7 +56,7 @@ func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.Acc
 	return
 }
 
-func UserGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
+func UsersUserGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
 	if err = models.UsersEditPermission(token); err != nil {
 		return
 	}

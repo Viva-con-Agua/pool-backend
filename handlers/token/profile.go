@@ -20,7 +20,7 @@ func (i *ProfileHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
 	group.PUT("", i.Update, accessCookie)
-	group.PUT("/update", i.UpdateUserProfile, accessCookie)
+	group.PUT("/update", i.UsersUpdate, accessCookie)
 }
 
 func (i *ProfileHandler) Create(cc echo.Context) (err error) {
@@ -63,7 +63,7 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
-func (i *ProfileHandler) UpdateUserProfile(cc echo.Context) (err error) {
+func (i *ProfileHandler) UsersUpdate(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ProfileUpdate)
 	if err = c.BindAndValidate(body); err != nil {
@@ -74,7 +74,7 @@ func (i *ProfileHandler) UpdateUserProfile(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.Profile)
-	if result, err = dao.UserProfileUpdate(c.Ctx(), body, token); err != nil {
+	if result, err = dao.UsersProfileUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
