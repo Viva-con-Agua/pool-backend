@@ -49,6 +49,7 @@ type (
 	}
 	DepositUpdate struct {
 		ID          string              `json:"id" bson:"_id"`
+		CrewID      string              `json:"crew_id" bson:"crew_id"`
 		Status      string              `json:"status" bson:"status"`
 		DepositUnit []DepositUnitUpdate `json:"deposit_units" bson:"-"`
 		HasExternal bool                `json:"has_external" bson:"has_external"`

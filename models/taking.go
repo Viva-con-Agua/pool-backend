@@ -57,6 +57,7 @@ type (
 		Open      vmod.Money `json:"open" bson:"open"`
 		Confirmed vmod.Money `json:"confirmed" bson:"confirmed"`
 		Wait      vmod.Money `json:"wait" bson:"wait"`
+		NoIncome  bool       `json:"no_income" bson:"no_income"`
 	}
 	TakingParam struct {
 		ID     string `param:"id"`

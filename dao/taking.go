@@ -103,26 +103,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	); err != nil {
 		return
 	}
-	/*
-		event := new(models.EventUpdate)
-		if err = EventCollection.FindOne(
-			ctx,
-			bson.D{{Key: "taking_id", Value: i.ID}},
-			event,
-		); event != nil {
-			event.EventState.State = "finished"
-			result := new(models.Event)
-			if err = EventCollection.UpdateOneAggregate(
-				ctx,
-				event.Filter(),
-				vmdb.UpdateSet(event),
-				result,
-				models.EventPipeline(token).Match(event.Match()).Pipe,
-			); err != nil {
-				return
-			}
-		}*/
-
 	return
 }
 
@@ -131,9 +111,11 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.Ac
 		return
 	}
 	result = new([]models.Taking)
+	filter := query.PermittedFilter(token)
+	pipeline := models.TakingPipeline().Match(filter).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
-		models.TakingPipeline().Match(query.PermittedFilter(token)).Pipe,
+		pipeline,
 		result,
 	); err != nil {
 		return

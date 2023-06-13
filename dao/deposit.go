@@ -11,20 +11,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func validateDepositUnits(ctx context.Context, depositUnits []models.DepositUnit) (err error) {
+func validateDepositUnits(ctx context.Context, takingID string, amount int64, crewID string, token *vcapool.AccessToken) (err error) {
 	taking := new(models.Taking)
 	takingPipeline := models.TakingPipeline()
-	for _, unit := range depositUnits {
-		if err = TakingCollection.AggregateOne(
-			ctx,
-			takingPipeline.Match(models.Match(unit.TakingID)).Pipe,
-			taking,
-		); err != nil {
-			return
-		}
-		if unit.Money.Amount > taking.Money.Amount {
-			return vcago.NewBadRequest(models.DepositCollection, "taking_failure", nil)
-		}
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		takingPipeline.Match(models.Match(takingID)).Pipe,
+		taking,
+	); err != nil {
+		return
+	}
+	if amount > taking.Money.Amount {
+		return vcago.NewBadRequest(models.DepositCollection, "taking_amount_failure", nil)
+	}
+	if (!token.Roles.Validate("admin;employee") && crewID != token.CrewID) || taking.CrewID != crewID {
+		return vcago.NewBadRequest(models.DepositCollection, "taking_crew_failure", nil)
 	}
 	return
 }
@@ -34,8 +35,10 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 		return
 	}
 	deposit, depositUnits := i.DepositDatabase(token)
-	if err = validateDepositUnits(ctx, depositUnits); err != nil {
-		return
+	for _, unit := range depositUnits {
+		if err = validateDepositUnits(ctx, unit.TakingID, unit.Money.Amount, deposit.CrewID, token); err != nil {
+			return
+		}
 	}
 	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID)
 	if err != nil {
@@ -70,22 +73,16 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 		return
 	}
 	i.Money = deposit.Money
-	for _, unit := range i.DepositUnit {
-		taking := new(models.Taking)
-		takingPipeline := models.TakingPipeline()
-		log.Print(unit)
-		if err = TakingCollection.AggregateOne(
-			ctx,
-			takingPipeline.Match(models.Match(unit.TakingID)).Pipe,
-			taking,
-		); err != nil {
-			return
-		}
-		if unit.Money.Amount > taking.Money.Amount {
-			return nil, vcago.NewBadRequest(models.DepositCollection, "taking_failure", nil)
-		}
+	if deposit.Status == "confirmed" && !token.Roles.Validate("admin;employee") {
+		return nil, vcago.NewBadRequest("deposit", "deposit_confirmed_failure", nil)
 	}
 	depositUpdate, depositUnitCreate, depositUnitUpdate, depositUnitDelete := i.DepositDatabase(deposit)
+	for _, unit := range i.DepositUnit {
+		if err = validateDepositUnits(ctx, unit.TakingID, unit.Money.Amount, depositUpdate.CrewID, token); err != nil {
+			return
+		}
+	}
+
 	for _, unit := range depositUnitCreate {
 		if err = DepositUnitCollection.InsertOne(ctx, unit); err != nil {
 			return
