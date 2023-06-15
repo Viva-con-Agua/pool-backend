@@ -98,14 +98,14 @@ func InitialDatabase() {
 	AvatarCollection = Database.Collection(models.AvatarCollection).CreateIndex("user_id", true)
 
 	// PoolRoleCollection represents the database collection of the PoolRole Collection.
-	PoolRoleCollection = Database.Collection(models.PoolRoleCollection).CreateMultiIndex(bson.D{{Key: "name", Value: 1}, {Key: "user_id", Value: 1}}, true)
+	PoolRoleCollection = Database.Collection(models.PoolRoleCollection).CreateIndex("user_id", false).CreateMultiIndex(bson.D{{Key: "name", Value: 1}, {Key: "user_id", Value: 1}}, true)
 
 	//
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection)
 	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
-	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateMultiIndex(
+	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{
 			{Key: "user_id", Value: 1},
 			{Key: "event_id", Value: 1},
