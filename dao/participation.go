@@ -161,15 +161,6 @@ func ParticipationCreateNotification(ctx context.Context, i *models.Participatio
 		return
 	}
 
-	for _, user := range *users {
-		if user.ID != eventAps.ID {
-			mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
-			mail.AddUser(user.User())
-			mail.AddContent(i.ToContent())
-			vcago.Nats.Publish("system.mail.job", mail)
-		}
-	}
-
 	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())
