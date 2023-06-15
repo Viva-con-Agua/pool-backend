@@ -56,15 +56,22 @@ func (i *RoleHandler) CreateBulk(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(vmod.Role)
-	if result, err = dao.RoleBulkUpdate(c.Ctx(), body, token); err != nil {
+	result := new(models.RoleBulkExport)
+	userRolesMap := make(map[string]*models.BulkUserRoles)
+	if result, userRolesMap, err = dao.RoleBulkUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {
-		if err = dao.IDjango.Post(result, "/v1/pool/crew/asp/"); err != nil {
+		if err = dao.IDjango.Post(result, "/v1/pool/asps/"); err != nil {
 			log.Print(err)
 		}
 	}()
+	if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
+		return
+	}
+	if !token.Roles.Validate("employee;admin") {
+		dao.RoleAdminNotification(c.Ctx(), &models.CrewParam{ID: body.CrewID})
+	}
 	return c.Created(result)
 }
 
