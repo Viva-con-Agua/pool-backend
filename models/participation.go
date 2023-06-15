@@ -115,7 +115,7 @@ func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
 }
 
 func ParticipationUpdatePermission(token *vcapool.AccessToken, participation *Participation) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) && token.ID != participation.Event.EventASPID {
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID && token.ID != participation.UserID {
 		return vcago.NewPermissionDenied(ParticipationCollection)
 	}
 	return
@@ -279,8 +279,8 @@ func (i *ParticipationStateRequest) Match() bson.D {
 func (i *ParticipationUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if token.PoolRoles.Validate("network;operation;education") {
-		filter.EqualString("crew_id", token.CrewID)
+	if !token.PoolRoles.Validate("admin;employee") {
+		filter.EqualString("event.crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
