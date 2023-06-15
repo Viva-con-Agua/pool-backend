@@ -55,7 +55,7 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	if err = takingDatabase.UpdatePermission(token); err != nil {
 		return
 	}
-	i.State = &takingDatabase.State
+	//i.State = takingDatabase.State
 	for _, v := range i.Sources {
 		//create new sources
 		if v.ID == "" {
