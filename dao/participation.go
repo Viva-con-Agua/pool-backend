@@ -107,7 +107,7 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	if err = models.ParticipationUpdatePermission(token, event); err != nil {
 		return
 	}
-	filter := i.PermittedFilter(token)
+	filter := i.Match()
 	if err = ParticipationCollection.UpdateOneAggregate(
 		ctx,
 		filter,
