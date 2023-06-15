@@ -60,6 +60,7 @@ func (i *ActiveHandler) Confirm(cc echo.Context) (err error) {
 	if result, err = dao.ActiveConfirm(c.Ctx(), body, token); err != nil {
 		return
 	}
+	dao.ActiveNotification(c.Ctx(), result, "active_confirm")
 	return c.SuccessResponse(http.StatusOK, "successfully_confirmed", "active", result)
 }
 
@@ -78,6 +79,7 @@ func (i *ActiveHandler) Reject(cc echo.Context) (err error) {
 	if result, err = dao.ActiveReject(c.Ctx(), body, token); err != nil {
 		return
 	}
+	dao.ActiveNotification(c.Ctx(), result, "active_reject")
 	return c.SuccessResponse(http.StatusOK, "successfully_rejected", "active", result)
 }
 

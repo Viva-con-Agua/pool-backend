@@ -13,7 +13,7 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vc
 
 	if !token.Roles.Validate("employee;admin") || i.UserID == "" {
 		if i.Value == "regional" && token.CrewID == "" {
-			return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+			return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 		}
 		result = i.Newsletter(token)
 		if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
@@ -23,7 +23,7 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vc
 		if i.Value == "regional" {
 			crew := new(models.UserCrew)
 			if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: i.UserID}}, crew); err != nil {
-				return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+				return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 			}
 		}
 		result = i.NewsletterAdmin()
@@ -58,7 +58,7 @@ func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *
 	if i.Value == "regional" {
 		crew := new(models.UserCrew)
 		if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}}, crew); err != nil {
-			return nil, vcago.NewBadRequest("newsletter", "not part of an crew", nil)
+			return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 		}
 	}
 	result = i.ToNewsletter(user.ID)
