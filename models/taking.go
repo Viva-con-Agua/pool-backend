@@ -19,12 +19,12 @@ type (
 		Comment   string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID      string         `json:"id" bson:"_id"`
-		Name    string         `json:"name" bson:"name"`
-		CrewID  string         `json:"crew_id" bson:"crew_id"`
-		Sources []SourceUpdate `json:"sources" bson:"-"`
-		State   *TakingState   `json:"-;omitempty" bson:"state"`
-		Comment string         `json:"comment"`
+		ID      string            `json:"id" bson:"_id"`
+		Name    string            `json:"name" bson:"name"`
+		CrewID  string            `json:"crew_id" bson:"crew_id"`
+		Sources []SourceUpdate    `json:"sources" bson:"-"`
+		State   TakingStateUpdate `json:"state" bson:"state"`
+		Comment string            `json:"comment"`
 	}
 
 	TakingDatabase struct {
@@ -34,6 +34,7 @@ type (
 		Type     string        `json:"type" bson:"type"`
 		Comment  string        `json:"comment" bson:"comment"`
 		State    TakingState   `json:"state" bson:"state"`
+		Currency string        `json:"-" bson:"currency"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Taking struct {
@@ -56,6 +57,10 @@ type (
 		Open      vmod.Money `json:"open" bson:"open"`
 		Confirmed vmod.Money `json:"confirmed" bson:"confirmed"`
 		Wait      vmod.Money `json:"wait" bson:"wait"`
+		NoIncome  bool       `json:"no_income" bson:"no_income"`
+	}
+	TakingStateUpdate struct {
+		NoIncome bool `json:"no_income" bson:"no_income"`
 	}
 	TakingParam struct {
 		ID     string `param:"id"`
@@ -64,6 +69,7 @@ type (
 	TakingQuery struct {
 		ID              []string `query:"id"`
 		Name            string   `query:"name"`
+		Search          string   `query:"search"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
 		EventState      []string `query:"event_state"`
@@ -74,6 +80,7 @@ type (
 		StatusConfirmed bool     `query:"status_confirmed"`
 		StatusNone      bool     `query:"status_none"`
 		StatusWait      bool     `query:"status_wait"`
+		StatusNoIncome  bool     `query:"status_no_income"`
 	}
 )
 
@@ -124,6 +131,7 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 		Name:     i.Name,
 		CrewID:   i.CrewID,
 		Type:     "manually",
+		Currency: i.NewSource[0].Money.Currency,
 		Comment:  i.Comment,
 		Modified: vmod.NewModified(),
 	}
@@ -168,12 +176,13 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 		filter.EqualStringList("crew_id", i.CrewID)
 	}
 	filter.LikeString("name", i.Name)
+	filter.SearchString([]string{"name", "event.name"}, i.Search)
 	filter.EqualStringList("event.event_state.state", i.EventState)
 	filter.LikeString("event.name", i.EventName)
 	filter.GteInt64("event.end_at", i.EventEndFrom)
 	filter.LteInt64("event.end_at", i.EventEndTo)
 	status := bson.A{}
-	if i.StatusOpen || i.StatusConfirmed || i.StatusWait || i.StatusNone {
+	if i.StatusOpen || i.StatusConfirmed || i.StatusWait || i.StatusNone || i.StatusNoIncome {
 		if i.StatusOpen {
 			status = append(status, bson.D{{Key: "state.open.amount", Value: bson.D{{Key: "$gte", Value: 1}}}})
 		}
@@ -189,6 +198,9 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 				{Key: "state.confirmed.amount", Value: 0},
 				{Key: "state.open.amount", Value: 0},
 			})
+		}
+		if i.StatusNoIncome {
+			status = append(status, bson.D{{Key: "state.no_income", Value: true}})
 		}
 		filter.Append(bson.E{Key: "$or", Value: status})
 	}

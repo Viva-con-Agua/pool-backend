@@ -39,7 +39,6 @@ func GetNewReasonForPayment(ctx context.Context, crewID string) (r string, err e
 			if err = ReasonForPaymentCollection.InsertOne(ctx, rfp); err != nil {
 				return
 			}
-
 		} else {
 			return
 		}
