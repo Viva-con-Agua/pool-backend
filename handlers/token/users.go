@@ -35,10 +35,11 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.User)
-	if result, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i *UserHandler) GetUsersByCrew(cc echo.Context) (err error) {

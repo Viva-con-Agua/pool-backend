@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -32,14 +33,26 @@ func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.Use
 	return
 }
 
-func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.User, err error) {
+func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.User, list_size int64, err error) {
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
+	ctx = context.Background()
 	filter := i.PermittedFilter(token)
+	sort := i.Sort()
+	pipeline := models.SortedUserPipeline(sort, false).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.User)
-	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, result); err != nil {
+	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
+	}
+	//list_size = 1254
+	count := vmod.Count{}
+	var cErr error
+	if cErr = UserCollection.AggregateOne(ctx, models.UserPipeline(false).Match(filter).Count().Pipe, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
+	} else {
+		list_size = int64(count.Total)
 	}
 	return
 }
