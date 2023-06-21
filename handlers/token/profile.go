@@ -20,6 +20,7 @@ func (i *ProfileHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
 	group.PUT("", i.Update, accessCookie)
+	group.PUT("/update", i.UsersUpdate, accessCookie)
 }
 
 func (i *ProfileHandler) Create(cc echo.Context) (err error) {
@@ -52,6 +53,28 @@ func (i *ProfileHandler) Update(cc echo.Context) (err error) {
 	}
 	result := new(models.Profile)
 	if result, err = dao.ProfileUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/profile/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return c.Updated(result)
+}
+
+func (i *ProfileHandler) UsersUpdate(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.ProfileUpdate)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new(models.Profile)
+	if result, err = dao.UsersProfileUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	go func() {

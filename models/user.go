@@ -217,6 +217,26 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	return
 }
 
+func UserPermittedPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	if token.Roles.Validate("admin") {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address._id"}}}})
+	} else {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
+	}
+	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
+	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+
+	return
+}
+
 func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
@@ -277,6 +297,16 @@ func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 	return vcago.NewAuthToken(accessToken, refreshToken)
 }
 
+func (i *ProfileUpdate) ToUserUpdate() *ProfileUpdate {
+	return &ProfileUpdate{
+		ID:         i.ID,
+		Mattermost: i.Mattermost,
+		Phone:      i.Phone,
+		Gender:     i.Gender,
+		Birthdate:  i.Birthdate,
+	}
+}
+
 func UsersPermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
 		return vcago.NewPermissionDenied(UserCollection)
@@ -291,6 +321,13 @@ func (i *UserParam) UsersDeletePermission(token *vcapool.AccessToken) (err error
 	return
 }
 
+func UsersEditPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(UserCollection)
+	}
+	return
+}
+
 func (i *UserQuery) CrewUsersPermission(token *vcapool.AccessToken) (err error) {
 	if i.CrewID != "" && i.CrewID != token.CrewID {
 		return vcago.NewPermissionDenied(UserCollection)
@@ -298,7 +335,7 @@ func (i *UserQuery) CrewUsersPermission(token *vcapool.AccessToken) (err error) 
 	return
 }
 
-func (i UserParam) Match() bson.D {
+func (i *UserParam) Match() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
