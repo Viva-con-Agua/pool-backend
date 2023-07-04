@@ -77,7 +77,7 @@ func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
 		c.Ctx(),
 		models.UserPipeline(true).Match(models.UserMatchEmail(body.Email)).Pipe,
 		result,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	); err != nil {
 		return
 	}
 	token := new(vcago.AuthToken)
