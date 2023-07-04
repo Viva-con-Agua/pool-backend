@@ -64,6 +64,10 @@ func UpdateDatabase() {
 		UpdateDepositUnitCurrency(ctx)
 		InsertUpdate(ctx, "deposit_unit_currency")
 	}
+	if !CheckUpdated(ctx, "taking_fix_no_income") {
+		UpdateTakingFixNoIncome(ctx)
+		InsertUpdate(ctx, "taking_fix_no_income")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -136,6 +140,17 @@ func UpdateDepositCurrency(ctx context.Context) {
 func UpdateDepositUnitCurrency(ctx context.Context) {
 	update := bson.D{{Key: "money.currency", Value: "EUR"}}
 	if _, err := DepositUnitCollection.Collection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		return
+	}
+}
+
+func UpdateTakingFixNoIncome(ctx context.Context) {
+	update := bson.D{{Key: "state.no_income", Value: false}}
+	if _, err := TakingCollection.Collection.UpdateMany(
+		ctx,
+		bson.D{{Key: "$not", Value: bson.D{{Key: "state.no_income", Value: true}}}},
+		vmdb.UpdateSet(update),
+	); err != nil {
 		return
 	}
 }

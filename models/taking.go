@@ -184,7 +184,7 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	status := bson.A{}
 	if i.StatusOpen || i.StatusConfirmed || i.StatusWait || i.StatusNone || i.StatusNoIncome {
 		if i.StatusOpen {
-			status = append(status, bson.D{{Key: "state.open.amount", Value: bson.D{{Key: "$gte", Value: 1}}}})
+			status = append(status, bson.D{{Key: "state.open.amount", Value: bson.D{{Key: "$gte", Value: 1}}}, {Key: "state.no_income", Value: false}})
 		}
 		if i.StatusConfirmed {
 			status = append(status, bson.D{{Key: "state.confirmed.amount", Value: bson.D{{Key: "$gte", Value: 1}}}})
