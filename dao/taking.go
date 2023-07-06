@@ -163,3 +163,15 @@ func TakingDeletetByID(ctx context.Context, param *models.TakingParam, token *vc
 	err = TakingCollection.DeleteOne(ctx, param.PermittedFilter(token))
 	return
 }
+
+func TakingUpdateEventStatus(ctx context.Context, state string, id string) (err error) {
+	switch state {
+	case "canceled":
+		filter := bson.D{{Key: "_id", Value: id}}
+		update := bson.D{{Key: "state.no_income", Value: true}}
+		if err = TakingCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			return
+		}
+	}
+	return
+}

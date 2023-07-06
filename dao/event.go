@@ -129,6 +129,9 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 	if err = i.EventStateValidation(token, event); err != nil {
 		return
 	}
+	if err = TakingUpdateEventStatus(ctx, i.EventState.State, event.TakingID); err != nil {
+		return
+	}
 	if err = EventCollection.UpdateOneAggregate(
 		ctx,
 		filter,
