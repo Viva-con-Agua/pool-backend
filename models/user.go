@@ -140,6 +140,7 @@ type (
 		SortDirection string   `query:"sort_dir"`
 		Limit         int64    `query:"limit"`
 		Skip          int64    `query:"skip"`
+		FullCount     string   `query:"full_count"`
 	}
 )
 
@@ -340,6 +341,7 @@ func (i UserQuery) Sort() bson.D {
 func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualBool("confirmed", "true")
+	filter.LikeString("email", i.Email)
 	filter.LikeString("first_name", i.FullName)
 	filter.LikeString("last_name", i.FullName)
 	filter.LikeString("full_name", i.FullName)
