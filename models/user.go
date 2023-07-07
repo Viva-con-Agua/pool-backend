@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -71,6 +72,26 @@ type (
 		NVM        NVM           `json:"nvm" bson:"nvm,omitempty"`
 		Newsletter []Newsletter  `json:"newsletter" bson:"newsletter"`
 		Modified   vmod.Modified `json:"modified" bson:"modified"`
+	}
+	ListUser struct {
+		ID          string        `json:"id,omitempty" bson:"_id"`
+		Email       string        `json:"email" bson:"email" validate:"required,email"`
+		FirstName   string        `bson:"first_name" json:"first_name" validate:"required"`
+		LastName    string        `bson:"last_name" json:"last_name" validate:"required"`
+		FullName    string        `bson:"full_name" json:"full_name"`
+		DisplayName string        `bson:"display_name" json:"display_name"`
+		Roles       vmod.RoleList `json:"system_roles" bson:"system_roles"`
+		Country     string        `bson:"country" json:"country"`
+		Confirmed   bool          `bson:"confirmed" json:"confirmed"`
+		//extends the vcago.User
+		Profile    ProfileMinimal  `json:"profile" bson:"profile,truncate"`
+		Crew       UserCrewMinimal `json:"crew" bson:"crew,omitempty"`
+		Avatar     Avatar          `bson:"avatar,omitempty" json:"avatar"`
+		PoolRoles  vmod.RoleList   `json:"pool_roles" bson:"pool_roles,omitempty"`
+		Active     Active          `json:"active" bson:"active,omitempty"`
+		NVM        NVM             `json:"nvm" bson:"nvm,omitempty"`
+		Newsletter []Newsletter    `json:"newsletter" bson:"newsletter"`
+		Modified   vmod.Modified   `json:"modified" bson:"modified"`
 	}
 	UserParticipant struct {
 		ID          string   `json:"id,omitempty" bson:"_id"`
@@ -212,6 +233,35 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
+	return
+}
+func (i *UserQuery) FacetUserPipeline(sort bson.D, user bool) (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.Append(vmdb.SortFields(sort))
+	if user == true {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	} else {
+		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
+		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
+	}
+	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
+	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+
+	count := bson.A{}
+	count = append(count, bson.E{Key: "$count", Value: "count"})
+	entries := bson.A{}
+	entries = append(entries, bson.E{Key: "$skip", Value: i.Skip})
+	entries = append(entries, bson.E{Key: "$limit", Value: i.Limit})
+	facets := bson.D{{Key: "entries", Value: entries}, {Key: "count", Value: count}}
+	facet := bson.D{{Key: "$facet", Value: facets}}
+	pipe.Append(facet)
+
+	fmt.Printf("%v", pipe)
 	return
 }
 
