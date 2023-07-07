@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -150,6 +149,8 @@ type (
 		ID            []string `query:"id"`
 		Search        string   `query:"search"`
 		Email         string   `query:"email"`
+		FirstName     string   `query:"first_name"`
+		LastName      string   `query:"last_name"`
 		FullName      string   `query:"full_name"`
 		DisplayName   string   `query:"display_name" qs:"display_name"`
 		ActiveState   []string `query:"active_state" qs:"active_state"`
@@ -245,35 +246,6 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
-	return
-}
-func (i *UserQuery) FacetUserPipeline(sort bson.D, user bool) (pipe *vmdb.Pipeline) {
-	pipe = vmdb.NewPipeline()
-	pipe.Append(vmdb.SortFields(sort))
-	if user == true {
-		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
-	} else {
-		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
-		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
-	}
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
-	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
-
-	count := bson.A{}
-	count = append(count, bson.E{Key: "$count", Value: "count"})
-	entries := bson.A{}
-	entries = append(entries, bson.E{Key: "$skip", Value: i.Skip})
-	entries = append(entries, bson.E{Key: "$limit", Value: i.Limit})
-	facets := bson.D{{Key: "entries", Value: entries}, {Key: "count", Value: count}}
-	facet := bson.D{{Key: "$facet", Value: facets}}
-	pipe.Append(facet)
-
-	fmt.Printf("%v", pipe)
 	return
 }
 
@@ -431,8 +403,8 @@ func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("email", i.Email)
-	filter.LikeString("first_name", i.FullName)
-	filter.LikeString("last_name", i.FullName)
+	filter.LikeString("first_name", i.FirstName)
+	filter.LikeString("last_name", i.LastName)
 	filter.LikeString("full_name", i.FullName)
 	filter.LikeString("display_name", i.DisplayName)
 	filter.EqualString("crew.crew_id", i.CrewID)
@@ -454,8 +426,8 @@ func (i *UserQuery) PermittedUserFilter(token *vcapool.AccessToken) bson.D {
 	filter.EqualString("crew.crew_id", token.CrewID)
 	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"})
 	filter.EqualBool("confirmed", "true")
-	filter.LikeString("first_name", i.FullName)
-	filter.LikeString("last_name", i.FullName)
+	filter.LikeString("first_name", i.FirstName)
+	filter.LikeString("last_name", i.LastName)
 	filter.LikeString("full_name", i.FullName)
 	filter.LikeString("display_name", i.DisplayName)
 	filter.EqualString("crew.crew_id", i.CrewID)
@@ -469,8 +441,8 @@ func (i *UserQuery) PermittedUserFilter(token *vcapool.AccessToken) bson.D {
 func (i *UserQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualBool("confirmed", "true")
-	filter.LikeString("first_name", i.FullName)
-	filter.LikeString("last_name", i.FullName)
+	filter.LikeString("first_name", i.FirstName)
+	filter.LikeString("last_name", i.LastName)
 	filter.LikeString("full_name", i.FullName)
 	filter.LikeString("display_name", i.DisplayName)
 	filter.EqualString("crew.crew_id", i.CrewID)
