@@ -161,6 +161,7 @@ type (
 		SortDirection string   `query:"sort_dir"`
 		Limit         int64    `query:"limit"`
 		Skip          int64    `query:"skip"`
+		FullCount     string   `query:"full_count"`
 	}
 )
 
@@ -215,6 +216,17 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 		Confirmed:     user.Confirmd,
 		LastUpdate:    user.LastUpdate,
 	}
+}
+
+func UserCountPipeline() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
+	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
+	return
 }
 
 func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
@@ -379,6 +391,7 @@ func (i UserQuery) Sort() bson.D {
 func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualBool("confirmed", "true")
+	filter.LikeString("email", i.Email)
 	filter.LikeString("first_name", i.FullName)
 	filter.LikeString("last_name", i.FullName)
 	filter.LikeString("full_name", i.FullName)
