@@ -55,7 +55,7 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	if err = takingDatabase.UpdatePermission(token); err != nil {
 		return
 	}
-	i.State = &takingDatabase.State
+	//i.State = takingDatabase.State
 	for _, v := range i.Sources {
 		//create new sources
 		if v.ID == "" {
@@ -66,9 +66,10 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			}
 		}
 		if v.UpdateState == "deleted" {
-			deleteSource := new(models.Source)
-			if err = SourceCollection.FindOne(ctx, bson.D{{Key: "_id", Value: v.ID}}, deleteSource); err != nil {
-				return
+			if models.SourceDeletePermission(takingDatabase, token) {
+				if err = SourceCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: v.ID}}); err != nil {
+					return
+				}
 			}
 		}
 		if v.UpdateState == "updated" {
@@ -102,26 +103,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	); err != nil {
 		return
 	}
-	/*
-		event := new(models.EventUpdate)
-		if err = EventCollection.FindOne(
-			ctx,
-			bson.D{{Key: "taking_id", Value: i.ID}},
-			event,
-		); event != nil {
-			event.EventState.State = "finished"
-			result := new(models.Event)
-			if err = EventCollection.UpdateOneAggregate(
-				ctx,
-				event.Filter(),
-				vmdb.UpdateSet(event),
-				result,
-				models.EventPipeline(token).Match(event.Match()).Pipe,
-			); err != nil {
-				return
-			}
-		}*/
-
 	return
 }
 
@@ -130,9 +111,11 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.Ac
 		return
 	}
 	result = new([]models.Taking)
+	filter := query.PermittedFilter(token)
+	pipeline := models.TakingPipeline().Match(filter).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
-		models.TakingPipeline().Match(query.PermittedFilter(token)).Pipe,
+		pipeline,
 		result,
 	); err != nil {
 		return

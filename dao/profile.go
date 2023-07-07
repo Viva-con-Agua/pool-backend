@@ -41,6 +41,16 @@ func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.
 	return
 }
 
+func UsersProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
+	if err = models.UsersEditPermission(token); err != nil {
+		return
+	}
+	if err = ProfileCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i.ToUserUpdate()), &result); err != nil {
+		return
+	}
+	return
+}
+
 func ProfileImport(ctx context.Context, profile *models.ProfileImport) (result *models.Profile, err error) {
 	user := new(models.UserDatabase)
 	userFilter := bson.D{{Key: "drops_id", Value: profile.DropsID}}

@@ -40,7 +40,7 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 	ctx = context.Background()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
-	pipeline := models.SortedUserPipeline(sort, false).Match(filter).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+	pipeline := models.SortedUserPermittedPipeline(sort, token).Match(filter).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.ListUser)
 	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
@@ -65,6 +65,16 @@ func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.Acc
 	filter := i.PermittedUserFilter(token)
 	result = new([]models.UserBasic)
 	if err = UserCollection.Aggregate(ctx, models.UserPipelinePublic().Match(filter).Pipe, result); err != nil {
+		return
+	}
+	return
+}
+
+func UsersUserGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
+	if err = models.UsersEditPermission(token); err != nil {
+		return
+	}
+	if err = UserCollection.AggregateOne(ctx, models.UserPermittedPipeline(token).Match(i.Match()).Pipe, &result); err != nil {
 		return
 	}
 	return
