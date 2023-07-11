@@ -29,6 +29,13 @@ type (
 		MailboxID string        `bson:"mailbox_id" json:"mailbox_id"`
 		Modified  vmod.Modified `bson:"modified" json:"modified"`
 	}
+	UserCrewMinimal struct {
+		ID     string `bson:"_id" json:"id"`
+		UserID string `bson:"user_id" json:"user_id"`
+		Name   string `bson:"name" json:"name"`
+		Email  string `bson:"email" json:"email"`
+		CrewID string `bson:"crew_id" json:"crew_id"`
+	}
 	UserCrewUpdate struct {
 		ID     string `bson:"_id" json:"id"`
 		UserID string `bson:"user_id" json:"user_id"`

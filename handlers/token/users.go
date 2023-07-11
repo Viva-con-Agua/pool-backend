@@ -35,11 +35,12 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new([]models.User)
-	if result, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
+	result := new([]models.ListUser)
+	var listSize int64
+	if result, listSize, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i *UserHandler) GetByID(cc echo.Context) (err error) {

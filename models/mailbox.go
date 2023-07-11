@@ -71,7 +71,7 @@ func (i *MailboxParam) Pipeline() mongo.Pipeline {
 func (i *MailboxParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;asp;")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;other")) {
 		filter.EqualString("user._id", token.ID)
 		filter.EqualString("type", "user")
 	} else if !token.Roles.Validate("employee;admin") {

@@ -7,6 +7,7 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.User, err error) {
@@ -32,14 +33,27 @@ func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.Use
 	return
 }
 
-func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.User, err error) {
+func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.ListUser, list_size int64, err error) {
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
+	ctx = context.Background()
 	filter := i.PermittedFilter(token)
-	result = new([]models.User)
-	if err = UserCollection.Aggregate(ctx, models.UserPermittedPipeline(token).Match(filter).Pipe, result); err != nil {
+	sort := i.Sort()
+	pipeline := models.SortedUserPermittedPipeline(sort, token).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+	result = new([]models.ListUser)
+	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
+	}
+	opts := options.Count().SetHint("_id_")
+	if i.FullCount != "true" {
+		opts.SetSkip(i.Skip).SetLimit(i.Limit)
+	}
+	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
+		print(cErr)
+		list_size = 0
+	} else {
+		list_size = cursor
 	}
 	return
 }
