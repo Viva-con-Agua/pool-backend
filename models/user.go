@@ -219,17 +219,6 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 	}
 }
 
-func UserCountPipeline() (pipe *vmdb.Pipeline) {
-	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
-	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
-	return
-}
-
 func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	if user == true {
@@ -384,6 +373,7 @@ func (i *UserParam) Match() bson.D {
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
+
 func (i UserQuery) Sort() bson.D {
 	sort := vmdb.NewSort()
 	sort.Add(i.SortField, i.SortDirection)
