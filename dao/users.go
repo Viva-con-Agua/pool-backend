@@ -47,11 +47,11 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 	}
 	opts := options.Count().SetHint("_id_")
 	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit + 401)
+		opts.SetSkip(i.Skip).SetLimit(i.Limit)
 	}
 	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
 		print(cErr)
-		list_size = 1
+		list_size = 0
 	} else {
 		list_size = cursor
 	}

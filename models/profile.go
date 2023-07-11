@@ -33,6 +33,7 @@ type (
 	}
 	ProfileMinimal struct {
 		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		Birthdate  int64  `bson:"birthdate" json:"birthdate"`
 		UserID     string `bson:"user_id" json:"user_id"`
 	}
 	ProfileImport struct {

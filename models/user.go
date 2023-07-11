@@ -251,21 +251,21 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 
 func SortedUserPermittedPipeline(sort bson.D, token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.Append(vmdb.SortFields(sort))
-	if token.Roles.Validate("admin") {
-		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
-		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address._id"}}}})
-	} else {
-		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
-		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
-	}
+	//if token.Roles.Validate("admin") {
+	//	pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
+	//	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address._id"}}}})
+	//} else {
+	//	pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
+	//	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
+	//}
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	pipe.Append(vmdb.SortFields(sort))
+	//pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
 }
@@ -407,6 +407,7 @@ func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.LikeString("last_name", i.LastName)
 	filter.LikeString("full_name", i.FullName)
 	filter.LikeString("display_name", i.DisplayName)
+	filter.EqualString("crew.crew_id", i.CrewID)
 	filter.EqualString("crew.crew_id", i.CrewID)
 	filter.ElemMatchList("system_roles", "name", i.SystemRoles)
 	filter.ElemMatchList("pool_roles", "name", i.PoolRoles)
