@@ -275,6 +275,10 @@ func EventParticipantsNotification(ctx context.Context, i *models.Event, templat
 
 func EventASPNotification(ctx context.Context, i *models.Event, template string) (err error) {
 
+	if i.EventASPID == "" {
+		return vcago.NewNotFound(models.EventCollection, i)
+	}
+
 	user := new(models.User)
 	if user, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
 		return
@@ -293,6 +297,10 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 }
 
 func EventStateNotification(ctx context.Context, i *models.Event, template string) (err error) {
+
+	if i.EventASPID == "" {
+		return vcago.NewNotFound(models.EventCollection, i)
+	}
 
 	eventAps := new(models.User)
 	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
