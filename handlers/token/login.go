@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"net/http"
 	"pool-backend/dao"
 	"pool-backend/models"
@@ -54,6 +55,11 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
 			return
 		}
+		go func() {
+			if err = dao.IDjango.Post(result, "/v1/pool/user/"); err != nil {
+				log.Print(err)
+			}
+		}()
 		vcago.Nats.Publish("pool.user.created", result)
 	}
 	token := new(vcago.AuthToken)
