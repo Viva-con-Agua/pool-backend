@@ -7,6 +7,7 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -106,19 +107,30 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	return
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, err error) {
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, listSize int64, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
 	result = new([]models.Taking)
 	filter := query.PermittedFilter(token)
-	pipeline := models.TakingPipeline().Match(filter).Pipe
+	sort := query.Sort()
+	pipeline := models.TakingPipeline().Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
 		pipeline,
 		result,
 	); err != nil {
 		return
+	}
+	opts := options.Count().SetHint("_id_")
+	if query.FullCount != "true" {
+		opts.SetSkip(query.Skip).SetLimit(query.Limit)
+	}
+	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
+		print(cErr)
+		listSize = 0
+	} else {
+		listSize = cursor
 	}
 	return
 }
