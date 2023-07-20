@@ -264,7 +264,9 @@ func UserPermittedPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
+	if !(token.Roles.Validate("admin") || token.Roles.Validate("employee")) {
+		pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
+	}
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
@@ -349,6 +351,13 @@ func UsersPermission(token *vcapool.AccessToken) (err error) {
 
 func (i *UserParam) UsersDeletePermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("employee;admin") || i.ID == token.ID) {
+		return vcago.NewPermissionDenied(UserCollection)
+	}
+	return
+}
+
+func UsersDetailsPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return

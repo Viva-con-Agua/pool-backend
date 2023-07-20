@@ -19,7 +19,7 @@ func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.
 }
 
 func ProfileGetByID(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.User, err error) {
-	if err = models.UsersEditPermission(token); err != nil {
+	if err = models.UsersDetailsPermission(token); err != nil {
 		return
 	}
 	if err = UserCollection.AggregateOne(ctx, models.UserPermittedPipeline(token).Match(i.Match()).Pipe, &result); err != nil {
