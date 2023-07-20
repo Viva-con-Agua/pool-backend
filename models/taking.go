@@ -81,6 +81,11 @@ type (
 		StatusNone      bool     `query:"status_none"`
 		StatusWait      bool     `query:"status_wait"`
 		StatusNoIncome  bool     `query:"status_no_income"`
+		SortField       string   `query:"sort"`
+		SortDirection   string   `query:"sort_dir"`
+		Limit           int64    `query:"limit"`
+		Skip            int64    `query:"skip"`
+		FullCount       string   `query:"full_count"`
 	}
 )
 
@@ -237,4 +242,10 @@ func (i *Taking) UpdatePermission(token *vcapool.AccessToken) error {
 		}
 	}
 	return nil
+}
+
+func (i *TakingQuery) Sort() bson.D {
+	sort := vmdb.NewSort()
+	sort.Add(i.SortField, i.SortDirection)
+	return sort.Bson()
 }
