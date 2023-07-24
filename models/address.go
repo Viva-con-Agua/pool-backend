@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -10,6 +11,16 @@ import (
 
 type (
 	AddressCreate struct {
+		Street      string `json:"street" bson:"street" validate:"required"`
+		Number      string `json:"number" bson:"number" validate:"required"`
+		Zip         string `json:"zip" bson:"zip" validate:"required"`
+		City        string `json:"city" bson:"city" validate:"required"`
+		Country     string `json:"country" bson:"country" validate:"required"`
+		CountryCode string `json:"country_code" bson:"country_code" validate:"required"`
+		Additional  string `json:"additional" bson:"additional"`
+	}
+	UsersAddressCreate struct {
+		UserID      string `json:"user_id" bson:"user_id" validate:"required"`
 		Street      string `json:"street" bson:"street" validate:"required"`
 		Number      string `json:"number" bson:"number" validate:"required"`
 		Zip         string `json:"zip" bson:"zip" validate:"required"`
@@ -82,6 +93,21 @@ func (i *AddressCreate) Address(userID string) (r *Address) {
 	}
 }
 
+func (i *UsersAddressCreate) Address(userID string) (r *Address) {
+	return &Address{
+		ID:          uuid.NewString(),
+		Street:      i.Street,
+		Number:      i.Number,
+		Zip:         i.Zip,
+		City:        i.City,
+		Country:     i.Country,
+		CountryCode: i.CountryCode,
+		Additional:  i.Additional,
+		UserID:      userID,
+		Modified:    vmod.NewModified(),
+	}
+}
+
 func (i *AddressImport) Address(userID string) (r *Address) {
 	return &Address{
 		ID:          uuid.NewString(),
@@ -94,6 +120,13 @@ func (i *AddressImport) Address(userID string) (r *Address) {
 		Additional:  i.Additional,
 		UserID:      userID,
 	}
+}
+
+func AddressPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(CrewCollection)
+	}
+	return
 }
 
 func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
@@ -119,10 +152,22 @@ func (i *AddressUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
+func (i *AddressUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
 func (i *AddressParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
+}
+
+func (i *AddressParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
 

@@ -15,6 +15,10 @@ type (
 	UserCrewCreate struct {
 		CrewID string `json:"crew_id"`
 	}
+	UsersCrewCreate struct {
+		CrewID string `json:"crew_id"`
+		UserID string `json:"user_id"`
+	}
 	UserCrew struct {
 		ID        string        `bson:"_id" json:"id"`
 		UserID    string        `bson:"user_id" json:"user_id"`
@@ -24,6 +28,13 @@ type (
 		CrewID    string        `bson:"crew_id" json:"crew_id"`
 		MailboxID string        `bson:"mailbox_id" json:"mailbox_id"`
 		Modified  vmod.Modified `bson:"modified" json:"modified"`
+	}
+	UserCrewMinimal struct {
+		ID     string `bson:"_id" json:"id"`
+		UserID string `bson:"user_id" json:"user_id"`
+		Name   string `bson:"name" json:"name"`
+		Email  string `bson:"email" json:"email"`
+		CrewID string `bson:"crew_id" json:"crew_id"`
 	}
 	UserCrewUpdate struct {
 		ID     string `bson:"_id" json:"id"`
@@ -59,6 +70,20 @@ func NewUserCrew(userID string, crewID string, name string, email string, mailbo
 
 func (i *UserCrewUpdate) UserCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
 	if token.ID != i.UserID {
+		return vcago.NewPermissionDenied(CrewCollection)
+	}
+	return
+}
+
+func (i *UserCrewUpdate) UsersCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(CrewCollection)
+	}
+	return
+}
+
+func (i *UsersCrewCreate) UsersCrewCreatePermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
@@ -117,6 +142,18 @@ func (i *UserCrewImport) ToRoles(userID string) (result []vmod.Role) {
 func (i *UserCrewCreate) CrewFilter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.CrewID)
+	return filter.Bson()
+}
+
+func (i *UsersCrewCreate) CrewFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.CrewID)
+	return filter.Bson()
+}
+
+func (i *UserCrewUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
 

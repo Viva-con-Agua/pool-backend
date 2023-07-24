@@ -422,13 +422,13 @@ func EventRolePipeline() *vmdb.Pipeline {
 
 func EventPermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		return vcago.NewPermissionDenied(CrewCollection)
+		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
 }
 
 func EventDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
@@ -440,9 +440,13 @@ func (i *EventDatabase) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *EventParam) Match() bson.D {
+func (i *EventParam) PermittedDeleteFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
+		filter.EqualStringList("event_state.state", []string{"created", "requested"})
+	}
 	return filter.Bson()
 }
 func (i *EventUpdate) Match() bson.D {
@@ -454,14 +458,12 @@ func (i *EventUpdate) Match() bson.D {
 func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		filter.EqualString("event_asp_id", token.ID)
 		filter.EqualString("crew_id", token.CrewID)
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
-
 	return filter.Bson()
 }
 
@@ -478,8 +480,6 @@ func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
 		filter.EqualString("event_asp_id", token.ID)
-		filter.EqualString("crew_id", token.CrewID)
-		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("crew_id", token.CrewID)
 	}

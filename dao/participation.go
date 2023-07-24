@@ -140,27 +140,38 @@ func ParticipationNotification(ctx context.Context, i *models.Participation) (er
 	mail.AddUser(i.User.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
-	//notification := vcago.NewMNotificationData(result.User.Email, "pool-backend", template, result.User.Country, token.ID)
-	//notification.AddUser(result.User.User())
-	//notification.AddContent(result.ToContent())
-	//vcago.Nats.Publish("system.notification.job", notification)
+
 	return
 }
 
 func ParticipationCreateNotification(ctx context.Context, i *models.Participation) (err error) {
+	if i.Event.CrewID == "" || i.Event.EventASPID == "" {
+		return vcago.NewNotFound(models.CrewCollection, i)
+	}
 
 	template := "participation_create"
-
-	users := new([]models.User)
-	filter := i.Event.FilterCrew()
-	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, users); err != nil {
-		return
-	}
 	eventAps := new(models.User)
 	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.Event.EventASPID}); err != nil {
 		return
 	}
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail.AddUser(eventAps.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
+	return
+}
 
+func ParticipationWithdrawnNotification(ctx context.Context, i *models.Participation) (err error) {
+
+	if i.Event.CrewID == "" || i.Event.EventASPID == "" {
+		return vcago.NewNotFound(models.CrewCollection, i)
+	}
+
+	template := "participation_withdrawn"
+	eventAps := new(models.User)
+	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.Event.EventASPID}); err != nil {
+		return
+	}
 	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())

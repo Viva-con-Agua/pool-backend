@@ -146,7 +146,7 @@ func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.Acces
 		return
 	}
 	event := new(models.Event)
-	filter := i.Match()
+	filter := i.PermittedDeleteFilter(token)
 	if err = EventCollection.FindOne(
 		ctx,
 		filter,
@@ -275,6 +275,10 @@ func EventParticipantsNotification(ctx context.Context, i *models.Event, templat
 
 func EventASPNotification(ctx context.Context, i *models.Event, template string) (err error) {
 
+	if i.EventASPID == "" {
+		return vcago.NewNotFound(models.EventCollection, i)
+	}
+
 	user := new(models.User)
 	if user, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
 		return
@@ -294,23 +298,13 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 
 func EventStateNotification(ctx context.Context, i *models.Event, template string) (err error) {
 
-	users := new([]models.User)
-	filter := i.FilterCrew()
-	if err = UserCollection.Aggregate(ctx, models.UserPipeline(false).Match(filter).Pipe, users); err != nil {
-		return
+	if i.EventASPID == "" {
+		return vcago.NewNotFound(models.EventCollection, i)
 	}
+
 	eventAps := new(models.User)
 	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
 		return
-	}
-
-	for _, user := range *users {
-		if user.ID != eventAps.ID {
-			mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
-			mail.AddUser(user.User())
-			mail.AddContent(i.ToContent())
-			vcago.Nats.Publish("system.mail.job", mail)
-		}
 	}
 
 	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
