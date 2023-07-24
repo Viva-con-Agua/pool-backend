@@ -152,7 +152,8 @@ func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) b
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		filter.EqualString("mailbox_id", token.MailboxID)
+		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
+		filter.EqualString("user_id", token.ID)
 	} else {
 		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
 	}
@@ -163,7 +164,8 @@ func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) 
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		filter.EqualString("mailbox_id", token.MailboxID)
+		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
+		filter.EqualString("user_id", token.ID)
 	} else {
 		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
 	}

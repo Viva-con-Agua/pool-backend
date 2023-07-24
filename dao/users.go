@@ -71,7 +71,7 @@ func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.Acc
 }
 
 func UsersUserGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
-	if err = models.UsersEditPermission(token); err != nil {
+	if err = models.UsersPermission(token); err != nil {
 		return
 	}
 	if err = UserCollection.AggregateOne(ctx, models.UserPermittedPipeline(token).Match(i.Match()).Pipe, &result); err != nil {

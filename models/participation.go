@@ -210,9 +210,7 @@ func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D 
 	filter.EqualStringList("comment", i.Comment)
 	filter.EqualStringList("user_id", i.UserId)
 	filter.EqualStringList("crew.name", i.CrewName)
-	if !token.Roles.Validate("employee;admin") {
-		filter.EqualString("crew_id", token.CrewID)
-	} else {
+	if token.Roles.Validate("employee;admin") {
 		filter.EqualStringList("crew_id", i.CrewId)
 	}
 	return filter.Bson()
