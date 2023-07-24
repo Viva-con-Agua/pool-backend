@@ -264,7 +264,7 @@ func UserPermittedPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	if !(token.Roles.Validate("admin") || token.Roles.Validate("employee")) {
+	if token.Roles.Validate("employee;admin") {
 		pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	}
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
