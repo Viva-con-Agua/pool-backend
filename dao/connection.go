@@ -61,12 +61,14 @@ var (
 	ActivityCollection *vmdb.Collection
 
 	ReasonForPaymentCollection *vmdb.Collection
+	UserViewCollection         *vmdb.Collection
 
 	NewsletterCollection *vmdb.Collection
 
 	DepositUnitTakingPipe  = vmdb.NewPipeline()
 	ParticipationEventPipe = vmdb.NewPipeline()
 	ActitityUserPipe       = vmdb.NewPipeline()
+	UserPipe               = vmdb.NewPipeline()
 	UpdateCollection       *vmdb.Collection
 )
 
@@ -77,13 +79,13 @@ func InitialDatabase() {
 	UserCollection = Database.Collection(models.UserCollection).CreateIndex("email", true)
 
 	// UserCrewCollection represents the database collection of the UserCrew model.
-	UserCrewCollection = Database.Collection(models.UserCrewCollection).CreateIndex("user_id", true)
+	UserCrewCollection = Database.Collection(models.UserCrewCollection).CreateIndex("user_id", true).CreateIndex("crew_id", false).CreateMultiIndex(bson.D{{Key: "crew_id", Value: 1}, {Key: "user_id", Value: 1}}, true)
 
 	// ActiveCollection represents the database collection of the Active model.
-	ActiveCollection = Database.Collection(models.ActiveCollection).CreateIndex("user_id", true)
+	ActiveCollection = Database.Collection(models.ActiveCollection).CreateIndex("user_id", true).CreateIndex("crew_id", false).CreateMultiIndex(bson.D{{Key: "crew_id", Value: 1}, {Key: "user_id", Value: 1}}, true)
 
 	// NVMCollection represents the database collection of the NVM model.
-	NVMCollection = Database.Collection(models.NVMCollection).CreateIndex("user_id", true)
+	NVMCollection = Database.Collection(models.NVMCollection).CreateIndex("user_id", true).CreateIndex("crew_id", false).CreateMultiIndex(bson.D{{Key: "crew_id", Value: 1}, {Key: "user_id", Value: 1}}, true)
 
 	// AdressesCollection represents the database colltection of the Address model.
 	AddressesCollection = Database.Collection(models.AddressesCollection).CreateIndex("user_id", true)
@@ -103,7 +105,7 @@ func InitialDatabase() {
 	//
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
-	MessageCollection = Database.Collection(models.MessageCollection)
+	MessageCollection = Database.Collection(models.MessageCollection).CreateIndex("user_id", false).CreateIndex("mailbox_id", false)
 	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
 	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{
@@ -121,12 +123,27 @@ func InitialDatabase() {
 	FSFilesCollection = Database.Collection(models.FSFilesCollection)
 	ActivityCollection = Database.Collection(models.ActivityCollection)
 
-	NewsletterCollection = Database.Collection(models.NewsletterCollection).CreateMultiIndex(
+	NewsletterCollection = Database.Collection(models.NewsletterCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{{Key: "user_id", Value: 1}, {Key: "value", Value: 1}},
 		true,
 	)
 
 	ReasonForPaymentCollection = Database.Collection(models.ReasonForPaymentCollection)
+
+	UserPipe.LookupUnwind(models.AddressesCollection, "_id", "user_id", "address")
+	UserPipe.LookupUnwind(models.ProfileCollection, "_id", "user_id", "profile")
+	UserPipe.LookupUnwind(models.UserCrewCollection, "_id", "user_id", "crew")
+	UserPipe.LookupUnwind(models.ActiveCollection, "_id", "user_id", "active")
+	UserPipe.LookupUnwind(models.NVMCollection, "_id", "user_id", "nvm")
+	UserPipe.Lookup(models.PoolRoleCollection, "_id", "user_id", "pool_roles")
+	Database.Database.CreateView(
+		context.Background(),
+		models.UserView,
+		models.UserCollection,
+		UserPipe.Pipe,
+	)
+	UserViewCollection = Database.Collection(models.UserView)
+
 	DepositUnitTakingPipe.LookupUnwind(models.DepositCollection, "deposit_id", "_id", "deposit")
 	Database.Database.CreateView(
 		context.Background(),

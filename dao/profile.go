@@ -18,6 +18,16 @@ func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.
 	return
 }
 
+func ProfileGetByID(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.User, err error) {
+	if err = models.UsersDetailsPermission(token); err != nil {
+		return
+	}
+	if err = UserCollection.AggregateOne(ctx, models.UserPermittedPipeline(token).Match(i.Match()).Pipe, &result); err != nil {
+		return
+	}
+	return
+}
+
 func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
 	filter := i.PermittedFilter(token)
 	if err = ProfileCollection.UpdateOne(
@@ -37,6 +47,28 @@ func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.
 				}
 			}()
 		}
+	}
+	return
+}
+
+func ProfileSync(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.Profile, err error) {
+	if err = ProfileCollection.FindOne(ctx, i.Match(), &result); err != nil {
+		return
+	}
+	go func() {
+		if err = IDjango.Post(result, "/v1/pool/profile/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return
+}
+
+func UsersProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
+	if err = models.UsersEditPermission(token); err != nil {
+		return
+	}
+	if err = ProfileCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i.ToUserUpdate()), &result); err != nil {
+		return
 	}
 	return
 }

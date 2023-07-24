@@ -69,10 +69,11 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.Taking)
-	if result, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i TakingHandler) GetByID(cc echo.Context) (err error) {

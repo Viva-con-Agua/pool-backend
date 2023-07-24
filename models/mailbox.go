@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type (
@@ -35,19 +34,34 @@ func NewMailboxDatabase(t string) *MailboxDatabase {
 	}
 }
 
-func MailboxPipeline() *vmdb.Pipeline {
+func MailboxPipeline(token *vcapool.AccessToken) *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
-	inboxMatch := vmdb.NewFilter()
-	inboxMatch.EqualString("type", "inbox")
-	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
-	outboxMatch := vmdb.NewFilter()
-	outboxMatch.EqualString("type", "outbox")
-	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
-	draftMatch := vmdb.NewFilter()
-	draftMatch.EqualString("type", "draft")
-	pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;other")) {
+		inboxMatch := vmdb.NewFilter()
+		inboxMatch.EqualString("type", "inbox")
+		inboxMatch.EqualString("user_id", token.ID)
+		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
+		outboxMatch := vmdb.NewFilter()
+		outboxMatch.EqualString("type", "outbox")
+		outboxMatch.EqualString("user_id", token.ID)
+		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
+		draftMatch := vmdb.NewFilter()
+		draftMatch.EqualString("type", "draft")
+		draftMatch.EqualString("user_id", token.ID)
+		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
+	} else {
+		inboxMatch := vmdb.NewFilter()
+		inboxMatch.EqualString("type", "inbox")
+		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
+		outboxMatch := vmdb.NewFilter()
+		outboxMatch.EqualString("type", "outbox")
+		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
+		draftMatch := vmdb.NewFilter()
+		draftMatch.EqualString("type", "draft")
+		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
+	}
 	return pipe
 }
 
@@ -60,21 +74,10 @@ func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) 
 	return vcago.NewPermissionDenied(MailboxCollection)
 }
 
-func (i *MailboxParam) Pipeline() mongo.Pipeline {
-	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	pipe := MailboxPipeline()
-	pipe.Match(filter.Bson())
-	return pipe.Pipe
-}
-
 func (i *MailboxParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;asp;")) {
-		filter.EqualString("user._id", token.ID)
-		filter.EqualString("type", "user")
-	} else if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("employee;admin") {
 		status := bson.A{}
 		status = append(status, bson.D{{Key: "user._id", Value: token.ID}})
 		status = append(status, bson.D{{Key: "crew._id", Value: token.CrewID}})

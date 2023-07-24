@@ -5,26 +5,44 @@ import (
 	"log"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+func validateDepositUnits(ctx context.Context, takingID string, amount int64, crewID string, token *vcapool.AccessToken) (err error) {
+	taking := new(models.Taking)
+	takingPipeline := models.TakingPipeline()
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		takingPipeline.Match(models.Match(takingID)).Pipe,
+		taking,
+	); err != nil {
+		return
+	}
+	if amount > taking.Money.Amount {
+		return vcago.NewBadRequest(models.DepositCollection, "taking_amount_failure", nil)
+	}
+	if (!token.Roles.Validate("admin;employee") && crewID != token.CrewID) || taking.CrewID != crewID {
+		return vcago.NewBadRequest(models.DepositCollection, "taking_crew_failure", nil)
+	}
+	return
+}
 
 func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.AccessToken) (result *models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
 	deposit, depositUnits := i.DepositDatabase(token)
-	taking := new(models.TakingDatabase)
 	for _, unit := range depositUnits {
-		if err = TakingCollection.FindOne(ctx, models.Match(unit.TakingID), taking); err != nil {
+		if err = validateDepositUnits(ctx, unit.TakingID, unit.Money.Amount, deposit.CrewID, token); err != nil {
 			return
 		}
 	}
 	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID)
 	if err != nil {
-		log.Print(err)
-		err = nil
+		return
 	}
 
 	for _, unit := range depositUnits {
@@ -45,12 +63,44 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
-	depositDatabase := new(models.DepositDatabase)
-	if err = DepositCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, depositDatabase); err != nil {
+	deposit := new(models.Deposit)
+	filter := bson.D{{Key: "_id", Value: i.ID}}
+	if err = DepositCollection.AggregateOne(
+		ctx,
+		models.DepositPipeline().Match(filter).Pipe,
+		deposit,
+	); err != nil {
 		return
 	}
-	i.Money = depositDatabase.Money
-	if err = DepositCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, vmdb.UpdateSet(i), nil); err != nil {
+	i.Money = deposit.Money
+	if deposit.Status == "confirmed" && !token.Roles.Validate("admin;employee") {
+		return nil, vcago.NewBadRequest("deposit", "deposit_confirmed_failure", nil)
+	}
+	depositUpdate, depositUnitCreate, depositUnitUpdate, depositUnitDelete := i.DepositDatabase(deposit)
+	for _, unit := range i.DepositUnit {
+		if err = validateDepositUnits(ctx, unit.TakingID, unit.Money.Amount, depositUpdate.CrewID, token); err != nil {
+			return
+		}
+	}
+
+	for _, unit := range depositUnitCreate {
+		if err = DepositUnitCollection.InsertOne(ctx, unit); err != nil {
+			return
+		}
+	}
+	for _, unit := range depositUnitUpdate {
+		updateFilter := bson.D{{Key: "_id", Value: unit.ID}}
+		if err = DepositUnitCollection.UpdateOne(ctx, updateFilter, vmdb.UpdateSet(unit), nil); err != nil {
+			return
+		}
+	}
+	for _, unit := range depositUnitDelete {
+		deleteFilter := bson.D{{Key: "_id", Value: unit.ID}}
+		if err = DepositUnitCollection.DeleteOne(ctx, deleteFilter); err != nil {
+			return
+		}
+	}
+	if err = DepositCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: i.ID}}, vmdb.UpdateSet(depositUpdate), nil); err != nil {
 		return
 	}
 	if err = DepositCollection.AggregateOne(
@@ -68,7 +118,13 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 				ctx,
 				bson.D{{Key: "taking_id", Value: unit.TakingID}},
 				event,
-			); event != nil {
+			); err != nil {
+				if !vmdb.ErrNoDocuments(err) {
+					return
+				}
+				err = nil
+			}
+			if event.ID != "" {
 				event.EventState.State = "closed"
 				e := new(models.Event)
 				if err = EventCollection.UpdateOneAggregate(
@@ -110,6 +166,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 
 				if err = IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
 					log.Print(err)
+					err = nil
 				}
 
 			}

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -31,8 +32,12 @@ type (
 		UserID     string        `bson:"user_id" json:"user_id"`
 		Modified   vmod.Modified `bson:"modified" json:"modified"`
 	}
+	ProfileParam struct {
+		ID string `param:"id"`
+	}
 	ProfileMinimal struct {
 		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		Birthdate  int64  `bson:"birthdate" json:"birthdate"`
 		UserID     string `bson:"user_id" json:"user_id"`
 	}
 	ProfileImport struct {
@@ -45,6 +50,13 @@ type (
 )
 
 var ProfileCollection = "profiles"
+
+func (i *ProfileParam) ProfileSyncPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(ProfileCollection)
+	}
+	return
+}
 
 func (i *ProfileCreate) Profile(userID string) *Profile {
 	return &Profile{
@@ -74,5 +86,17 @@ func (i *ProfileUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
+}
+
+func (i *ProfileUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
+func (i *ProfileParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
