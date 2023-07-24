@@ -3,21 +3,31 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type (
 	AddressCreate struct {
-		Street      string `json:"street" bson:"street"`
-		Number      string `json:"number" bson:"number"`
-		Zip         string `json:"zip" bson:"zip"`
-		City        string `json:"city" bson:"city"`
-		Country     string `json:"country" bson:"country"`
-		CountryCode string `json:"country_code" bson:"country_code"`
-		Additionals string `json:"additionals" bson:"additionals"`
+		Street      string `json:"street" bson:"street" validate:"required"`
+		Number      string `json:"number" bson:"number" validate:"required"`
+		Zip         string `json:"zip" bson:"zip" validate:"required"`
+		City        string `json:"city" bson:"city" validate:"required"`
+		Country     string `json:"country" bson:"country" validate:"required"`
+		CountryCode string `json:"country_code" bson:"country_code" validate:"required"`
+		Additional  string `json:"additional" bson:"additional"`
+	}
+	UsersAddressCreate struct {
+		UserID      string `json:"user_id" bson:"user_id" validate:"required"`
+		Street      string `json:"street" bson:"street" validate:"required"`
+		Number      string `json:"number" bson:"number" validate:"required"`
+		Zip         string `json:"zip" bson:"zip" validate:"required"`
+		City        string `json:"city" bson:"city" validate:"required"`
+		Country     string `json:"country" bson:"country" validate:"required"`
+		CountryCode string `json:"country_code" bson:"country_code" validate:"required"`
+		Additional  string `json:"additional" bson:"additional"`
 	}
 	AddressUpdate struct {
 		ID          string `json:"id" bson:"_id"`
@@ -27,20 +37,20 @@ type (
 		City        string `json:"city" bson:"city"`
 		Country     string `json:"country" bson:"country"`
 		CountryCode string `json:"country_code" bson:"country_code"`
-		Additionals string `json:"additionals" bson:"additionals"`
+		Additional  string `json:"additional" bson:"additional"`
 		UserID      string `json:"user_id" bson:"user_id"`
 	}
 	Address struct {
-		ID          string         `json:"id" bson:"_id"`
-		Street      string         `json:"street" bson:"street"`
-		Number      string         `json:"number" bson:"number"`
-		Zip         string         `json:"zip" bson:"zip"`
-		City        string         `json:"city" bson:"city"`
-		Country     string         `json:"country" bson:"country"`
-		CountryCode string         `json:"country_code" bson:"country_code"`
-		Additionals string         `json:"additionals" bson:"additionals"`
-		UserID      string         `json:"user_id" bson:"user_id"`
-		Modified    vcago.Modified `json:"modified" bson:"modified"`
+		ID          string        `json:"id" bson:"_id"`
+		Street      string        `json:"street" bson:"street"`
+		Number      string        `json:"number" bson:"number"`
+		Zip         string        `json:"zip" bson:"zip"`
+		City        string        `json:"city" bson:"city"`
+		Country     string        `json:"country" bson:"country"`
+		CountryCode string        `json:"country_code" bson:"country_code"`
+		Additional  string        `json:"additional" bson:"additional"`
+		UserID      string        `json:"user_id" bson:"user_id"`
+		Modified    vmod.Modified `json:"modified" bson:"modified"`
 	}
 	AddressQuery struct {
 		ID          []string `query:"id" qs:"id"`
@@ -54,7 +64,19 @@ type (
 	AddressParam struct {
 		ID string `param:"id"`
 	}
+	AddressImport struct {
+		Street      string `json:"street" bson:"street"`
+		Number      string `json:"number" bson:"number"`
+		Zip         string `json:"zip" bson:"zip"`
+		City        string `json:"city" bson:"city"`
+		Country     string `json:"country" bson:"country"`
+		CountryCode string `json:"country_code" bson:"country_code"`
+		Additional  string `json:"additional" bson:"additional"`
+		DropsID     string `json:"drops_id"`
+	}
 )
+
+var AddressesCollection = "addresses"
 
 func (i *AddressCreate) Address(userID string) (r *Address) {
 	return &Address{
@@ -64,41 +86,93 @@ func (i *AddressCreate) Address(userID string) (r *Address) {
 		Zip:         i.Zip,
 		City:        i.City,
 		Country:     i.Country,
+		CountryCode: i.CountryCode,
+		Additional:  i.Additional,
+		UserID:      userID,
+		Modified:    vmod.NewModified(),
+	}
+}
+
+func (i *UsersAddressCreate) Address(userID string) (r *Address) {
+	return &Address{
+		ID:          uuid.NewString(),
+		Street:      i.Street,
+		Number:      i.Number,
+		Zip:         i.Zip,
+		City:        i.City,
+		Country:     i.Country,
+		CountryCode: i.CountryCode,
+		Additional:  i.Additional,
+		UserID:      userID,
+		Modified:    vmod.NewModified(),
+	}
+}
+
+func (i *AddressImport) Address(userID string) (r *Address) {
+	return &Address{
+		ID:          uuid.NewString(),
+		Street:      i.Street,
+		Number:      i.Number,
+		Zip:         i.Zip,
+		City:        i.City,
+		Country:     i.Country,
 		CountryCode: i.Country,
-		Additionals: i.Additionals,
+		Additional:  i.Additional,
 		UserID:      userID,
 	}
 }
 
-func (i *AddressParam) Pipeline(token *vcapool.AccessToken) mongo.Pipeline {
-	match := vmdb.NewMatch()
-	match.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
-		match.EqualString("user_id", token.ID)
+func AddressPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(CrewCollection)
 	}
-	return vmdb.NewPipeline().Match(match).Pipe
+	return
 }
 
-func (i *AddressQuery) Filter(token *vcapool.AccessToken) bson.D {
-	match := vmdb.NewFilter()
+func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
 	if token.Roles.Validate("employee;admin") {
-		match.EqualStringList("_id", i.ID)
-		match.EqualStringList("crew_id", i.CrewID)
-		match.EqualStringList("user_id", i.UserID)
+		filter.EqualStringList("_id", i.ID)
+		filter.EqualStringList("crew_id", i.CrewID)
+		filter.EqualStringList("user_id", i.UserID)
 	} else {
-		match.EqualString("user_id", token.ID)
+		filter.EqualString("user_id", token.ID)
 	}
-	match.GteInt64("modified.updated", i.UpdatedFrom)
-	match.GteInt64("modified.created", i.CreatedFrom)
-	match.LteInt64("modified.updated", i.UpdatedTo)
-	match.LteInt64("modified.created", i.CreatedTo)
-	return bson.D(*match)
+	filter.GteInt64("modified.updated", i.UpdatedFrom)
+	filter.GteInt64("modified.created", i.CreatedFrom)
+	filter.LteInt64("modified.updated", i.UpdatedTo)
+	filter.LteInt64("modified.created", i.CreatedTo)
+	return filter.Bson()
 }
 
-func (i *AddressUpdate) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *AddressUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
 }
 
-func (i *AddressParam) Filter(token *vcapool.AccessToken) bson.D {
-	return bson.D{{Key: "_id", Value: i.ID}, {Key: "user_id", Value: token.ID}}
+func (i *AddressUpdate) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
+func (i *AddressParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	filter.EqualString("user_id", token.ID)
+	return filter.Bson()
+}
+
+func (i *AddressParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
+func (i *AddressImport) FilterUser() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("drops_id", i.DropsID)
+	return filter.Bson()
 }

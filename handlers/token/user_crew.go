@@ -1,14 +1,13 @@
 package token
 
 import (
-	"pool-user/dao"
-	"pool-user/models"
+	"log"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserCrewHandler struct {
@@ -19,9 +18,12 @@ var UserCrew = &UserCrewHandler{*vcago.NewHandler("user_crew")}
 
 func (i *UserCrewHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.PUT("", i.Update, vcapool.AccessCookieConfig())
-	group.DELETE("", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.POST("/create", i.UsersCreate, accessCookie)
+	group.PUT("", i.Update, accessCookie)
+	group.PUT("/update", i.UsersUpdate, accessCookie)
+	group.DELETE("", i.Delete, accessCookie)
+	group.DELETE("/:id", i.UsersDelete, accessCookie)
 }
 
 func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
@@ -34,20 +36,37 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	crew := new(models.Crew)
-	if err = dao.CrewsCollection.FindOne(c.Ctx(), body.CrewFilter(), crew); err != nil {
+	result := new(models.UserCrew)
+	if result, err = dao.UserCrewInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
-	result := models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email)
-	if err = dao.UserCrewCollection.InsertOne(c.Ctx(), result); err != nil {
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return c.Created(result)
+}
+
+func (i *UserCrewHandler) UsersCreate(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UsersCrewCreate)
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	if err = dao.ActiveCollection.InsertOne(c.Ctx(), models.NewActive(token.ID, crew.ID)); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.NVMCollection.InsertOne(c.Ctx(), models.NewNVM(token.ID)); err != nil {
+	result := new(models.UserCrew)
+	if result, err = dao.UsersUserCrewInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Created(result)
 }
 
@@ -61,32 +80,53 @@ func (i *UserCrewHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if token.ID != body.UserID {
-		return vcago.NewPermissionDenied("crew")
-	}
 	result := new(models.UserCrew)
-	if err = dao.UserCrewCollection.UpdateOne(c.Ctx(), body.Filter(token), vmdb.NewUpdateSet(body), result); err != nil {
-		return
-	}
-	//reset active and nvm
-	if err = dao.ActiveCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	//reject nvm state
-	if err = dao.NVMCollection.UpdateOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: body.UserID}},
-		vmdb.NewUpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if result, err = dao.UserCrewUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
 	return c.Updated(result)
+}
+
+func (i *UserCrewHandler) UsersUpdate(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserCrewUpdate)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new(models.UserCrew)
+	if result, err = dao.UsersCrewUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Updated(result)
+}
+
+func (i *UserCrewHandler) UsersDelete(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = models.UsersEditPermission(token); err != nil {
+		return
+	}
+	if err = dao.UserCrewDelete(c.Ctx(), body.ID); err != nil {
+		return
+	}
+	go func() {
+		if err = dao.IDjango.Post(&models.UserCrewUpdate{UserID: token.ID}, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return c.Deleted(token.ID)
+
 }
 
 func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
@@ -95,30 +135,14 @@ func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.UserCrewCollection.DeleteOne(c.Ctx(), bson.D{{Key: "user_id", Value: token.ID}}); err != nil {
+	if err = dao.UserCrewDelete(c.Ctx(), token.ID); err != nil {
 		return
 	}
-	//reset active and nvm
-	if err = dao.ActiveCollection.DeleteOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	//reject nvm state
-	if err = dao.NVMCollection.DeleteOne(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	if err = dao.PoolRoleCollection.DeleteMany(
-		c.Ctx(),
-		bson.D{{Key: "user_id", Value: token.ID}},
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	err = nil
+	go func() {
+		if err = dao.IDjango.Post(&models.UserCrewUpdate{UserID: token.ID}, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Deleted(token.ID)
 
 }

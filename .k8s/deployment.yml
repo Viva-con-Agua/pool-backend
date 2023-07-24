@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pool-backend
+  labels: &labels
+    app.kubernetes.io/name: pool-backend
+    app.kubernetes.io/component: component-explorer
+spec:
+  selector:
+    matchLabels: *labels
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - name: pool-backend
+          image: ghcr.io/viva-con-agua/pool-backend
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: pool-backend
+            - secretRef:
+                name: pool-backend
+          volumeMounts:
+            - name: assets-storage
+              mountPath: /public/files
+          ports:
+            - name: http
+              containerPort: 1323
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 1323
+      volumes:
+        - name: assets-storage
+          persistentVolumeClaim:
+            claimName: assets-storage-pvc

@@ -2,10 +2,11 @@ package token
 
 import (
 	"log"
-	"pool-user/dao"
-	"pool-user/models"
+	"pool-backend/dao"
+	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -18,8 +19,9 @@ var Role = &RoleHandler{*vcago.NewHandler("role")}
 
 func (i *RoleHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
-	group.POST("", i.Create, vcapool.AccessCookieConfig())
-	group.DELETE("", i.Delete, vcapool.AccessCookieConfig())
+	group.POST("", i.Create, accessCookie)
+	group.POST("/bulk", i.CreateBulk, accessCookie)
+	group.DELETE("", i.Delete, accessCookie)
 }
 
 func (i *RoleHandler) Create(cc echo.Context) (err error) {
@@ -32,27 +34,43 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	user := new(models.User)
-	if err = dao.UserCollection.AggregateOne(
-		c.Ctx(),
-		models.UserPipeline().Match(body.MatchUser()).Pipe,
-		user,
-	); err != nil {
-		log.Print(err)
+	result := new(vmod.Role)
+	if result, err = dao.RoleInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
-	var result *vcago.Role
-	if result, err = body.New(); err != nil {
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/crew/asp/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return c.Created(result)
+}
+
+func (i *RoleHandler) CreateBulk(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.RoleBulkRequest)
+	if c.BindAndValidate(body); err != nil {
 		return
 	}
-	if user.NVM.Status != "confirmed" {
-		return vcago.NewBadRequest("role", "nvm required", nil)
-	}
-	if !token.Roles.CheckRoot(result) && !token.PoolRoles.CheckRoot(result) {
-		return vcago.NewBadRequest("role", "no permission for set this role", nil)
-	}
-	if err = dao.PoolRoleCollection.InsertOne(c.Ctx(), result); err != nil {
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
 		return
+	}
+	result := new(models.RoleBulkExport)
+	userRolesMap := make(map[string]*models.BulkUserRoles)
+	if result, userRolesMap, err = dao.RoleBulkUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/asps/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
+		return
+	}
+	if !token.Roles.Validate("employee;admin") {
+		dao.RoleAdminNotification(c.Ctx(), &models.CrewParam{ID: body.CrewID})
 	}
 	return c.Created(result)
 }
@@ -67,27 +85,14 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	user := new(models.User)
-	if err = dao.UserCollection.FindOne(
-		c.Ctx(),
-		body.Filter(),
-		user,
-	); err != nil {
+	result := new(vmod.Role)
+	if result, err = dao.RoleDelete(c.Ctx(), body, token); err != nil {
 		return
 	}
-	result := new(vcago.Role)
-	if err = dao.PoolRoleCollection.FindOne(
-		c.Ctx(),
-		body.Filter(),
-		result,
-	); err != nil {
-		return
-	}
-	if !token.Roles.CheckRoot((*vcago.Role)(result)) && !token.PoolRoles.CheckRoot((*vcago.Role)(result)) {
-		return vcago.NewValidationError("no permission for delete this role")
-	}
-	if err = dao.PoolRoleCollection.DeleteOne(c.Ctx(), body.Filter()); err != nil {
-		return
-	}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/crew/asp/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return c.Deleted(body)
 }

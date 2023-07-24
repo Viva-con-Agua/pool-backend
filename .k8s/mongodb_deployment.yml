@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels: &labels
+    app.kubernetes.io/name: pool-backend-db
+    app.kubernetes.io/component: component-explorer
+  name: pool-backend-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels: *labels
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - image: mongo
+          name: pool-backend-db
+          args: ["--dbpath", "/data/db"]
+          volumeMounts:
+            - name: "pool-backend-db-storage"
+              mountPath: "/data/db"
+      volumes:
+        - name: "pool-backend-db-storage"
+          persistentVolumeClaim:
+            claimName: "pool-backend-db-storage"

@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +13,12 @@ import (
 
 type (
 	Active struct {
-		ID       string         `bson:"_id" json:"id"`
-		Status   string         `bson:"status" json:"status"`
-		Since    int64          `bson:"since" json:"since"`
-		UserID   string         `bson:"user_id" json:"user_id"`
-		CrewID   string         `bson:"crew_id" json:"crew_id"`
-		Modified vcago.Modified `bson:"modified" json:"modified"`
+		ID       string        `bson:"_id" json:"id"`
+		Status   string        `bson:"status" json:"status"`
+		Since    int64         `bson:"since" json:"since"`
+		UserID   string        `bson:"user_id" json:"user_id"`
+		CrewID   string        `bson:"crew_id" json:"crew_id"`
+		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	ActiveUpdate struct {
 		Status string `bson:"status" json:"status"`
@@ -27,6 +29,8 @@ type (
 	}
 )
 
+var ActiveCollection = "active"
+
 func NewActive(userID string, crewID string) *Active {
 	return &Active{
 		ID:       uuid.NewString(),
@@ -34,7 +38,7 @@ func NewActive(userID string, crewID string) *Active {
 		Since:    time.Now().Unix(),
 		UserID:   userID,
 		CrewID:   crewID,
-		Modified: vcago.NewModified(),
+		Modified: vmod.NewModified(),
 	}
 }
 
@@ -66,49 +70,33 @@ func ActiveRequest() *ActiveUpdate {
 	}
 }
 
-func (i *Active) IsRequested() bool {
-	if i.Status == "requested" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsConfirmed() bool {
-	if i.Status == "confirmed" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsWithdrawn() bool {
-	if i.Status == "withdrawn" {
-		return true
-	}
-	return false
-}
-func (i *Active) IsRejected() bool {
-	if i.Status == "rejected" {
-		return true
-	}
-	return false
-}
-
 func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 	if token.CrewID == "" {
-		return vcago.NewBadRequest("active", "not an crew member")
+		return vcago.NewBadRequest(ActiveCollection, "not an crew member")
 	}
 	return
 }
 
 func ActivePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee") && !token.PoolRoles.Validate("network;operation") {
-		return vcago.NewBadRequest("active", "permission denied")
+	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation") {
+		return vcago.NewBadRequest(ActiveCollection, "permission denied")
 	}
 	return
 }
 
-func (i *ActiveParam) Filter(token *vcapool.AccessToken) bson.D {
-	if token.Roles.Validate("employee") {
-		return bson.D{{Key: "user_id", Value: i.UserID}}
-
+func (i *ActiveParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("user_id", i.UserID)
+	if !token.Roles.Validate("employee;admin") {
+		filter.EqualString("crew_id", token.CrewID)
 	}
-	return bson.D{{Key: "user_id", Value: i.UserID}, {Key: "crew_id", Value: token.CrewID}}
+	return filter.Bson()
+}
+
+func (i *Active) ToContent(crew *Crew) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Crew"] = crew
+	return content
 }
