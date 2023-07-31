@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"log"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcapool"
@@ -115,7 +116,7 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = AddressesCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
+	if err = UserCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
 	if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
@@ -142,5 +143,21 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = UserCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
 		return
 	}
+	return
+}
+
+func UserSync(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.User, err error) {
+	profile := new(models.Profile)
+	if err = ProfileCollection.FindOne(ctx, i.Match(), profile); err != nil {
+		return
+	}
+	if result, err = ProfileGetByID(ctx, &models.UserParam{ID: profile.UserID}, token); err != nil {
+		return
+	}
+	go func() {
+		if err = IDjango.Post(result, "/v1/pool/user/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return
 }

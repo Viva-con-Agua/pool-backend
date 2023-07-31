@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"log"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -65,5 +66,14 @@ func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *
 	if err = NewsletterCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
+	return
+}
+
+func NewsletterSync(ctx context.Context, i []models.Newsletter, token *vcapool.AccessToken) (result *[]models.Newsletter, err error) {
+	go func() {
+		if err = IDjango.Post(i, "/v1/pool/newsletters/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return
 }
