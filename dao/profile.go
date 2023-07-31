@@ -18,7 +18,7 @@ func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.
 	return
 }
 
-func ProfileGetByID(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.User, err error) {
+func ProfileGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
 	if err = models.UsersDetailsPermission(token); err != nil {
 		return
 	}
@@ -51,12 +51,9 @@ func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.
 	return
 }
 
-func ProfileSync(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.Profile, err error) {
-	if err = ProfileCollection.FindOne(ctx, i.Match(), &result); err != nil {
-		return
-	}
+func ProfileSync(ctx context.Context, i models.Profile, token *vcapool.AccessToken) (result *models.Profile, err error) {
 	go func() {
-		if err = IDjango.Post(result, "/v1/pool/profile/"); err != nil {
+		if err = IDjango.Post(i, "/v1/pool/profile/"); err != nil {
 			log.Print(err)
 		}
 	}()

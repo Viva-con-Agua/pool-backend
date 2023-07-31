@@ -247,6 +247,19 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 	return
 }
 
+func EventSync(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
+	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, &result); err != nil {
+		return
+	}
+	result.EditorID = result.Creator.ID
+	go func() {
+		if err = IDjango.Post(result, "/v1/pool/event/sync/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return
+}
+
 func EventParticipantsNotification(ctx context.Context, i *models.Event, template string) (err error) {
 	filter := i.FilterParticipants()
 
