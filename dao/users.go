@@ -116,7 +116,7 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = AddressesCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	if err = UserCollection.TryDeleteOne(ctx, delete); err != nil {
+	if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
 	if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
