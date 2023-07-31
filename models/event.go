@@ -434,6 +434,19 @@ func EventDeletePermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
+func (i *EventParam) EventSyncPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(EventCollection)
+	}
+	return
+}
+
+func (i *EventParam) Match() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.ID)
+	return filter.Bson()
+}
+
 func (i *EventDatabase) Match() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
