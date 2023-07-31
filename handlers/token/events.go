@@ -2,6 +2,7 @@ package token
 
 import (
 	"log"
+	"net/http"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -23,6 +24,7 @@ func (i *EventHandler) Routes(group *echo.Group) {
 	group.DELETE("/:id", i.Delete, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.GET("/sync/:id", i.EventSync, accessCookie)
 	group.GET("/public", i.GetPublic)
 	group.GET("/email", i.GetEmailEvents, accessCookie)
 	group.GET("/user", i.GetByEventAsp, accessCookie)
@@ -208,6 +210,25 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 		}
 	}()
 	return c.Updated(result)
+}
+
+func (i *EventHandler) EventSync(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.EventParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = body.EventSyncPermission(token); err != nil {
+		return
+	}
+	if _, err = dao.EventSync(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.SuccessResponse(http.StatusOK, "successfully_synced", "event", nil)
 }
 
 func (i *EventHandler) Delete(cc echo.Context) (err error) {
