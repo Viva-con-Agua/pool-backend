@@ -41,7 +41,7 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 	ctx = context.Background()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
-	pipeline := models.SortedUserPermittedPipeline(sort, token).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+	pipeline := models.SortedUserPermittedPipeline(token).SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.ListUser)
 	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
