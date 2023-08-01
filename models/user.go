@@ -238,15 +238,13 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	return
 }
 
-func SortedUserPermittedPipeline(sort bson.D, token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
+func SortedUserPermittedPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.Append(vmdb.SortFields(sort))
-
 	return
 }
 
