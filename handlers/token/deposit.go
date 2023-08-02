@@ -1,6 +1,7 @@
 package token
 
 import (
+	"net/http"
 	"pool-backend/dao"
 	"pool-backend/models"
 
@@ -21,6 +22,7 @@ func (i *DepositHandler) Routes(group *echo.Group) {
 	group.PUT("", i.Update, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.GET("/sync/:id", i.Sync, accessCookie)
 }
 
 func (i *DepositHandler) Create(cc echo.Context) (err error) {
@@ -90,7 +92,24 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	}
 	return c.Updated(result)
 }
-
+func (i *DepositHandler) Sync(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.DepositParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	if err = body.DepositSyncPermission(token); err != nil {
+		return
+	}
+	if _, err = dao.DepositSync(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.SuccessResponse(http.StatusOK, "successfully_synced", "event", nil)
+}
 func (i *DepositHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositParam)
