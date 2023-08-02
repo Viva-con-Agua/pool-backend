@@ -84,11 +84,14 @@ func (i *ProfileHandler) UserSync(cc echo.Context) (err error) {
 	}
 	result := new(models.User)
 	if result, err = dao.UserSync(c.Ctx(), body, token); err != nil {
+		log.Print("err3")
 		return
 	}
+	log.Print("err4")
 	if _, err = dao.ProfileSync(c.Ctx(), result.Profile, token); err != nil {
 		return
 	}
+	log.Print("err5")
 	if _, err = dao.NewsletterSync(c.Ctx(), result.Newsletter, token); err != nil {
 		return
 	}

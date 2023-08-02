@@ -114,6 +114,13 @@ func DepositPermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
+func (i *DepositParam) DepositSyncPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("admin") {
+		return vcago.NewPermissionDenied(DepositCollection)
+	}
+	return
+}
+
 func DepositPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
