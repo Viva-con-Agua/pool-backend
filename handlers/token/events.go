@@ -24,7 +24,7 @@ func (i *EventHandler) Routes(group *echo.Group) {
 	group.DELETE("/:id", i.Delete, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
-	group.GET("/sync/:id", i.EventSync, accessCookie)
+	group.GET("/sync/:id", i.Sync, accessCookie)
 	group.GET("/public", i.GetPublic)
 	group.GET("/email", i.GetEmailEvents, accessCookie)
 	group.GET("/user", i.GetByEventAsp, accessCookie)
@@ -212,7 +212,7 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
-func (i *EventHandler) EventSync(cc echo.Context) (err error) {
+func (i *EventHandler) Sync(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)
 	if err = c.BindAndValidate(body); err != nil {
