@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"pool-backend/models"
 
@@ -188,13 +187,11 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.Acc
 	); err != nil {
 		return
 	}
-	fmt.Printf("%v\n", result)
 	if result.Status != "confirmed" {
 		return nil, vcago.NewBadRequest("deposit", "deposit_confirmed_failure", nil)
 	}
 
 	for _, unit := range result.DepositUnit {
-		fmt.Printf("%v\n", unit.TakingID)
 		event := new(models.EventUpdate)
 		if err = EventCollection.FindOne(
 			ctx,
@@ -206,7 +203,6 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.Acc
 			}
 			err = nil
 		}
-		fmt.Printf("%v\n", event)
 		if event.ID != "" {
 			event.EventState.State = "closed"
 			e := new(models.Event)
