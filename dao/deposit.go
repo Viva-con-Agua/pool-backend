@@ -177,6 +177,83 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 	return
 }
 
+func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+
+	filter := bson.D{{Key: "_id", Value: i.ID}}
+	if err = DepositCollection.AggregateOne(
+		ctx,
+		models.DepositPipeline().Match(filter).Pipe,
+		&result,
+	); err != nil {
+		return
+	}
+	if result.Status != "confirmed" {
+		return nil, vcago.NewBadRequest("deposit", "deposit_confirmed_failure", nil)
+	}
+
+	for _, unit := range result.DepositUnit {
+		event := new(models.EventUpdate)
+		if err = EventCollection.FindOne(
+			ctx,
+			bson.D{{Key: "taking_id", Value: unit.TakingID}},
+			event,
+		); err != nil {
+			if !vmdb.ErrNoDocuments(err) {
+				return
+			}
+			err = nil
+		}
+		if event.ID != "" {
+			event.EventState.State = "closed"
+			e := new(models.Event)
+			if err = EventCollection.UpdateOneAggregate(
+				ctx,
+				event.Match(),
+				vmdb.UpdateSet(event),
+				e,
+				models.EventPipeline(token).Match(event.Match()).Pipe,
+			); err != nil {
+				return
+			}
+
+			// Add takings to CRM
+			var taking *models.Taking
+			if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: unit.TakingID}, token); err != nil {
+				log.Print(err)
+			}
+
+			taking.EditorID = token.ID
+			if err = IDjango.Post(taking, "/v1/pool/taking/create/"); err != nil {
+				log.Print(err)
+			}
+
+			// Update CRM event
+			if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
+				log.Print(err)
+			}
+
+			// Add participations to event
+			participations := new([]models.Participation)
+
+			if err = ParticipationCollection.Aggregate(
+				ctx,
+				models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
+				participations,
+			); err != nil {
+				return
+			}
+
+			if err = IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
+				log.Print(err)
+				err = nil
+			}
+
+		}
+	}
+
+	return
+}
+
 func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.AccessToken) (result *[]models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return

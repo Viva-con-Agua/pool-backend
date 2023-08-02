@@ -154,10 +154,9 @@ func UserSync(ctx context.Context, i *models.ProfileParam, token *vcapool.Access
 	if result, err = ProfileGetByID(ctx, &models.UserParam{ID: profile.UserID}, token); err != nil {
 		return
 	}
-	go func() {
-		if err = IDjango.Post(result, "/v1/pool/user/"); err != nil {
-			log.Print(err)
-		}
-	}()
+	if err = IDjango.Post(result, "/v1/pool/user/"); err != nil {
+		log.Print(err)
+		err = nil
+	}
 	return
 }
