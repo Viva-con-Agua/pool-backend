@@ -69,11 +69,16 @@ func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *
 	return
 }
 
-func NewsletterSync(ctx context.Context, i []models.Newsletter, token *vcapool.AccessToken) (result *[]models.Newsletter, err error) {
+func NewsletterSync(ctx context.Context, i *models.User, token *vcapool.AccessToken) (result *[]models.Newsletter, err error) {
+	export := &models.NewsletterExport{
+		UserID:     i.ID,
+		Newsletter: i.Newsletter,
+	}
 	go func() {
-		if err = IDjango.Post(i, "/v1/pool/newsletters/"); err != nil {
+		if err = IDjango.Post(export, "/v1/pool/newsletters/"); err != nil {
 			log.Print(err)
 		}
 	}()
+	result = &i.Newsletter
 	return
 }
