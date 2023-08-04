@@ -111,6 +111,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 		return
 	}
 
+	ctx = context.Background()
 	if i.Status == "confirmed" {
 		go func() {
 
