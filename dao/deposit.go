@@ -193,7 +193,7 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.Acc
 	if result.Status != "confirmed" {
 		return nil, vcago.NewBadRequest("deposit", "deposit_confirmed_failure", nil)
 	}
-
+	ctx = context.Background()
 	go func() {
 		for _, unit := range result.DepositUnit {
 			event := new(models.EventUpdate)
