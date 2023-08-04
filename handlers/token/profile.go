@@ -89,7 +89,7 @@ func (i *ProfileHandler) UserSync(cc echo.Context) (err error) {
 	if _, err = dao.ProfileSync(c.Ctx(), result.Profile, token); err != nil {
 		return
 	}
-	if _, err = dao.NewsletterSync(c.Ctx(), result.Newsletter, token); err != nil {
+	if _, err = dao.NewsletterSync(c.Ctx(), result, token); err != nil {
 		return
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_synced", "active", nil)
