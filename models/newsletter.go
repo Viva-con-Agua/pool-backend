@@ -20,6 +20,10 @@ type (
 		UserID   string        `json:"user_id" bson:"user_id"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
+	NewsletterExport struct {
+		UserID     string       `json:"user_id"`
+		Newsletter []Newsletter `json:"newsletter"`
+	}
 	NewsletterParam struct {
 		ID string `param:"id"`
 	}
