@@ -72,6 +72,7 @@ type (
 		InternalConfirmation string `json:"internal_confirmation" bson:"internal_confirmation"`
 		TakingID             string `json:"taking_id" bson:"taking_id"`
 		DepositID            string `json:"deposit_id" bson:"deposit_id"`
+		OldState             string `json:"-" bson:"old_state"`
 	}
 	EventStatePublic struct {
 		State string `json:"state" bson:"state"`
