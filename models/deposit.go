@@ -86,6 +86,7 @@ type (
 	DepositQuery struct {
 		ID               []string `query:"id"`
 		Name             string   `query:"deposit_unit_name"`
+		Search           string   `query:"search"`
 		ReasonForPayment string   `query:"reason_for_payment"`
 		CrewID           []string `query:"crew_id"`
 		Status           []string `query:"deposit_status"`
@@ -228,6 +229,7 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
+	filter.SearchString([]string{"deposit_units.taking.name", "reason_for_payment"}, i.Search)
 	if !token.Roles.Validate("admin;employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	} else {
