@@ -15,6 +15,7 @@ func main() {
 	dao.InitialIDjango()
 	dao.FixDatabase()
 	dao.UpdateDatabase()
+	dao.UpdateTicker()
 	//dao.ReloadDatabase()
 	//login routes
 	api := e.Group("/v1")
