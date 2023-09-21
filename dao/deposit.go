@@ -264,10 +264,11 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.Acce
 		return
 	}
 	filter := i.PermittedFilter(token)
+	sort := i.Sort()
 	result = new([]models.Deposit)
 	if err = DepositCollection.Aggregate(
 		ctx,
-		models.DepositPipeline().Match(filter).Pipe,
+		models.DepositPipeline().SortFields(sort).Match(filter).Sort(sort).Pipe,
 		result,
 	); err != nil {
 		return
