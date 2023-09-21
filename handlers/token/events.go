@@ -177,31 +177,9 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	event := new(models.Event)
-	if event, err = dao.EventGetByID(c.Ctx(), &models.EventParam{ID: body.ID}, token); err != nil {
-		return
-	}
 	result := new(models.Event)
 	if result, err = dao.EventUpdate(c.Ctx(), body, token); err != nil {
 		return
-	}
-	if event.EventState.State != result.EventState.State {
-		if result.EventState.State == "canceled" {
-			dao.EventParticipantsNotification(c.Ctx(), result, "event_cancel")
-		}
-		if result.EventState.State == "published" ||
-			result.EventState.State == "canceled" ||
-			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
-			dao.EventStateNotification(c.Ctx(), result, "event_state")
-		}
-	} else if event.StartAt != result.StartAt ||
-		event.EndAt != result.EndAt ||
-		event.Location.PlaceID != result.Location.PlaceID ||
-		event.EventASPID != result.EventASPID {
-		dao.EventParticipantsNotification(c.Ctx(), result, "event_update")
-	}
-	if event.EventASPID != result.EventASPID && result.EventASPID != token.ID {
-		dao.EventASPNotification(c.Ctx(), result, "event_asp")
 	}
 	result.EditorID = token.ID
 	go func() {
