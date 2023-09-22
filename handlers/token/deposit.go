@@ -56,7 +56,7 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	if result, err = dao.DepositGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, int64(len(*result)))
 }
 
 func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
