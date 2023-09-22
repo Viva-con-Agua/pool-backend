@@ -296,7 +296,7 @@ func EventParticipantsNotification(ctx context.Context, i *models.Event, templat
 	}
 
 	for _, participant := range *participants {
-		mail := vcago.NewMailData(participant.User.Email, "pool-backend", template, participant.User.Country)
+		mail := vcago.NewMailData(participant.User.Email, "pool-backend", template, "pool", participant.User.Country)
 		mail.AddUser(participant.User.User())
 		mail.AddContent(participant.ToContent())
 		vcago.Nats.Publish("system.mail.job", mail)
@@ -320,7 +320,7 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 		return
 	}
 
-	mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+	mail := vcago.NewMailData(user.Email, "pool-backend", template, "pool", user.Country)
 	mail.AddUser(user.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
@@ -343,7 +343,7 @@ func EventStateNotification(ctx context.Context, i *models.Event, template strin
 		return
 	}
 
-	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
