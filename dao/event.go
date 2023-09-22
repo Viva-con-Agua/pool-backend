@@ -138,6 +138,29 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 	); err != nil {
 		return
 	}
+	if event.EventState.State != result.EventState.State {
+		if result.EventState.State == "canceled" {
+			EventParticipantsNotification(ctx, result, "event_cancel")
+			updateTaking := bson.D{{Key: "state.no_income", Value: true}}
+			filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
+			if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+				return
+			}
+		}
+		if result.EventState.State == "published" ||
+			result.EventState.State == "canceled" ||
+			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
+			EventStateNotification(ctx, result, "event_state")
+		}
+	} else if event.StartAt != result.StartAt ||
+		event.EndAt != result.EndAt ||
+		event.Location.PlaceID != result.Location.PlaceID ||
+		event.EventASPID != result.EventASPID {
+		EventParticipantsNotification(ctx, result, "event_update")
+	}
+	if event.EventASPID != result.EventASPID && result.EventASPID != token.ID {
+		EventASPNotification(ctx, result, "event_asp")
+	}
 	return
 }
 

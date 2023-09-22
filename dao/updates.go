@@ -64,6 +64,10 @@ func UpdateDatabase() {
 		UpdateDepositUnitCurrency(ctx)
 		InsertUpdate(ctx, "deposit_unit_currency")
 	}
+	if !CheckUpdated(ctx, "taking_no_income_event_canceled") {
+		UpdateEventCanceledNoIncome(ctx)
+		InsertUpdate(ctx, "taking_no_income_event_canceled")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -137,5 +141,20 @@ func UpdateDepositUnitCurrency(ctx context.Context) {
 	update := bson.D{{Key: "money.currency", Value: "EUR"}}
 	if _, err := DepositUnitCollection.Collection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
 		return
+	}
+}
+
+func UpdateEventCanceledNoIncome(ctx context.Context) {
+	filterEvent := bson.D{{Key: "event_state.state", Value: "canceled"}}
+	eventResult := []models.Event{}
+	if err := EventCollection.Find(ctx, filterEvent, &eventResult); err != nil {
+		return
+	}
+	for _, value := range eventResult {
+		updateTaking := bson.D{{Key: "state.no_income", Value: true}}
+		filterTaking := bson.D{{Key: "_id", Value: value.TakingID}}
+		if err := TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+			return
+		}
 	}
 }
