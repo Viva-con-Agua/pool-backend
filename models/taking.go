@@ -202,6 +202,7 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 				{Key: "state.wait.amount", Value: 0},
 				{Key: "state.confirmed.amount", Value: 0},
 				{Key: "state.open.amount", Value: 0},
+				{Key: "state.no_income", Value: bson.D{{Key: "$ne", Value: true}}},
 			})
 		}
 		if i.StatusNoIncome {

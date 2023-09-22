@@ -97,6 +97,8 @@ type (
 		UpdatedFrom      string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo        string   `query:"created_to" qs:"created_to"`
 		CreatedFrom      string   `query:"created_from" qs:"created_from"`
+		SortField        string   `query:"sort"`
+		SortDirection    string   `query:"sort_dir"`
 	}
 	DepositParam struct {
 		ID     string `param:"id"`
@@ -249,4 +251,10 @@ func (i *DepositParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
+}
+
+func (i *DepositQuery) Sort() bson.D {
+	sort := vmdb.NewSort()
+	sort.Add(i.SortField, i.SortDirection)
+	return sort.Bson()
 }
