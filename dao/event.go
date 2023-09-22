@@ -300,7 +300,7 @@ func EventParticipantsNotification(ctx context.Context, i *models.Event, templat
 		mail.AddUser(participant.User.User())
 		mail.AddContent(participant.ToContent())
 		vcago.Nats.Publish("system.mail.job", mail)
-		//notification := vcago.NewMNotificationData(participant.User.Email, "pool-backend", template, participant.User.Country, token.ID)
+		//notification := vcago.NewMNotificationData(participant.User.Email, "pool-backend", template, "pool", participant.User.Country, token.ID)
 		//notification.AddUser(participant.User.User())
 		//notification.AddContent(participant.ToContent())
 		//vcago.Nats.Publish("system.notification.job", notification)
