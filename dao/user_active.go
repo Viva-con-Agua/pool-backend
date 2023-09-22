@@ -111,7 +111,7 @@ func ActiveNotification(ctx context.Context, i *models.Active, template string) 
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.CrewID}}, &crew); err != nil {
 		return
 	}
-	mail := vcago.NewMailData(user.Email, "pool-backend", template, user.Country)
+	mail := vcago.NewMailData(user.Email, "pool-backend", template, "pool", user.Country)
 	mail.AddUser(user.User())
 	mail.AddContent(i.ToContent(crew))
 	vcago.Nats.Publish("system.mail.job", mail)

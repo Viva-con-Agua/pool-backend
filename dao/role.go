@@ -154,7 +154,7 @@ func RoleNotification(ctx context.Context, i map[string]*models.BulkUserRoles) (
 		); err != nil {
 			return
 		}
-		mail := vcago.NewMailData(user.Email, "pool-backend", "role_update", user.Country)
+		mail := vcago.NewMailData(user.Email, "pool-backend", "role_update", "pool", user.Country)
 		mail.AddUser(user.User())
 		mail.AddContent(user.RoleContent(role))
 		vcago.Nats.Publish("system.mail.job", mail)
@@ -166,7 +166,7 @@ func RoleAdminNotification(ctx context.Context, crewID *models.CrewParam) (err e
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, crewID.Match(), crew); err != nil {
 	}
-	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "role_network", "de")
+	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "role_network", "pool", "de")
 	mail.AddContent(models.RoleAdminContent(crew))
 	vcago.Nats.Publish("system.mail.job", mail)
 	return
