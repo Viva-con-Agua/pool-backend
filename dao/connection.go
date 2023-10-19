@@ -70,6 +70,8 @@ var (
 	ActitityUserPipe       = vmdb.NewPipeline()
 	UserPipe               = vmdb.NewPipeline()
 	UpdateCollection       *vmdb.Collection
+
+	TestLogin bool
 )
 
 func InitialDatabase() {
@@ -229,4 +231,8 @@ func InitialIDjango() {
 	IDjango.URL = vcago.Settings.String("IDJANGO_URL", "n", "https://idjango.dev.vivaconagua.org")
 	IDjango.Key = vcago.Settings.String("IDJANGO_KEY", "n", "")
 	IDjango.Export = vcago.Settings.Bool("IDJANGO_EXPORT", "n", false)
+}
+
+func InitialTestLogin() {
+	TestLogin = vcago.Settings.Bool("API_TEST_LOGIN", "n", false)
 }

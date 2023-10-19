@@ -2,6 +2,7 @@ package main
 
 import (
 	"pool-backend/dao"
+	"pool-backend/handlers/admin"
 	"pool-backend/handlers/key"
 	"pool-backend/handlers/token"
 
@@ -13,6 +14,7 @@ func main() {
 	dao.InitialDatabase()
 	dao.InitialNats()
 	dao.InitialIDjango()
+	dao.InitialTestLogin()
 	dao.FixDatabase()
 	dao.UpdateDatabase()
 	dao.UpdateTicker()
@@ -56,9 +58,11 @@ func main() {
 
 	key.Import.Routes(api.Group("/import"))
 
-	//admin.Crew.Routes(e.Group("/admin/crews"))
-	//admin.Role.Routes(e.Group("/admin/users/role"))
-	//admin.User.Routes(e.Group("/admin/users"))
+	if dao.TestLogin {
+		admin.Crew.Routes(e.Group("/admin/crews"))
+		admin.Role.Routes(e.Group("/admin/users/role"))
+		admin.User.Routes(e.Group("/admin/users"))
+	}
 	//server
 	e.Run()
 }
