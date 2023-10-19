@@ -193,30 +193,24 @@ func (i *RecipientGroup) FilterEvent() bson.D {
 	return filter.Bson()
 }
 
-func (i *Message) PermittedCreate(token *vcapool.AccessToken, crew *Crew, event *Event) *Message {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
-		if !(i.RecipientGroup.Type == "event" || token.ID == event.EventASPID) { // USER
-			i.MailboxID = token.MailboxID
-			i.From = token.Email
-		} else { // EVENT ASP
+func PermittedMessageCreate(token *vcapool.AccessToken, i *Message, crew *Crew, event *Event) (message *Message, err error) {
+	message = i
+	if !token.Roles.Validate("employee;admin") {
+		if i.RecipientGroup.Type == "event" && token.ID == event.EventASPID {
+			// IF IS EVENT ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
 			i.MailboxID = crew.MailboxID
-			if !(i.From == token.Email || i.From == crew.Email) {
-				i.From = token.Email
-			}
-		}
-	} else if !(token.Roles.Validate("employee;admin")) { // ASP
-		if i.MailboxID == crew.MailboxID {
-			i.RecipientGroup.CrewID = crew.ID
-			if !(i.From == token.Email || i.From == crew.Email) {
-				i.From = token.Email
-			}
+			i.From = crew.Email
+		} else if token.PoolRoles.Validate("network;operation;education") {
+			// IF IS CREW ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
+			i.MailboxID = crew.MailboxID
+			i.From = crew.Email
 		} else {
-			i.MailboxID = token.MailboxID
-			i.From = token.Email
+			return nil, vcago.NewBadRequest(MessageCollection, "Not allwed to create a message")
+			// i.MailboxID = token.MailboxID
+			// i.From = token.Email
 		}
 	}
-	// ADMIN
-	return i
+	return
 }
 
 func (i *Message) Inbox() *[]interface{} {
