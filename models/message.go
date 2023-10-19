@@ -198,12 +198,12 @@ func PermittedMessageCreate(token *vcapool.AccessToken, i *Message, crew *Crew, 
 	if !token.Roles.Validate("employee;admin") {
 		if i.RecipientGroup.Type == "event" && token.ID == event.EventASPID {
 			// IF IS EVENT ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
-			i.MailboxID = crew.MailboxID
-			i.From = crew.Email
+			message.MailboxID = crew.MailboxID
+			message.From = crew.Email
 		} else if token.PoolRoles.Validate("network;operation;education") {
 			// IF IS CREW ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
-			i.MailboxID = crew.MailboxID
-			i.From = crew.Email
+			message.MailboxID = crew.MailboxID
+			message.From = crew.Email
 		} else {
 			return nil, vcago.NewBadRequest(MessageCollection, "Not allwed to create a message")
 			// i.MailboxID = token.MailboxID
