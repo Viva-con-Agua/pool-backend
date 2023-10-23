@@ -157,13 +157,17 @@ func (i *Participation) ToContent() *vmod.Content {
 	return content
 }
 
-func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
+func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken, event *Event) *ParticipationDatabase {
+	eventStatus := "requested"
+	if event.TypeOfEvent == "crew_meeting" {
+		eventStatus = "confirmed"
+	}
 	return &ParticipationDatabase{
 		ID:       uuid.NewString(),
 		UserID:   token.ID,
 		EventID:  i.EventID,
 		Comment:  i.Comment,
-		Status:   "requested",
+		Status:   eventStatus,
 		CrewID:   token.CrewID,
 		Modified: vmod.NewModified(),
 	}
@@ -178,28 +182,16 @@ func (i *ParticipationImport) ParticipationDatabase() *ParticipationDatabase {
 	}
 }
 func (i *ParticipationStateRequest) IsRequested() bool {
-	if i.Status == "requested" {
-		return true
-	}
-	return false
+	return i.Status == "requested" 
 }
 func (i *ParticipationStateRequest) IsConfirmed() bool {
-	if i.Status == "confirmed" {
-		return true
-	}
-	return false
+	return  i.Status == "confirmed" 
 }
 func (i *ParticipationStateRequest) IsWithdrawn() bool {
-	if i.Status == "withdrawn" {
-		return true
-	}
-	return false
+	return i.Status == "withdrawn" 
 }
 func (i *ParticipationStateRequest) IsRejected() bool {
-	if i.Status == "rejected" {
-		return true
-	}
-	return false
+	return i.Status == "rejected" 
 }
 
 func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {

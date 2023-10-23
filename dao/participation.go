@@ -11,7 +11,16 @@ import (
 )
 
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	database := i.ParticipationDatabase(token)
+
+	event := new(models.Event)
+	if err = EventCollection.FindOne(
+		ctx,
+		bson.D{{Key: "_id", Value: i.EventID}},
+		event,
+	); err != nil {
+			return
+	}
+	database := i.ParticipationDatabase(token, event)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
 	}
@@ -104,6 +113,7 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
+	// TODO CHECK STATE PERMISSION
 	if err = models.ParticipationUpdatePermission(token, event); err != nil {
 		return
 	}
