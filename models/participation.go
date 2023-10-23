@@ -116,20 +116,11 @@ func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
 
 func (i *ParticipationUpdate) ParticipationUpdatePermission(token *vcapool.AccessToken, participation *Participation) (err error) {
 	switch i.Status {
-	case "requested":
+	case "requested", "withdrawn":
 		if !token.Roles.Validate("employee;admin") && token.ID != participation.UserID {
 			return vcago.NewPermissionDenied(ParticipationCollection)
 		}
-	case "withdrawn":
-		if !token.Roles.Validate("employee;admin") && token.ID != participation.UserID {
-			return vcago.NewPermissionDenied(ParticipationCollection)
-		}
-
-	case "confirmed":
-		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID {
-			return vcago.NewPermissionDenied(ParticipationCollection)
-		}
-	case "rejected":
+	case "confirmed", "rejected":
 		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID {
 			return vcago.NewPermissionDenied(ParticipationCollection)
 		}
