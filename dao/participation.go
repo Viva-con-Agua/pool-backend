@@ -104,7 +104,7 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
-	if err = models.ParticipationUpdatePermission(token, event); err != nil {
+	if err = i.ParticipationUpdatePermission(token, event); err != nil {
 		return
 	}
 	filter := i.Match()
@@ -136,7 +136,7 @@ func ParticipationNotification(ctx context.Context, i *models.Participation) (er
 	if i.Status == "rejected" {
 		template = "participation_reject"
 	}
-	mail := vcago.NewMailData(i.User.Email, "pool-backend", template, i.User.Country)
+	mail := vcago.NewMailData(i.User.Email, "pool-backend", template, "pool", i.User.Country)
 	mail.AddUser(i.User.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
@@ -154,7 +154,7 @@ func ParticipationCreateNotification(ctx context.Context, i *models.Participatio
 	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.Event.EventASPID}); err != nil {
 		return
 	}
-	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
@@ -172,7 +172,7 @@ func ParticipationWithdrawnNotification(ctx context.Context, i *models.Participa
 	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.Event.EventASPID}); err != nil {
 		return
 	}
-	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, eventAps.Country)
+	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)

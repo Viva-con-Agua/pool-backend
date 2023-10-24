@@ -17,7 +17,9 @@ func MessageInsert(ctx context.Context, i *models.MessageCreate, token *vcapool.
 	event := new(models.Event)
 	EventCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.RecipientGroup.EventID}}, event)
 
-	result = i.MessageSub(token).PermittedCreate(token, crew, event)
+	if result, err = models.PermittedMessageCreate(token, i.MessageSub(token), crew, event); err != nil {
+		return
+	}
 	if err = MessageCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
