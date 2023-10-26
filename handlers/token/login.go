@@ -24,7 +24,7 @@ var HydraClient = vcago.NewHydraClient()
 func (i *LoginHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("/callback", i.Callback)
-	if vcago.Settings.Bool("API_TEST_LOGIN", "n", false) {
+	if dao.TestLogin {
 		group.POST("/testlogin", i.LoginAPI)
 	}
 	group.GET("/refresh", i.Refresh, refreshCookie)

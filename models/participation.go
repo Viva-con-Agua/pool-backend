@@ -114,9 +114,20 @@ func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
-func ParticipationUpdatePermission(token *vcapool.AccessToken, participation *Participation) (err error) {
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID && token.ID != participation.UserID {
-		return vcago.NewPermissionDenied(ParticipationCollection)
+func (i *ParticipationUpdate) ParticipationUpdatePermission(token *vcapool.AccessToken, participation *Participation) (err error) {
+	switch i.Status {
+	case "requested", "withdrawn":
+		if !token.Roles.Validate("employee;admin") && token.ID != participation.UserID {
+			return vcago.NewPermissionDenied(ParticipationCollection)
+		}
+	case "rejected":
+		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID {
+			return vcago.NewPermissionDenied(ParticipationCollection)
+		}
+	case "confirmed":
+		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID && participation.Event.TypeOfEvent != "crew_meeting" {
+			return vcago.NewPermissionDenied(ParticipationCollection)
+		}
 	}
 	return
 }
@@ -182,16 +193,16 @@ func (i *ParticipationImport) ParticipationDatabase() *ParticipationDatabase {
 	}
 }
 func (i *ParticipationStateRequest) IsRequested() bool {
-	return i.Status == "requested" 
+	return i.Status == "requested"
 }
 func (i *ParticipationStateRequest) IsConfirmed() bool {
-	return  i.Status == "confirmed" 
+	return  i.Status == "confirmed"
 }
 func (i *ParticipationStateRequest) IsWithdrawn() bool {
-	return i.Status == "withdrawn" 
+	return i.Status == "withdrawn"
 }
 func (i *ParticipationStateRequest) IsRejected() bool {
-	return i.Status == "rejected" 
+	return i.Status == "rejected"
 }
 
 func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
