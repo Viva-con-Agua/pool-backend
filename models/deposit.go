@@ -224,7 +224,7 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 		}
 	}
 	currency := "EUR"
-	if current != nil {
+	if i.DepositUnit != nil {
 		currency = i.DepositUnit[0].Money.Currency
 	}
 	r = i
