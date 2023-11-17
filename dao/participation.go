@@ -117,6 +117,14 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
+	if event.Status != result.Status {
+		if result.Status == "confirmed" || result.Status == "rejected" {
+			ParticipationNotification(ctx, result)
+		}
+		if result.Status == "withdrawn" {
+			ParticipationWithdrawnNotification(ctx, result)
+		}
+	}
 	return
 }
 
