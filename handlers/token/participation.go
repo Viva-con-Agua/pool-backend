@@ -127,12 +127,6 @@ func (i *ParticipationHandler) Update(cc echo.Context) (err error) {
 	if result, err = dao.ParticipationUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
-	if result.Status == "confirmed" || result.Status == "rejected" {
-		dao.ParticipationNotification(c.Ctx(), result)
-	}
-	if result.Status == "withdrawn" {
-		dao.ParticipationWithdrawnNotification(c.Ctx(), result)
-	}
 	return c.Updated(result)
 }
 
