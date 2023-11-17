@@ -223,8 +223,13 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 			amount += value.Money.Amount
 		}
 	}
+	currency := "EUR"
+	if current != nil {
+		currency = i.DepositUnit[0].Money.Currency
+	}
 	r = i
 	r.Money.Amount = amount
+	r.Money.Currency = currency
 	return
 }
 
