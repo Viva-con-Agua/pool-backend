@@ -55,7 +55,7 @@ type (
 		HasExternal bool                `json:"has_external" bson:"has_external"`
 		External    External            `json:"external" bson:"external"`
 		UpdateState string              `json:"update_state" bson:"-"`
-		Money       vmod.Money          `json:"-" bson:"money"`
+		Money       vmod.Money          `json:"money" bson:"money"`
 	}
 	DepositDatabase struct {
 		ID               string        `json:"id" bson:"_id"`
@@ -223,8 +223,13 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 			amount += value.Money.Amount
 		}
 	}
+	currency := "EUR"
+	if i.DepositUnit != nil {
+		currency = i.DepositUnit[0].Money.Currency
+	}
 	r = i
 	r.Money.Amount = amount
+	r.Money.Currency = currency
 	return
 }
 
