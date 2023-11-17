@@ -55,7 +55,7 @@ type (
 		HasExternal bool                `json:"has_external" bson:"has_external"`
 		External    External            `json:"external" bson:"external"`
 		UpdateState string              `json:"update_state" bson:"-"`
-		Money       vmod.Money          `json:"money" bson:"money"`
+		Money       vmod.Money          `json:"-" bson:"money"`
 	}
 	DepositDatabase struct {
 		ID               string        `json:"id" bson:"_id"`
