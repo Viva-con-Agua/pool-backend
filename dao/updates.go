@@ -68,6 +68,12 @@ func UpdateDatabase() {
 		UpdateEventCanceledNoIncome(ctx)
 		InsertUpdate(ctx, "taking_no_income_event_canceled")
 	}
+	if !CheckUpdated(ctx, "currency_problem") {
+		UpdateDepositCurrency(ctx)
+		UpdateDepositUnitCurrency(ctx)
+		UpdateTakingCurrency(ctx)
+		InsertUpdate(ctx, "currency_problem")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -125,21 +131,24 @@ func UpdateConfirmAdmin(ctx context.Context) {
 
 func UpdateTakingCurrency(ctx context.Context) {
 	update := bson.D{{Key: "currency", Value: "EUR"}}
-	if _, err := TakingCollection.Collection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+	filter := bson.D{{Key: "money.currency", Value: ""}}
+	if _, err := TakingCollection.Collection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 		return
 	}
 }
 
 func UpdateDepositCurrency(ctx context.Context) {
 	update := bson.D{{Key: "money.currency", Value: "EUR"}}
-	if _, err := DepositCollection.Collection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+	filter := bson.D{{Key: "money.currency", Value: ""}}
+	if _, err := DepositCollection.Collection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 		return
 	}
 }
 
 func UpdateDepositUnitCurrency(ctx context.Context) {
 	update := bson.D{{Key: "money.currency", Value: "EUR"}}
-	if _, err := DepositUnitCollection.Collection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+	filter := bson.D{{Key: "money.currency", Value: ""}}
+	if _, err := DepositUnitCollection.Collection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 		return
 	}
 }
