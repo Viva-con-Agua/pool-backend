@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
@@ -106,7 +107,7 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			err = nil
 		}
 
-		if event.ID != "" {
+		if event.ID != "" && event.EndAt < time.Now().Unix() {
 			event.EventState.OldState = event.EventState.State
 			event.EventState.State = "closed"
 			e := new(models.Event)
