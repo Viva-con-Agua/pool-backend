@@ -151,7 +151,7 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
 		filter.EqualString("user_id", token.ID)
 	} else {
@@ -163,7 +163,7 @@ func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) b
 func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
 		filter.EqualString("user_id", token.ID)
 	} else {
@@ -200,7 +200,7 @@ func PermittedMessageCreate(token *vcapool.AccessToken, i *Message, crew *Crew, 
 			// IF IS EVENT ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
 			message.MailboxID = crew.MailboxID
 			message.From = crew.Email
-		} else if token.PoolRoles.Validate("network;operation;education") {
+		} else if token.PoolRoles.Validate(ASPEventRole) {
 			// IF IS CREW ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
 			message.MailboxID = crew.MailboxID
 			message.From = crew.Email

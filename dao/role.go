@@ -117,6 +117,55 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 	return
 }
 
+func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.BulkUserRoles, err error) {
+	if err = models.RolesAdminPermission(token); err != nil {
+		return
+	}
+	userRolesMap = make(map[string]*models.BulkUserRoles)
+
+	PoolRoleCollection.DeleteMany(ctx, bson.D{{Key: "crew_id", Value: crew_id}})
+
+	result = new(models.RoleBulkExport)
+	for _, role := range *i {
+		filter := role.MatchUser()
+		user := new(models.User)
+		if err = UserCollection.AggregateOne(
+			ctx,
+			models.UserPipeline(false).Match(filter).Pipe,
+			user,
+		); err != nil {
+			return
+		}
+
+		if err = models.RolesPermission(role.Role, user, token); err != nil {
+			return
+		}
+		userRole := new(models.RoleDatabase)
+		result.Users = append(result.Users, models.ExportRole{UserID: user.ID, Role: role.Role})
+
+		if err = PoolRoleCollection.FindOne(ctx, role.Filter(), userRole); err != nil {
+
+			createdRole := new(vmod.Role)
+			if createdRole, err = role.NewRole(); err != nil {
+				return
+			}
+			if err = PoolRoleCollection.InsertOne(ctx, createdRole); err != nil {
+				return
+			}
+
+			if token.ID != role.UserID {
+				if userRolesMap[role.UserID] == nil {
+					userRolesMap[role.UserID] = &models.BulkUserRoles{}
+				}
+				userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Label)
+			}
+		}
+
+	}
+	result.CrewID = crew_id
+	return
+}
+
 func RoleDelete(ctx context.Context, i *models.RoleRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {
 	filter := i.MatchUser()
 	user := new(models.User)
@@ -164,8 +213,6 @@ func RoleNotification(ctx context.Context, i map[string]*models.BulkUserRoles) (
 
 func RoleAdminNotification(ctx context.Context, crewID *models.CrewParam) (err error) {
 	crew := new(models.Crew)
-	if err = CrewsCollection.FindOne(ctx, crewID.Match(), crew); err != nil {
-	}
 	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "role_network", "pool", "de")
 	mail.AddContent(models.RoleAdminContent(crew))
 	vcago.Nats.Publish("system.mail.job", mail)

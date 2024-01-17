@@ -31,6 +31,7 @@ func main() {
 	token.Profile.Routes(tokenUser.Group("/profile"))
 	token.UserCrew.Routes(tokenUser.Group("/crew"))
 	token.Role.Routes(tokenUser.Group("/role"))
+	token.RoleHistory.Routes(tokenUser.Group("/role_history"))
 	token.Active.Routes(tokenUser.Group("/active"))
 	token.NVM.Routes(tokenUser.Group("/nvm"))
 	token.Address.Routes(tokenUser.Group("/address"))

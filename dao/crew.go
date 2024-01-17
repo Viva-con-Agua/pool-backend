@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"pool-backend/models"
+	"sort"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
@@ -72,6 +73,18 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 		return
 	}
 	filter := i.PermittedFilter(token)
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, filter, &crew); err != nil {
+		return
+	}
+	strings := []string{"active", "inactive"}
+	sort.Strings(strings)
+	match := sort.SearchStrings(strings, i.AspSelection)
+	if crew.AspSelection == "selected" && match < len(strings) && strings[match] == i.AspSelection {
+		if _, err = RoleHistoryDelete(ctx, &models.RoleHistoryRequest{CrewID: i.ID, Confirmed: false}, token); err != nil {
+			return
+		}
+	}
 	if !token.Roles.Validate("employee;admin") {
 		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), &result); err != nil {
 			return
@@ -80,6 +93,22 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 			return
 		}
+	}
+	return
+}
+
+func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value string, token *vcapool.AccessToken) (result *models.Crew, err error) {
+	if err = models.CrewUpdatePermission(token); err != nil {
+		return
+	}
+	filter := i.PermittedFilter(token)
+	crew := new(models.CrewUpdate)
+	if err = CrewsCollection.FindOne(ctx, filter, &crew); err != nil {
+		return
+	}
+	crew.AspSelection = value
+	if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(crew), &result); err != nil {
+		return
 	}
 	return
 }
