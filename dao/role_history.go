@@ -4,9 +4,11 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -30,9 +32,7 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 	}
 
 	if token.Roles.Validate("admin;employee") {
-		if _, err = RoleHistoryDelete(ctx, &models.RoleHistoryRequest{CrewID: i.CrewID, Confirmed: false}, token); err != nil {
-			return
-		}
+		RoleHistoryDelete(ctx, &models.RoleHistoryRequest{CrewID: i.CrewID, Confirmed: false}, token)
 	}
 	result = new(models.RoleBulkExport)
 	for _, role := range i.AddedRoles {
@@ -52,7 +52,7 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 		userRoleHistory := new(models.RoleHistoryDatabase)
 		result.Users = append(result.Users, models.ExportRole{UserID: user.ID, Role: role.Role})
 
-		if err = PoolRoleHistoryCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}, {Key: "role", Value: role.Role}, {Key: "end_date", Value: int64(0)}, {Key: "crew_id", Value: i.CrewID}}, userRoleHistory); err != nil {
+		if err = PoolRoleHistoryCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}, {Key: "role", Value: role.Role}, {Key: "end_date", Value: int64(0)}, {Key: "crew_id", Value: i.CrewID}, {Key: "confirmed", Value: false}}, userRoleHistory); err != nil {
 			if err = PoolRoleHistoryCollection.InsertOne(ctx, role.NewRoleHistory(user)); err != nil {
 				return
 			}
@@ -81,6 +81,8 @@ func RoleHistoryConfirm(ctx context.Context, i *models.RoleHistoryRequest, token
 	if err = models.RolesHistoryAdminPermission(token); err != nil {
 		return
 	}
+	PoolRoleHistoryCollection.UpdateMany(ctx, i.PermittedFilter(token), vmdb.UpdateSet(bson.D{{Key: "end_date", Value: time.Now().Unix()}}))
+
 	i.Confirmed = false
 	result = new([]models.RoleHistory)
 	if err = PoolRoleHistoryCollection.Find(ctx, i.PermittedFilter(token), result); err != nil {
@@ -107,6 +109,26 @@ func RoleHistoryDelete(ctx context.Context, i *models.RoleHistoryRequest, token 
 		return
 	}
 
+	return
+}
+
+func RoleHistoryFromRoles(ctx context.Context) (err error) {
+	roles := new([]vmod.Role)
+	PoolRoleCollection.Find(ctx, bson.D{}, roles)
+
+	for _, role := range *roles {
+		user := new(models.User)
+		if err = UserCollection.AggregateOne(
+			ctx,
+			models.UserPipeline(false).Match(bson.D{{Key: "_id", Value: role.UserID}}).Pipe,
+			user,
+		); err != nil {
+			log.Print(err)
+		}
+		if err = PoolRoleHistoryCollection.InsertOne(ctx, models.NewRoleHistory(&role, user)); err != nil {
+			log.Print(err)
+		}
+	}
 	return
 }
 

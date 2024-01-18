@@ -73,6 +73,7 @@ func (i *RoleHistoryHandler) ConfirmSelection(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
+	body.Confirmed = true
 	history := new([]models.RoleHistory)
 	if history, err = dao.RoleHistoryConfirm(c.Ctx(), body, token); err != nil {
 		return
@@ -82,18 +83,17 @@ func (i *RoleHistoryHandler) ConfirmSelection(cc echo.Context) (err error) {
 	if result, userRolesMap, err = dao.RoleBulkConfirm(c.Ctx(), history, body.CrewID, token); err != nil {
 		return
 	}
-	print(userRolesMap)
 	if _, err = dao.CrewUpdateAspSelection(c.Ctx(), &models.CrewParam{ID: body.CrewID}, "inactive", token); err != nil {
 		return
 	}
-	//go func() {
-	//	if err = dao.IDjango.Post(result, "/v1/pool/asps/"); err != nil {
-	//		log.Print(err)
-	//	}
-	//}()
-	//if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
-	//	return
-	//}
+	go func() {
+		if err = dao.IDjango.Post(result, "/v1/pool/asps/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
+		return
+	}
 	return c.Created(result)
 }
 

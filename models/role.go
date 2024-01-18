@@ -85,8 +85,30 @@ func (i *RoleRequest) NewRoleHistory(user *User) (r *RoleHistoryDatabase) {
 		UserID:    user.ID,
 		CrewID:    user.Crew.CrewID,
 		StartDate: time.Now().Unix(),
-		Selected:  true,
 		Confirmed: false,
+		Modified:  vmod.NewModified(),
+	}
+}
+
+func NewRoleHistory(i *vmod.Role, user *User) (r *RoleHistoryDatabase) {
+	return &RoleHistoryDatabase{
+		ID:        uuid.NewString(),
+		Role:      i.Name,
+		UserID:    user.ID,
+		CrewID:    user.Crew.CrewID,
+		StartDate: time.Now().Unix(),
+		Confirmed: true,
+		Modified:  vmod.NewModified(),
+	}
+}
+func NewRoleRequestHistory(i *RoleRequest, user *User) (r *RoleHistoryDatabase) {
+	return &RoleHistoryDatabase{
+		ID:        uuid.NewString(),
+		Role:      i.Role,
+		UserID:    user.ID,
+		CrewID:    user.Crew.CrewID,
+		StartDate: time.Now().Unix(),
+		Confirmed: true,
 		Modified:  vmod.NewModified(),
 	}
 }
@@ -220,6 +242,12 @@ func (i *RoleRequest) MatchUser() bson.D {
 func (i *RoleRequest) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("name", i.Role)
+	filter.EqualString("user_id", i.UserID)
+	return filter.Bson()
+}
+func (i *RoleRequest) FilterHistory() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("role", i.Role)
 	filter.EqualString("user_id", i.UserID)
 	return filter.Bson()
 }

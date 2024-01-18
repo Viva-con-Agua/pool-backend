@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -16,16 +15,25 @@ type RoleHistoryCreate struct {
 	UserID    string        `json:"user_id"`
 	Role      string        `json:"role"`
 	CrewID    string        `json:"crew_id"`
+	Confirmed bool          `json:"confirmed" bson:"confirmed"`
 	StartDate int64         `json:"start_date" bson:"start_date"`
 	EndDate   int64         `json:"end_date" bson:"end_date"`
 	Modified  vmod.Modified `json:"modified" bson:"modified"`
 }
 
+type RoleHistoryUpdate struct {
+	ID        string `bson:"_id" json:"id"`
+	UserID    string `json:"user_id" bson:"user_id"`
+	Role      string `json:"role" bson:"role"`
+	CrewID    string `json:"crew_id" bson:"crew_id"`
+	Confirmed bool   `json:"confirmed" bson:"confirmed"`
+	StartDate int64  `json:"start_date" bson:"start_date"`
+	EndDate   int64  `json:"end_date" bson:"end_date"`
+}
 type RoleHistoryRequest struct {
 	UserID    string        `json:"user_id"`
 	Role      string        `json:"role"`
 	CrewID    string        `json:"crew_id"`
-	Selected  bool          `json:"selected" bson:"selected"`
 	Confirmed bool          `json:"confirmed" bson:"confirmed"`
 	StartDate int64         `json:"start_date" bson:"start_date"`
 	EndDate   int64         `json:"end_date" bson:"end_date"`
@@ -45,7 +53,6 @@ type RoleHistory struct {
 	Crew      UserCrewMinimal `json:"crew" bson:"crew"`
 	Profile   ProfileMinimal  `json:"profile" bson:"profile"`
 	User      UserMinimal     `json:"user" bson:"user"`
-	Selected  bool            `json:"selected" bson:"selected"`
 	Confirmed bool            `json:"confirmed" bson:"confirmed"`
 	StartDate int64           `json:"start_date" bson:"start_date"`
 	EndDate   int64           `json:"end_date" bson:"end_date"`
@@ -57,7 +64,6 @@ type RoleHistoryDatabase struct {
 	UserID    string        `json:"user_id" bson:"user_id"`
 	Role      string        `json:"role" bson:"role"`
 	CrewID    string        `json:"crew_id" bson:"crew_id"`
-	Selected  bool          `json:"selected" bson:"selected"`
 	Confirmed bool          `json:"confirmed" bson:"confirmed"`
 	StartDate int64         `json:"start_date" bson:"start_date"`
 	EndDate   int64         `json:"end_date" bson:"end_date"`
@@ -119,6 +125,7 @@ func (i *RoleHistoryCreate) NewRoleHistory() *RoleHistory {
 		Role:      i.Role,
 		UserID:    i.UserID,
 		CrewID:    i.CrewID,
+		Confirmed: i.Confirmed,
 		StartDate: i.StartDate,
 		EndDate:   i.EndDate,
 		Modified:  vmod.NewModified(),
@@ -131,9 +138,16 @@ func (i *RoleHistory) MatchUser() bson.D {
 	return filter.Bson()
 }
 
-func (i *RoleHistory) Filter() bson.D {
+func (i *RoleHistory) FilterRole() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("name", i.Role)
+	filter.EqualString("user_id", i.UserID)
+	return filter.Bson()
+}
+
+func (i *RoleHistory) Filter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("role", i.Role)
 	filter.EqualString("user_id", i.UserID)
 	return filter.Bson()
 }
@@ -144,7 +158,6 @@ func (i *RoleHistoryRequest) Filter() bson.D {
 	filter.EqualBool("confirmed", strconv.FormatBool(i.Confirmed))
 	filter.EqualString("crew_id", i.CrewID)
 	filter.EqualString("user_id", i.UserID)
-	fmt.Printf("%v\n", filter)
 	return filter.Bson()
 }
 
