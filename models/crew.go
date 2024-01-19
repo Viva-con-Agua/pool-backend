@@ -18,6 +18,7 @@ type (
 		Additional   string `json:"additional" bson:"additional"`
 		Cities       []City `json:"cities" bson:"cities"`
 		Status       string `json:"status" bson:"status"`
+		AspSelection string `json:"asp_selection" bson:"asp_selection"`
 	}
 	CrewUpdate struct {
 		ID           string `json:"id,omitempty" bson:"_id"`
@@ -27,6 +28,7 @@ type (
 		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
 		Additional   string `json:"additional" bson:"additional"`
 		Status       string `json:"status" bson:"status"`
+		AspSelection string `json:"asp_selection" bson:"asp_selection"`
 		Cities       []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdateASP struct {
@@ -44,6 +46,7 @@ type (
 		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities       []City        `json:"cities" bson:"cities"`
 		Status       string        `json:"status" bson:"status"`
+		AspSelection string        `json:"asp_selection" bson:"asp_selection"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
 	CrewPublic struct {
@@ -90,7 +93,7 @@ func CrewPermission(token *vcapool.AccessToken) (err error) {
 }
 
 func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return

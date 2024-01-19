@@ -383,7 +383,7 @@ func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
 	if token.Roles.Validate("employee;admin") {
 		pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
-	} else if token.PoolRoles.Validate("network;operation;education") {
+	} else if token.PoolRoles.Validate(ASPEventRole) {
 		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
 	} else {
 		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.event_asp_id", Value: token.ID}})
@@ -422,14 +422,14 @@ func EventRolePipeline() *vmdb.Pipeline {
 }
 
 func EventPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
 }
 
 func EventDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
@@ -472,7 +472,7 @@ func (i *EventUpdate) Match() bson.D {
 func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 		filter.EqualString("crew_id", token.CrewID)
 	} else if !token.Roles.Validate("employee;admin") {
@@ -492,7 +492,7 @@ func (i *Event) FilterCrew() bson.D {
 func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("crew_id", token.CrewID)
@@ -522,7 +522,7 @@ func (i *EventParam) PublicFilter() bson.D {
 
 func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("crew_id", token.CrewID)
@@ -532,7 +532,7 @@ func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
 
 func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	} else if !token.Roles.Validate("employee;admin") {
 		noCrewMatch := vmdb.NewFilter()
@@ -556,7 +556,7 @@ func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 		filter.EqualString("crew_id", token.CrewID)
 	} else if !token.Roles.Validate("employee;admin") {
