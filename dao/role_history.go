@@ -51,8 +51,9 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 		}
 		userRoleHistory := new(models.RoleHistoryDatabase)
 		result.Users = append(result.Users, models.ExportRole{UserID: user.ID, Role: role.Role})
+		history_filter := bson.D{{Key: "user_id", Value: user.ID}, {Key: "role", Value: role.Role}, {Key: "end_date", Value: int64(0)}, {Key: "crew_id", Value: i.CrewID}, {Key: "confirmed", Value: false}}
 
-		if err = PoolRoleHistoryCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}, {Key: "role", Value: role.Role}, {Key: "end_date", Value: int64(0)}, {Key: "crew_id", Value: i.CrewID}, {Key: "confirmed", Value: false}}, userRoleHistory); err != nil {
+		if err = PoolRoleHistoryCollection.FindOne(ctx, history_filter, userRoleHistory); err != nil {
 			if err = PoolRoleHistoryCollection.InsertOne(ctx, role.NewRoleHistory(user)); err != nil {
 				return
 			}
@@ -114,7 +115,7 @@ func RoleHistoryDelete(ctx context.Context, i *models.RoleHistoryRequest, token 
 
 func RoleHistoryFromRoles(ctx context.Context) (err error) {
 	roles := new([]vmod.Role)
-	PoolRoleCollection.Find(ctx, bson.D{}, roles)
+	PoolRoleCollection.Find(ctx, bson.D{{}}, roles)
 
 	for _, role := range *roles {
 		user := new(models.User)
