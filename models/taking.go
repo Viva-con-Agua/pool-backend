@@ -130,6 +130,12 @@ func TakingPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
+func TakingPipelineTicker() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	return pipe
+}
+
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
 		ID:       uuid.NewString(),
