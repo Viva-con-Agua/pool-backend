@@ -136,12 +136,12 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 	return
 }
 
-func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.BulkUserRoles, err error) {
+func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.AspBulkUserRoles, err error) {
 	if err = models.RolesAdminPermission(token); err != nil {
 		return
 	}
 
-	userRolesMap = make(map[string]*models.BulkUserRoles)
+	userRolesMap = make(map[string]*models.AspBulkUserRoles)
 
 	role_filter := bson.D{{Key: "crew.crew_id", Value: crew_id}, {Key: "pool_roles", Value: bson.D{{Key: "$exists", Value: true}, {Key: "$ne", Value: "[]"}}}}
 	deleted_roles_users := new([]models.User)
@@ -186,11 +186,15 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 			}
 
 			if token.ID != role.UserID {
+				if userRolesMap[role.UserID] == nil {
+					userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
+				}
 				if index := getIndex(createdRole, *deleted_roles); index >= 0 {
+					userRolesMap[role.UserID].UnchangedRoles = append(userRolesMap[role.UserID].UnchangedRoles, createdRole.Label)
 					*deleted_roles = (*deleted_roles)[:index+copy((*deleted_roles)[index:], (*deleted_roles)[index+1:])]
 				} else {
 					if userRolesMap[role.UserID] == nil {
-						userRolesMap[role.UserID] = &models.BulkUserRoles{}
+						userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 					}
 					userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Label)
 				}
@@ -200,7 +204,7 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 	for _, role := range *deleted_roles {
 		if token.ID != role.UserID {
 			if userRolesMap[role.UserID] == nil {
-				userRolesMap[role.UserID] = &models.BulkUserRoles{}
+				userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 			}
 			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Label)
 		}
@@ -267,6 +271,24 @@ func RoleNotification(ctx context.Context, i map[string]*models.BulkUserRoles) (
 		mail := vcago.NewMailData(user.Email, "pool-backend", "role_update", "pool", user.Country)
 		mail.AddUser(user.User())
 		mail.AddContent(user.RoleContent(role))
+		vcago.Nats.Publish("system.mail.job", mail)
+	}
+	return
+}
+
+func AspRoleNotification(ctx context.Context, i map[string]*models.AspBulkUserRoles) (err error) {
+	for index, role := range i {
+		user := new(models.User)
+		if err = UserCollection.FindOne(
+			ctx,
+			bson.D{{Key: "_id", Value: index}},
+			user,
+		); err != nil {
+			return
+		}
+		mail := vcago.NewMailData(user.Email, "pool-backend", "asp_role_update", "pool", user.Country)
+		mail.AddUser(user.User())
+		mail.AddContent(user.AspRoleContent(role))
 		vcago.Nats.Publish("system.mail.job", mail)
 	}
 	return

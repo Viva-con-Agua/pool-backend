@@ -79,7 +79,7 @@ func (i *RoleHistoryHandler) ConfirmSelection(cc echo.Context) (err error) {
 		return
 	}
 	result := new(models.RoleBulkExport)
-	userRolesMap := make(map[string]*models.BulkUserRoles)
+	userRolesMap := make(map[string]*models.AspBulkUserRoles)
 	if result, userRolesMap, err = dao.RoleBulkConfirm(c.Ctx(), history, body.CrewID, token); err != nil {
 		return
 	}
@@ -91,7 +91,7 @@ func (i *RoleHistoryHandler) ConfirmSelection(cc echo.Context) (err error) {
 			log.Print(err)
 		}
 	}()
-	if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
+	if err = dao.AspRoleNotification(c.Ctx(), userRolesMap); err != nil {
 		return
 	}
 	return c.Created(result)

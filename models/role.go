@@ -54,6 +54,12 @@ type BulkUserRoles struct {
 	DeletedRoles []string `bson:"deleted" json:"deleted"`
 }
 
+type AspBulkUserRoles struct {
+	AddedRoles     []string `bson:"created" json:"created"`
+	DeletedRoles   []string `bson:"deleted" json:"deleted"`
+	UnchangedRoles []string `bson:"unchanged" json:"unchanged"`
+}
+
 var PoolRoleCollection = "pool_roles"
 
 func (i *RoleRequest) NewRole() (r *vmod.Role, err error) {
