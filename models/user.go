@@ -453,6 +453,16 @@ func (i *User) RoleContent(roles *BulkUserRoles) *vmod.Content {
 	return content
 }
 
+func (i *User) AspRoleContent(roles *AspBulkUserRoles) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["AddedRoles"] = strings.Join(roles.AddedRoles, ", ")
+	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
+	content.Fields["UnchangedRoles"] = strings.Join(roles.UnchangedRoles, ", ")
+	return content
+}
+
 func RoleAdminContent(crew *Crew) *vmod.Content {
 	content := &vmod.Content{
 		Fields: make(map[string]interface{}),
