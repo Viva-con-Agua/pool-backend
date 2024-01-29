@@ -38,7 +38,7 @@ func MailboxPipeline(token *vcapool.AccessToken) *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("operation;network;finance;education;socialmedia;awareness;other")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		inboxMatch := vmdb.NewFilter()
 		inboxMatch.EqualString("type", "inbox")
 		inboxMatch.EqualString("user_id", token.ID)

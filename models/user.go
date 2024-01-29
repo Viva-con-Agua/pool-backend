@@ -341,7 +341,7 @@ func (i *ProfileUpdate) ToUserUpdate() *ProfileUpdate {
 }
 
 func UsersPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return
@@ -450,6 +450,16 @@ func (i *User) RoleContent(roles *BulkUserRoles) *vmod.Content {
 	}
 	content.Fields["AddedRoles"] = strings.Join(roles.AddedRoles, ", ")
 	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
+	return content
+}
+
+func (i *User) AspRoleContent(roles *AspBulkUserRoles) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["AddedRoles"] = strings.Join(roles.AddedRoles, ", ")
+	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
+	content.Fields["UnchangedRoles"] = strings.Join(roles.UnchangedRoles, ", ")
 	return content
 }
 
