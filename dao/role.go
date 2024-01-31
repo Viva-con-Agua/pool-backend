@@ -296,6 +296,7 @@ func AspRoleNotification(ctx context.Context, i map[string]*models.AspBulkUserRo
 
 func RoleAdminNotification(ctx context.Context, crewID *models.CrewParam) (err error) {
 	crew := new(models.Crew)
+	CrewsCollection.FindOne(ctx, crewID.Match(), crew)
 	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "role_network", "pool", "de")
 	mail.AddContent(models.RoleAdminContent(crew))
 	vcago.Nats.Publish("system.mail.job", mail)
