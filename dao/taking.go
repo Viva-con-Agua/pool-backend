@@ -136,10 +136,8 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
 				log.Print(err)
 			}
-
 			// Add participations to event
 			participations := new([]models.Participation)
-
 			if err = ParticipationCollection.Aggregate(
 				ctx,
 				models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,

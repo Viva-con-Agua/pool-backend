@@ -53,6 +53,27 @@ func EventStateNoIncome() {
 		if err := TakingCollection.UpdateOne(context.Background(), updateFilter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
+		if err := IDjango.Post(i, "/v1/pool/taking/create/"); err != nil {
+			log.Print(err)
+		}
+
+		// Update CRM event
+		if err := IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
+			log.Print(err)
+		}
+		// Add participations to event
+		participations := new([]models.Participation)
+		if err := ParticipationCollection.Aggregate(
+			context.Background(),
+			models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
+			participations,
+		); err != nil {
+			return
+		}
+		if err := IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
+			log.Print(err)
+			err = nil
+		}
 
 	}
 }
