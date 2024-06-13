@@ -2,9 +2,7 @@ package dao
 
 import (
 	"context"
-	"log"
 	"pool-backend/models"
-	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
@@ -92,65 +90,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			); err != nil {
 				return
 			}
-		}
-	}
-	if !takingDatabase.State.NoIncome && i.State.NoIncome {
-		event := new(models.EventUpdate)
-		if err = EventCollection.FindOne(
-			ctx,
-			bson.D{{Key: "taking_id", Value: takingDatabase.ID}},
-			event,
-		); err != nil {
-			if !vmdb.ErrNoDocuments(err) {
-				return
-			}
-			err = nil
-		}
-
-		if event.ID != "" && event.EndAt < time.Now().Unix() {
-			event.EventState.OldState = event.EventState.State
-			event.EventState.State = "closed"
-			e := new(models.Event)
-			if err = EventCollection.UpdateOneAggregate(
-				ctx,
-				event.Match(),
-				vmdb.UpdateSet(event),
-				e,
-				models.EventPipeline(token).Match(event.Match()).Pipe,
-			); err != nil {
-				return
-			}
-
-			// Add takings to CRM
-			var taking *models.Taking
-			if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: takingDatabase.ID}, token); err != nil {
-				log.Print(err)
-			}
-
-			taking.EditorID = token.ID
-			if err = IDjango.Post(taking, "/v1/pool/taking/create/"); err != nil {
-				log.Print(err)
-			}
-
-			// Update CRM event
-			if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
-				log.Print(err)
-			}
-			// Add participations to event
-			participations := new([]models.Participation)
-			if err = ParticipationCollection.Aggregate(
-				ctx,
-				models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
-				participations,
-			); err != nil {
-				return
-			}
-
-			if err = IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
-				log.Print(err)
-				err = nil
-			}
-
 		}
 	}
 	if err = ActivityCollection.InsertOne(ctx, TakingUpdatedActivity.New(token.ID, takingDatabase.ID)); err != nil {
