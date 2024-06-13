@@ -15,12 +15,13 @@ func UpdateTicker() {
 	ticker := time.NewTicker(1 * time.Hour)
 	quit := make(chan struct{})
 	EventStateFinishTicker()
+	EventStateClosedTicker()
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
 				EventStateFinishTicker()
-				EventStateClosed()
+				EventStateClosedTicker()
 			case <-quit:
 				ticker.Stop()
 				return
@@ -41,7 +42,7 @@ func EventStateFinishTicker() {
 }
 
 // EventStateClosed
-func EventStateClosed() {
+func EventStateClosedTicker() {
 	filter := vmdb.NewFilter()
 	confirmedFilter := bson.E{Key: "$or", Value: bson.A{
 		bson.D{
