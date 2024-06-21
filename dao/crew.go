@@ -97,6 +97,14 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 			return
 		}
 	}
+	if crew.Email != i.Email || crew.Name != i.Name {
+		filter := bson.D{{Key: "crew_id", Value: i.ID}}
+		update := bson.D{{Key: "email", Value: i.Email}, {Key: "name", Value: i.Name}}
+		if err = UserCrewCollection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
+			return
+		}
+
+	}
 	return
 }
 

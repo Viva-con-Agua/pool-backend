@@ -37,7 +37,7 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 	}
 	result := new([]models.ListUser)
 	var listSize int64
-	if result, listSize, err = dao.UsersGet(c.Ctx(), body, token); err != nil {
+	if result, listSize, err = dao.UsersGet(body, token); err != nil {
 		return
 	}
 	return c.Listed(result, listSize)
