@@ -228,7 +228,7 @@ func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *TakingParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {
