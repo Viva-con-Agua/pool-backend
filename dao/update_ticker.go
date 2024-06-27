@@ -36,9 +36,21 @@ func EventStateFinishTicker() {
 	filter.EqualString("event_state.state", "published")
 	filter.LteInt64("end_at", fmt.Sprint(time.Now().Unix()))
 	update := bson.D{{Key: "event_state.state", Value: "finished"}}
+	events := new([]models.Event)
+	if err := EventCollection.Find(context.Background(), filter.Bson(), events); err != nil {
+		log.Print(err)
+	}
 	if err := EventCollection.UpdateMany(context.Background(), filter.Bson(), vmdb.UpdateSet(update)); err != nil {
 		log.Print(err)
 	}
+	for _, value := range *events {
+		filterTaking := bson.D{{Key: "_id", Value: value.TakingID}, {Key: "taking_id", Value: bson.D{{Key: "$ne", Value: ""}}}}
+		updateTaking := bson.D{{Key: "date_of_taking", Value: value.EndAt}}
+		if err := TakingCollection.UpdateOne(context.Background(), filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+			log.Print(err)
+		}
+	}
+
 }
 
 // EventStateClosed

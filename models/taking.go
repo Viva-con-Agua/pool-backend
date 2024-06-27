@@ -13,29 +13,32 @@ import (
 
 type (
 	TakingCreate struct {
-		Name      string         `json:"name" bson:"name"`
-		CrewID    string         `json:"crew_id" bson:"crew_id"`
-		NewSource []SourceCreate `json:"new_sources"`
-		Comment   string         `json:"comment"`
+		Name         string         `json:"name" bson:"name"`
+		CrewID       string         `json:"crew_id" bson:"crew_id"`
+		NewSource    []SourceCreate `json:"new_sources"`
+		DateOfTaking int64          `json:"date_of_taking" bson:"date_of_taking"`
+		Comment      string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID      string            `json:"id" bson:"_id"`
-		Name    string            `json:"name" bson:"name"`
-		CrewID  string            `json:"crew_id" bson:"crew_id"`
-		Sources []SourceUpdate    `json:"sources" bson:"-"`
-		State   TakingStateUpdate `json:"state" bson:"state"`
-		Comment string            `json:"comment"`
+		ID           string            `json:"id" bson:"_id"`
+		Name         string            `json:"name" bson:"name"`
+		CrewID       string            `json:"crew_id" bson:"crew_id"`
+		Sources      []SourceUpdate    `json:"sources" bson:"-"`
+		State        TakingStateUpdate `json:"state" bson:"state"`
+		DateOfTaking int64             `json:"date_of_taking" bson:"date_of_taking"`
+		Comment      string            `json:"comment"`
 	}
 
 	TakingDatabase struct {
-		ID       string        `json:"id" bson:"_id"`
-		Name     string        `json:"name" bson:"name"`
-		CrewID   string        `json:"crew_id" bson:"crew_id"`
-		Type     string        `json:"type" bson:"type"`
-		Comment  string        `json:"comment" bson:"comment"`
-		State    TakingState   `json:"state" bson:"state"`
-		Currency string        `json:"-" bson:"currency"`
-		Modified vmod.Modified `json:"modified" bson:"modified"`
+		ID           string        `json:"id" bson:"_id"`
+		Name         string        `json:"name" bson:"name"`
+		CrewID       string        `json:"crew_id" bson:"crew_id"`
+		Type         string        `json:"type" bson:"type"`
+		Comment      string        `json:"comment" bson:"comment"`
+		State        TakingState   `json:"state" bson:"state"`
+		Currency     string        `json:"-" bson:"currency"`
+		DateOfTaking int64         `json:"date_of_taking" bson:"date_of_taking"`
+		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Taking struct {
 		ID           string              `json:"id" bson:"_id"`
@@ -46,6 +49,7 @@ type (
 		Event        Event               `json:"event" bson:"event"`
 		Source       []Source            `json:"sources" bson:"sources"`
 		State        TakingState         `json:"state" bson:"state"`
+		DateOfTaking int64               `json:"date_of_taking" bson:"date_of_taking"`
 		Comment      string              `json:"comment" bson:"comment"`
 		EditorID     string              `json:"editor_id" bson:"-"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
@@ -138,13 +142,14 @@ func TakingPipelineTicker() *vmdb.Pipeline {
 
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
-		ID:       uuid.NewString(),
-		Name:     i.Name,
-		CrewID:   i.CrewID,
-		Type:     "manually",
-		Currency: i.NewSource[0].Money.Currency,
-		Comment:  i.Comment,
-		Modified: vmod.NewModified(),
+		ID:           uuid.NewString(),
+		Name:         i.Name,
+		CrewID:       i.CrewID,
+		Type:         "manually",
+		Currency:     i.NewSource[0].Money.Currency,
+		DateOfTaking: i.DateOfTaking,
+		Comment:      i.Comment,
+		Modified:     vmod.NewModified(),
 	}
 }
 
