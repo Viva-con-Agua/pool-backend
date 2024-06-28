@@ -76,6 +76,8 @@ type (
 		Search          string   `query:"search"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
+		TypeOfEvent     []string `query:"type_of_event"`
+		ArtistName      string   `query:"artist_name"`
 		EventState      []string `query:"event_state"`
 		EventEndFrom    string   `query:"event_end_from"`
 		EventEndTo      string   `query:"event_end_to"`
@@ -110,6 +112,7 @@ func TakingPipeline() *vmdb.Pipeline {
 	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.LookupList(ArtistCollection, "artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
 	}}})
@@ -194,7 +197,9 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.LikeString("name", i.Name)
 	filter.SearchString([]string{"name", "event.name"}, i.Search)
 	filter.EqualStringList("event.event_state.state", i.EventState)
+	filter.EqualStringList("event.type_of_event", i.TypeOfEvent)
 	filter.LikeString("event.name", i.EventName)
+	filter.LikeString("event.artists.name", i.ArtistName)
 	filter.GteInt64("event.end_at", i.EventEndFrom)
 	filter.LteInt64("event.end_at", i.EventEndTo)
 	status := bson.A{}

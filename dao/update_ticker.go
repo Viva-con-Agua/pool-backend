@@ -64,7 +64,7 @@ func EventStateClosedTicker() {
 		},
 		bson.D{{Key: "state.no_income", Value: true}},
 	}}
-	filter.Append(bson.E{Key: "$or", Value: confirmedFilter})
+	filter.Append(confirmedFilter)
 	filter.EqualString("event.event_state.state", "finished")
 	pipeline := models.TakingPipeline().Match(filter.Bson()).Pipe
 	takings := []models.Taking{}
