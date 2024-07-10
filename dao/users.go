@@ -43,12 +43,9 @@ func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models
 	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
-	opt := options.Aggregate()
-	opt.SetCollation(&options.Collation{Locale: "en_US", NumericOrdering: true})
-
 	pipeline := models.SortedUserPermittedPipeline(token).SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.ListUser)
-	if err = UserCollection.Aggregate(ctx, pipeline, result, opt); err != nil {
+	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
