@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcapool"
 
@@ -38,7 +39,8 @@ func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
 	opt := options.Aggregate()
