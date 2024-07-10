@@ -45,7 +45,7 @@ func (i *RoleHistoryHandler) Create(cc echo.Context) (err error) {
 func (i *RoleHistoryHandler) CreateBulk(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.RoleHistoryBulkRequest)
-	if c.BindAndValidate(body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
 	token := new(vcapool.AccessToken)
