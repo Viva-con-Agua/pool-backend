@@ -70,7 +70,7 @@ func EventStateClosedTicker() {
 	filter.EqualString("event.event_state.state", "finished")
 	pipeline := models.TakingPipeline().Match(filter.Bson()).Pipe
 	takings := []models.Taking{}
-	if err := TakingCollection.Aggregate(context.Background(), pipeline, takings); err != nil {
+	if err := TakingCollection.Aggregate(context.Background(), pipeline, &takings); err != nil {
 		log.Print(err)
 	}
 	for i := range takings {
