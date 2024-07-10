@@ -51,6 +51,8 @@ func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models
 	if err = UserCollection.Aggregate(ctx, pipeline, result, opt); err != nil {
 		return
 	}
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	opts := options.Count().SetHint("_id_")
 	if i.FullCount != "true" {
 		opts.SetSkip(i.Skip).SetLimit(i.Limit)
