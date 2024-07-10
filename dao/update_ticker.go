@@ -41,7 +41,9 @@ func EventStateFinishTicker() {
 		log.Print(err)
 	}
 	if err := EventCollection.UpdateMany(context.Background(), filter.Bson(), vmdb.UpdateSet(update)); err != nil {
-		log.Print(err)
+		if !vmdb.ErrNoDocuments(err) {
+			log.Print(err)
+		}
 	}
 	for _, value := range *events {
 		filterTaking := bson.D{{Key: "_id", Value: value.TakingID}, {Key: "taking_id", Value: bson.D{{Key: "$ne", Value: ""}}}}
