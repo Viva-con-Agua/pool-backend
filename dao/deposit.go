@@ -7,6 +7,7 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -114,11 +115,11 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 	ctx = context.Background()
 	if i.Status == "confirmed" {
 		go func() {
-
+			ctxAsync := context.Background()
 			for _, unit := range i.DepositUnit {
 				event := new(models.EventUpdate)
 				if err = EventCollection.FindOne(
-					ctx,
+					ctxAsync,
 					bson.D{{Key: "taking_id", Value: unit.TakingID}},
 					event,
 				); err != nil {
@@ -131,7 +132,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 					event.EventState.State = "closed"
 					e := new(models.Event)
 					if err = EventCollection.UpdateOneAggregate(
-						ctx,
+						ctxAsync,
 						event.Match(),
 						vmdb.UpdateSet(event),
 						e,
@@ -147,7 +148,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 
 					// Add takings to CRM
 					var taking *models.Taking
-					if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: unit.TakingID}, token); err != nil {
+					if taking, err = TakingGetByID(ctx, &vmod.IDParam{ID: unit.TakingID}, token); err != nil {
 						log.Print(err)
 					}
 
@@ -160,7 +161,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 					participations := new([]models.Participation)
 
 					if err = ParticipationCollection.Aggregate(
-						ctx,
+						ctxAsync,
 						models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
 						participations,
 					); err != nil {
@@ -228,7 +229,7 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.Acc
 
 				// Add takings to CRM
 				var taking *models.Taking
-				if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: unit.TakingID}, token); err != nil {
+				if taking, err = TakingGetByID(ctx, &vmod.IDParam{ID: unit.TakingID}, token); err != nil {
 					log.Print(err)
 				}
 				taking.EditorID = token.ID
