@@ -144,12 +144,16 @@ func TakingPipelineTicker() *vmdb.Pipeline {
 }
 
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
+	currency := "EUR"
+	if len(i.NewSource) > 0 {
+		currency = i.NewSource[0].Money.Currency
+	}
 	return &TakingDatabase{
 		ID:           uuid.NewString(),
 		Name:         i.Name,
 		CrewID:       i.CrewID,
 		Type:         "manually",
-		Currency:     i.NewSource[0].Money.Currency,
+		Currency:     currency,
 		DateOfTaking: i.DateOfTaking,
 		Comment:      i.Comment,
 		Modified:     vmod.NewModified(),
