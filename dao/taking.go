@@ -184,7 +184,10 @@ func TakingDeletetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.
 		return
 	}
 	if taking.Event.ID != "" {
-		return vcago.NewBadRequest("taking", "depending_in_event")
+		return vcago.NewBadRequest("taking", "depending_on_event")
+	}
+	if len(taking.DepositUnits) > 0 {
+		return vcago.NewBadRequest("taking", "depending_on_deposit")
 	}
 	err = TakingCollection.DeleteOne(ctx, filter)
 	return

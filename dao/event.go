@@ -161,6 +161,13 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 	if event.EventASPID != result.EventASPID && result.EventASPID != token.ID {
 		EventASPNotification(ctx, result, "event_asp")
 	}
+	if event.EndAt != i.EndAt {
+		updateTaking := bson.D{{Key: "date_of_taking", Value: i.EndAt}}
+		filterTaking := bson.D{{Key: "_id", Value: event.TakingID}}
+		if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+			return
+		}
+	}
 	return
 }
 
