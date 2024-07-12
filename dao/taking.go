@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
@@ -173,6 +174,18 @@ func TakingDeletetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	err = TakingCollection.DeleteOne(ctx, models.TakingPermittedFilter(param, token))
+	taking := new(models.Taking)
+	filter := models.TakingPermittedFilter(param, token)
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		models.TakingPipeline().Match(filter).Pipe,
+		&taking,
+	); err != nil {
+		return
+	}
+	if taking.Event.ID != "" {
+		return vcago.NewBadRequest("taking", "depending_in_event")
+	}
+	err = TakingCollection.DeleteOne(ctx, filter)
 	return
 }
