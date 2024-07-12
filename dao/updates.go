@@ -74,6 +74,10 @@ func UpdateDatabase() {
 		UpdateTakingCurrency(ctx)
 		InsertUpdate(ctx, "currency_problem")
 	}
+	if !CheckUpdated(ctx, "date_of_taking_1") {
+		UpdateDateOfTaking1(ctx)
+		InsertUpdate(ctx, "date_of_taking_1")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -166,4 +170,19 @@ func UpdateEventCanceledNoIncome(ctx context.Context) {
 			return
 		}
 	}
+}
+
+func UpdateDateOfTaking1(ctx context.Context) {
+	eventList := []models.Event{}
+	if err := EventCollection.Find(ctx, bson.D{{}}, &eventList); err != nil {
+		log.Print(err)
+	}
+	for _, event := range eventList {
+		update := bson.D{{Key: "date_of_taking", Value: event.EndAt}}
+		filter := bson.D{{Key: "_id", Value: event.TakingID}}
+		if err := TakingCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+
 }

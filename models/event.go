@@ -306,11 +306,12 @@ var EventCollection = "events"
 
 func (i *EventDatabase) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
-		ID:       uuid.NewString(),
-		Name:     i.Name,
-		CrewID:   i.CrewID,
-		Type:     "automatically",
-		Modified: vmod.NewModified(),
+		ID:           uuid.NewString(),
+		Name:         i.Name,
+		CrewID:       i.CrewID,
+		DateOfTaking: i.EndAt,
+		Type:         "automatically",
+		Modified:     vmod.NewModified(),
 	}
 }
 func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {

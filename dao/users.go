@@ -55,7 +55,6 @@ func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models
 		opts.SetSkip(i.Skip).SetLimit(i.Limit)
 	}
 	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		print(cErr)
 		list_size = 0
 	} else {
 		list_size = cursor
