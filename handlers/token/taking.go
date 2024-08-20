@@ -70,7 +70,7 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new([]models.Taking)
+	var result []models.Taking
 	var listSize int64
 	if result, listSize, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
 		return

@@ -109,18 +109,18 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	return
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, listSize int64, err error) {
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result []models.Taking, listSize int64, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	result = new([]models.Taking)
+	result = []models.Taking{}
 	filter := query.PermittedFilter(token)
 	sort := query.Sort()
 	pipeline := models.TakingPipeline().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
 		pipeline,
-		result,
+		&result,
 	); err != nil {
 		return
 	}

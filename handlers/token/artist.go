@@ -87,7 +87,7 @@ func (i *ArtistHandler) Update(cc echo.Context) (err error) {
 func (i *ArtistHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ArtistParam)
-	if c.BindAndValidate(body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
 	}
 	token := new(vcapool.AccessToken)

@@ -75,7 +75,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UserEmail)
-	if c.BindAndValidate(body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
 	result := new(models.User)
