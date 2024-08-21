@@ -16,12 +16,14 @@ func UpdateTicker() {
 	quit := make(chan struct{})
 	EventStateFinishTicker()
 	EventStateClosedTicker()
+	UserActiveStateTicker()
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
 				EventStateFinishTicker()
 				EventStateClosedTicker()
+				UserActiveStateTicker()
 			case <-quit:
 				ticker.Stop()
 				return
@@ -88,4 +90,25 @@ func EventStateClosedTicker() {
 		}
 
 	}
+}
+
+func UserActiveStateTicker() {
+	checkDate := time.Now().Unix() - 15768000
+	filter := bson.D{
+		{Key: "last_login_date", Value: bson.D{{Key: "$lte", Value: checkDate}}},
+		{Key: "active.status", Value: "confirmed"},
+	}
+	userList := []models.User{}
+	pipeline := models.UserPipeline(false).Match(filter).Pipe
+	if err := UserCollection.Aggregate(context.Background(), pipeline, &userList); err != nil {
+		log.Print(err)
+	}
+	for _, user := range userList {
+		update := bson.D{{Key: "status", Value: "rejected"}}
+		userFilter := bson.D{{Key: "_id", Value: user.Active.ID}}
+		if err := ActiveCollection.UpdateOne(context.Background(), userFilter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+
 }
