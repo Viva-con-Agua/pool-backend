@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
@@ -30,6 +31,12 @@ func ProfileGetByID(ctx context.Context, i *models.UserParam, token *vcapool.Acc
 
 func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
 	filter := i.PermittedFilter(token)
+	birthdate := time.Unix(i.Birthdate, 0)
+	if i.Birthdate != 0 {
+		i.BirthdateDatetime = birthdate.Format("2006-01-02")
+	} else {
+		i.BirthdateDatetime = ""
+	}
 	if err = ProfileCollection.UpdateOne(
 		ctx,
 		filter,

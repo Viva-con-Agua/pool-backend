@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/google/uuid"
@@ -77,6 +78,10 @@ func UpdateDatabase() {
 	if !CheckUpdated(ctx, "date_of_taking_1") {
 		UpdateDateOfTaking1(ctx)
 		InsertUpdate(ctx, "date_of_taking_1")
+	}
+	if !CheckUpdated(ctx, "birthdate_1") {
+		UpdateProfileBirthdate(ctx)
+		InsertUpdate(ctx, "birthdate_1")
 	}
 }
 
@@ -184,5 +189,23 @@ func UpdateDateOfTaking1(ctx context.Context) {
 			log.Print(err)
 		}
 	}
+}
 
+func UpdateProfileBirthdate(ctx context.Context) {
+	profileList := []models.ProfileUpdate{}
+	if err := ProfileCollection.Find(ctx, bson.D{{}}, &profileList); err != nil {
+		log.Print(err)
+	}
+	for _, profile := range profileList {
+		birthdate := time.Unix(profile.Birthdate, 0)
+		if profile.Birthdate != 0 {
+			profile.BirthdateDatetime = birthdate.Format("2006-01-02")
+		} else {
+			profile.BirthdateDatetime = ""
+		}
+		filter := bson.D{{Key: "_id", Value: profile.ID}}
+		if err := ProfileCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(profile), nil); err != nil {
+			log.Print(err)
+		}
+	}
 }

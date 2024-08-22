@@ -87,7 +87,7 @@ func (i *OrganizerHandler) Update(cc echo.Context) (err error) {
 func (i *OrganizerHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.OrganizerParam)
-	if c.BindAndValidate(body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return c.ErrorResponse(err)
 	}
 	token := new(vcapool.AccessToken)
