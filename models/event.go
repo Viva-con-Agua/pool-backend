@@ -362,7 +362,7 @@ func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
 		InternalASPID:         i.InternalASPID,
 		ExternalASP:           i.ExternalASP,
 		Application:           i.Application,
-		Applications:          EventApplications{Confirmed: 0, Rejected: 0, Requested: 0, Withdrawn: 0},
+		Applications:          EventApplications{Confirmed: 0, Rejected: 0, Requested: 0, Withdrawn: 0, Total: 0},
 		EventTools:            i.EventTools,
 		EventState:            i.EventState,
 		CreatorID:             token.ID,
@@ -413,7 +413,7 @@ func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
 	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
-	if token.ID == "" || token.Roles.Validate("employee;admin") {
+	if token.Roles.Validate("employee;admin") {
 		pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	} else if token.PoolRoles.Validate(ASPEventRole) {
 		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
