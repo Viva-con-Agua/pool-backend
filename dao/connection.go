@@ -8,6 +8,7 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -63,6 +64,8 @@ var (
 
 	ReasonForPaymentCollection *vmdb.Collection
 	UserViewCollection         *vmdb.Collection
+	EventViewCollection        *vmdb.Collection
+	PublicEventViewCollection  *vmdb.Collection
 
 	NewsletterCollection *vmdb.Collection
 
@@ -70,6 +73,8 @@ var (
 	ParticipationEventPipe = vmdb.NewPipeline()
 	ActitityUserPipe       = vmdb.NewPipeline()
 	UserPipe               = vmdb.NewPipeline()
+	EventPipe              = vmdb.NewPipeline()
+	PublicEventPipe        = vmdb.NewPipeline()
 	UpdateCollection       *vmdb.Collection
 
 	TestLogin bool
@@ -147,6 +152,30 @@ func InitialDatabase() {
 		UserPipe.Pipe,
 	)
 	UserViewCollection = Database.Collection(models.UserView)
+
+	PublicEventPipe.Lookup(models.ParticipationCollection, "_id", "event_id", "participations")
+	PublicEventPipe.LookupUnwind(models.OrganizerCollection, "organizer_id", "_id", "organizer")
+	PublicEventPipe.LookupList(models.ArtistCollection, "artist_ids", "_id", "artists")
+	PublicEventPipe.LookupUnwind(models.CrewCollection, "crew_id", "_id", "crew")
+	Database.Database.CreateView(
+		context.Background(),
+		models.PublicEventView,
+		models.EventCollection,
+		models.EventPipelinePublic().Pipe,
+	)
+	PublicEventViewCollection = Database.Collection(models.PublicEventView)
+
+	EventPipe.Lookup(models.ParticipationCollection, "_id", "event_id", "participations")
+	EventPipe.LookupUnwind(models.OrganizerCollection, "organizer_id", "_id", "organizer")
+	EventPipe.LookupList(models.ArtistCollection, "artist_ids", "_id", "artists")
+	EventPipe.LookupUnwind(models.CrewCollection, "crew_id", "_id", "crew")
+	Database.Database.CreateView(
+		context.Background(),
+		models.EventView,
+		models.EventCollection,
+		models.EventPipeline(&vcapool.AccessToken{ID: ""}),
+	)
+	EventViewCollection = Database.Collection(models.EventView)
 
 	DepositUnitTakingPipe.LookupUnwind(models.DepositCollection, "deposit_id", "_id", "deposit")
 	Database.Database.CreateView(

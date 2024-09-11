@@ -39,7 +39,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	}
 	tokenUser := new(vmod.User)
 	if tokenUser, err = HydraClient.Callback(c.Ctx(), body); err != nil {
-		return
+		return vcago.NewBadRequest("Error in callback. Maybe testlogin and oidc skip is enabeled in .env?", err.Error())
 	}
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
@@ -50,17 +50,29 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		return
 	}
 	if vmdb.ErrNoDocuments(err) {
-		err = nil
-		userDatabase := models.NewUserDatabase(tokenUser)
-		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
+
+		if err = dao.UserCollection.AggregateOne(
+			c.Ctx(),
+			models.UserPipeline(true).Match(models.UserMatchEmail(tokenUser.Email)).Pipe,
+			result,
+		); err != nil && !vmdb.ErrNoDocuments(err) {
 			return
 		}
-		go func() {
-			if err = dao.IDjango.Post(result, "/v1/pool/user/"); err != nil {
-				log.Print(err)
+
+		if vmdb.ErrNoDocuments(err) {
+
+			err = nil
+			userDatabase := models.NewUserDatabase(tokenUser)
+			if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
+				return
 			}
-		}()
-		vcago.Nats.Publish("pool.user.created", result)
+			go func() {
+				if err = dao.IDjango.Post(result, "/v1/pool/user/"); err != nil {
+					log.Print(err)
+				}
+			}()
+			vcago.Nats.Publish("pool.user.created", result)
+		}
 	}
 	token := new(vcago.AuthToken)
 	if token, err = result.AuthToken(); err != nil {

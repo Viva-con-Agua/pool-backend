@@ -164,6 +164,21 @@ func (i *Participation) ToContent() *vmod.Content {
 	return content
 }
 
+func (i *Participation) UpdateEventApplicationsUpdate(value int, applications *EventApplications) *EventApplicationsUpdate {
+	switch i.Status {
+	case "confirmed":
+		applications.Confirmed = i.Event.Applications.Confirmed + value
+	case "rejected":
+		applications.Rejected = i.Event.Applications.Rejected + value
+	case "requested":
+		applications.Requested = i.Event.Applications.Requested + value
+	case "withdrawn":
+		applications.Withdrawn = i.Event.Applications.Withdrawn + value
+	}
+	applications.Total = i.Event.Applications.Total + value
+	return &EventApplicationsUpdate{ID: i.EventID, Applications: *applications}
+}
+
 func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
 	return &ParticipationDatabase{
 		ID:       uuid.NewString(),

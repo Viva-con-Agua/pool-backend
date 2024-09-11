@@ -66,11 +66,13 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
+
 	result := new([]models.ListEvent)
-	if result, err = dao.EventGet(c.Ctx(), body, token); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.EventGet(body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i *EventHandler) GetByID(cc echo.Context) (err error) {
@@ -127,10 +129,11 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.EventPublic)
-	if result, err = dao.EventGetPublic(c.Ctx(), body); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.EventGetPublic(body); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {

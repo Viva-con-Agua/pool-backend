@@ -51,9 +51,6 @@ func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	opts := options.Count().SetHint("_id_")
-	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit)
-	}
 	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
 		list_size = 0
 	} else {
