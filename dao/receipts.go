@@ -18,6 +18,9 @@ func ReceiptFileCreate(
 	result *models.ReceiptFile,
 	err error,
 ) {
+	if err = models.DepositPermission(token); err != nil {
+		return
+	}
 	deposit := new(models.Deposit)
 	filter := bson.D{{Key: "_id", Value: create.DepositID}}
 	if err = DepositCollection.FindOne(ctx, filter, deposit); err != nil {
@@ -42,6 +45,9 @@ func ReceiptFileGetByID(
 	result []byte,
 	err error,
 ) {
+	if err = models.DepositPermission(token); err != nil {
+		return
+	}
 	filter := bson.D{{Key: "_id", Value: id.ID}}
 	file := new(models.ReceiptFile)
 	if err = ReceiptFileCollection.FindOne(ctx, filter, file); err != nil {
@@ -62,6 +68,9 @@ func ReceiptFileDeleteByID(
 	result *vmod.DeletedResponse,
 	err error,
 ) {
+	if err = models.DepositPermission(token); err != nil {
+		return
+	}
 	filter := bson.D{{Key: "_id", Value: id.ID}}
 	file := new(models.ReceiptFile)
 	if err = ReceiptFileCollection.FindOne(ctx, filter, file); err != nil {
