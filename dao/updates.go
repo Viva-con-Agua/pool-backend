@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -83,6 +84,10 @@ func UpdateDatabase() {
 		UpdateProfileBirthdate(ctx)
 		InsertUpdate(ctx, "birthdate_1")
 	}
+	if !CheckUpdated(ctx, "event_applications") {
+		UpdateEventApplications(ctx)
+		InsertUpdate(ctx, "event_applications")
+  }
 	if !CheckUpdated(ctx, "last_login_date_1") {
 		UpdateSetLastLoginDate(ctx)
 		InsertUpdate(ctx, "last_login_date_1")
@@ -214,6 +219,36 @@ func UpdateProfileBirthdate(ctx context.Context) {
 	}
 }
 
+func UpdateEventApplications(ctx context.Context) {
+	eventList := []models.Event{}
+	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&vcapool.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
+		log.Print(err)
+	}
+	for _, event := range eventList {
+		confirmed, rejected, requested, withdrawn, total := 0, 0, 0, 0, 0
+
+		for _, p := range event.Participation {
+			switch p.Status {
+			case "confirmed":
+				confirmed++
+			case "rejected":
+				rejected++
+			case "requested":
+				requested++
+			case "withdrawn":
+				withdrawn++
+			}
+			total++
+		}
+		update := bson.D{{Key: "applications", Value: models.EventApplications{
+			Confirmed: confirmed, Rejected: rejected, Requested: requested, Withdrawn: withdrawn, Total: total,
+		}}}
+		filter := bson.D{{Key: "_id", Value: event.ID}}
+		if err := EventCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
 func UpdateSetLastLoginDate(ctx context.Context) {
 	update := bson.D{{Key: "last_login_date", Value: time.Now().Unix()}}
 	if err := UserCollection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {

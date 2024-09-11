@@ -3,12 +3,14 @@ package dao
 import (
 	"context"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.AccessToken) (result *models.Event, err error) {
@@ -39,11 +41,25 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.Acce
 	return
 }
 
-func EventGet(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListEvent, err error) {
+func EventGet(i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListEvent, list_size int64, err error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	filter := i.PermittedFilter(token)
+	sort := i.Sort()
+	pipeline := models.EventPipeline(token).SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.ListEvent)
-	if err = EventCollection.Aggregate(ctx, models.EventPipeline(token).Match(filter).Pipe, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
+	}
+	opts := options.Count().SetHint("_id_")
+	if i.FullCount != "true" {
+		opts.SetSkip(i.Skip).SetLimit(i.Limit)
+	}
+	if cursor, cErr := EventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
+		list_size = 0
+	} else {
+		list_size = cursor
 	}
 	return
 }
@@ -53,6 +69,18 @@ func EventGetByID(ctx context.Context, i *models.EventParam, token *vcapool.Acce
 	if err = EventCollection.AggregateOne(
 		ctx,
 		models.EventPipeline(token).Match(filter).Pipe,
+		&result,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func EventGetInternalByID(ctx context.Context, i *models.EventParam) (result *models.Event, err error) {
+	filter := i.FilterID()
+	if err = EventCollection.AggregateOne(
+		ctx,
+		models.EventPipelinePublic().Match(filter).Pipe,
 		&result,
 	); err != nil {
 		return
@@ -84,11 +112,27 @@ func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models
 	return
 }
 
-func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.EventPublic, err error) {
+func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_size int64, err error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	filter := i.PublicFilter()
+	sort := i.Sort()
+	pipeline := models.EventPipelinePublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.EventPublic)
-	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Pipe, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
+	}
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	opts := options.Count().SetHint("_id_")
+	if i.FullCount != "true" {
+		opts.SetSkip(i.Skip).SetLimit(i.Limit)
+	}
+	if cursor, cErr := PublicEventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
+		list_size = 0
+	} else {
+		list_size = cursor
 	}
 	return
 }
@@ -167,6 +211,20 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 		if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
 			return
 		}
+	}
+	return
+}
+
+func EventApplicationsUpdate(ctx context.Context, i *models.EventApplicationsUpdate) (result *models.Event, err error) {
+
+	filter := bson.D{{Key: "_id", Value: i.ID}}
+	if err = EventCollection.UpdateOne(
+		ctx,
+		filter,
+		vmdb.UpdateSet(i),
+		&result,
+	); err != nil {
+		return
 	}
 	return
 }
