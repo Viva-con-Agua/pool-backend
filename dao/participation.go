@@ -22,10 +22,10 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	}
 	if _, err = EventApplicationsUpdate(ctx, &models.EventApplicationsUpdate{ID: i.EventID, Applications: models.EventApplications{
 		Requested: event.Applications.Requested + 1,
+		Total:     event.Applications.Total + 1,
 	}}); err != nil {
 		return
 	}
-	// UPDATE APPLICATIONS IN EVENT
 	filter := database.Match()
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
@@ -128,7 +128,6 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
-	// UPDATE APPLICATIONS IN EVENT
 	applications := new(models.EventApplications)
 	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
 	applicationsUpdate = result.UpdateEventApplicationsUpdate(1, &applicationsUpdate.Applications)
@@ -156,7 +155,6 @@ func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, toke
 	}
 	applications := new(models.EventApplications)
 	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
-	fmt.Printf("%v\n", applicationsUpdate)
 	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
 		fmt.Printf("HERE1")
 		return
