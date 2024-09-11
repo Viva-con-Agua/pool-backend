@@ -76,6 +76,7 @@ var (
 	EventPipe              = vmdb.NewPipeline()
 	PublicEventPipe        = vmdb.NewPipeline()
 	UpdateCollection       *vmdb.Collection
+	ReceiptFileCollection  *vmdb.Collection
 
 	TestLogin bool
 )
@@ -200,6 +201,7 @@ func InitialDatabase() {
 		ActitityUserPipe.Pipe,
 	)
 	UpdateCollection = Database.Collection("updates").CreateIndex("name", true)
+	ReceiptFileCollection = Database.Collection(models.ReceiptFileCollection).CreateIndex("deposit_id", false)
 }
 
 func FixDatabase() {

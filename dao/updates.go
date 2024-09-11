@@ -87,6 +87,10 @@ func UpdateDatabase() {
 	if !CheckUpdated(ctx, "event_applications") {
 		UpdateEventApplications(ctx)
 		InsertUpdate(ctx, "event_applications")
+  }
+	if !CheckUpdated(ctx, "last_login_date_1") {
+		UpdateSetLastLoginDate(ctx)
+		InsertUpdate(ctx, "last_login_date_1")
 	}
 }
 
@@ -243,5 +247,11 @@ func UpdateEventApplications(ctx context.Context) {
 		if err := EventCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
+	}
+}
+func UpdateSetLastLoginDate(ctx context.Context) {
+	update := bson.D{{Key: "last_login_date", Value: time.Now().Unix()}}
+	if err := UserCollection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
 	}
 }

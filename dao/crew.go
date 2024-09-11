@@ -9,6 +9,7 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.AccessToken) (result *models.Crew, err error) {
@@ -38,7 +39,9 @@ func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToke
 	}
 	filter := i.Filter()
 	result = new([]models.Crew)
-	if err = CrewsCollection.Find(ctx, filter, result); err != nil {
+	opt := options.Find().SetSort(bson.D{{Key: "name", Value: 1}})
+	opt.Collation = &options.Collation{Locale: "en", Strength: 2}
+	if err = CrewsCollection.Find(ctx, filter, result, opt); err != nil {
 		return
 	}
 	return
