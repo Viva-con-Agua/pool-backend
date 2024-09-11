@@ -51,28 +51,17 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	}
 	if vmdb.ErrNoDocuments(err) {
 
-		if err = dao.UserCollection.AggregateOne(
-			c.Ctx(),
-			models.UserPipeline(true).Match(models.UserMatchEmail(tokenUser.Email)).Pipe,
-			result,
-		); err != nil && !vmdb.ErrNoDocuments(err) {
+		err = nil
+		userDatabase := models.NewUserDatabase(tokenUser)
+		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
 			return
 		}
-
-		if vmdb.ErrNoDocuments(err) {
-
-			err = nil
-			userDatabase := models.NewUserDatabase(tokenUser)
-			if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
-				return
+		go func() {
+			if err = dao.IDjango.Post(result, "/v1/pool/user/"); err != nil {
+				log.Print(err)
 			}
-			go func() {
-				if err = dao.IDjango.Post(result, "/v1/pool/user/"); err != nil {
-					log.Print(err)
-				}
-			}()
-			vcago.Nats.Publish("pool.user.created", result)
-		}
+		}()
+		vcago.Nats.Publish("pool.user.created", result)
 	}
 	token := new(vcago.AuthToken)
 	if token, err = result.AuthToken(); err != nil {
