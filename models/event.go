@@ -237,6 +237,7 @@ type (
 
 	EventQuery struct {
 		ID                  []string `query:"id" qs:"id"`
+		Search              string   `query:"search" qs:"search"`
 		Name                string   `query:"name" qs:"name"`
 		CrewID              string   `query:"crew_id" qs:"crew_id"`
 		EventASPID          string   `query:"event_asp_id" qs:"event_asp_id"`
@@ -555,6 +556,8 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
+	filter.SearchString([]string{"_id", "name", "crew.name"}, i.Search)
+
 	return filter.Bson()
 }
 
@@ -612,6 +615,7 @@ func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
+	filter.SearchString([]string{"_id", "name", "crew.name"}, i.Search)
 	return filter.Bson()
 }
 

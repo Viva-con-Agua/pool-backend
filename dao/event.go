@@ -52,8 +52,10 @@ func EventGet(i *models.EventQuery, token *vcapool.AccessToken) (result *[]model
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-
 	opts := options.Count().SetHint("_id_")
+	if i.FullCount != "true" {
+		opts.SetSkip(i.Skip).SetLimit(i.Limit)
+	}
 	if cursor, cErr := EventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
 		list_size = 0
 	} else {
