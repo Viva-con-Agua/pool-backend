@@ -83,6 +83,10 @@ func UpdateDatabase() {
 		UpdateProfileBirthdate(ctx)
 		InsertUpdate(ctx, "birthdate_1")
 	}
+	if !CheckUpdated(ctx, "last_login_date_1") {
+		UpdateSetLastLoginDate(ctx)
+		InsertUpdate(ctx, "last_login_date_1")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -207,5 +211,12 @@ func UpdateProfileBirthdate(ctx context.Context) {
 		if err := ProfileCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(profile), nil); err != nil {
 			log.Print(err)
 		}
+	}
+}
+
+func UpdateSetLastLoginDate(ctx context.Context) {
+	update := bson.D{{Key: "last_login_date", Value: time.Now().Unix()}}
+	if err := UserCollection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
 	}
 }

@@ -80,6 +80,7 @@ type (
 		Creator          User          `json:"creator" bson:"creator"`
 		Confirmer        User          `json:"confirmer" bson:"confirmer"`
 		HasExternal      bool          `json:"has_external" bson:"has_external"`
+		Receipts         []ReceiptFile `json:"receipts" bson:"receipts"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -139,6 +140,7 @@ func DepositPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.Lookup(ReceiptFileCollection, "_id", "deposit_id", "receipts")
 	return pipe
 }
 

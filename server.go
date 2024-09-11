@@ -37,6 +37,7 @@ func main() {
 	token.Address.Routes(tokenUser.Group("/address"))
 	token.Avatar.Routes(tokenUser.Group("/avatar"))
 	token.Newsletter.Routes(tokenUser.Group("/newsletter"))
+
 	token.User.Routes(tokenUser)
 	//crew routes
 	crews := api.Group("/crews")
@@ -56,6 +57,7 @@ func main() {
 	token.Source.Routes(finances.Group("/source"))
 	token.Taking.Routes(finances.Group("/taking"))
 	token.Deposit.Routes(finances.Group("/deposit"))
+	token.ReceiptFile.Routes(finances.Group("/receipt"))
 
 	key.Import.Routes(api.Group("/import"))
 
