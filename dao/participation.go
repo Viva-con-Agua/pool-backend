@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -156,7 +155,6 @@ func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, toke
 	applications := new(models.EventApplications)
 	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
 	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
-		fmt.Printf("HERE1")
 		return
 	}
 	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {
