@@ -86,14 +86,14 @@ type (
 var CrewCollection = "crews"
 
 func CrewPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("pool_employee;admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
 func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("pool_employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
@@ -148,7 +148,7 @@ func (i *CrewQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("pool_employee;admin") {
 		filter.EqualString("_id", token.CrewID)
 	} else {
 		filter.EqualString("_id", i.ID)
@@ -158,7 +158,7 @@ func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *CrewParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("pool_employee;admin") {
 		filter.EqualString("_id", token.CrewID)
 	} else {
 		filter.EqualString("_id", i.ID)

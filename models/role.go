@@ -157,7 +157,6 @@ func RoleASP(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "asp",
-		Label:  "ASP",
 		Root:   "employee;admin",
 		UserID: userID,
 	}
@@ -167,7 +166,6 @@ func RoleSupporter(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "supporter",
-		Label:  "Supporter",
 		Root:   "system",
 		UserID: userID,
 	}
@@ -177,7 +175,6 @@ func RoleFinance(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "finance",
-		Label:  "Finanzen",
 		Root:   "finance;employee;admin",
 		UserID: userID,
 	}
@@ -187,7 +184,6 @@ func RoleAction(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "operation",
-		Label:  "Aktion",
 		Root:   "operation;employee;admin",
 		UserID: userID,
 	}
@@ -196,7 +192,6 @@ func RoleEducation(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "education",
-		Label:  "Bildung",
 		Root:   "education;employee;admin",
 		UserID: userID,
 	}
@@ -205,7 +200,6 @@ func RoleNetwork(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "network",
-		Label:  "Netzwerk",
 		Root:   "network;employee;admin",
 		UserID: userID,
 	}
@@ -214,7 +208,6 @@ func RoleSocialMedia(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "socialmedia",
-		Label:  "Social Media",
 		Root:   "socialmedia;employee;admin",
 		UserID: userID,
 	}
@@ -223,7 +216,6 @@ func RoleAwareness(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "awareness",
-		Label:  "Awareness",
 		Root:   "awareness;employee;admin",
 		UserID: userID,
 	}
@@ -233,7 +225,6 @@ func RoleOther(userID string) *vmod.Role {
 	return &vmod.Role{
 		ID:     uuid.NewString(),
 		Name:   "other",
-		Label:  "Other",
 		Root:   "other;employee;admin",
 		UserID: userID,
 	}

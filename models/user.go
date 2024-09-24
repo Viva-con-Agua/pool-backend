@@ -344,7 +344,7 @@ func (i *ProfileUpdate) ToUserUpdate() *ProfileUpdate {
 }
 
 func UsersPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("employee;admin;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return

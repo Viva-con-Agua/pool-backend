@@ -84,7 +84,7 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 				if userRolesMap[role.UserID] == nil {
 					userRolesMap[role.UserID] = &models.BulkUserRoles{}
 				}
-				userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Label)
+				userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Name)
 			}
 		}
 
@@ -129,7 +129,7 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 			if userRolesMap[role.UserID] == nil {
 				userRolesMap[role.UserID] = &models.BulkUserRoles{}
 			}
-			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, deleteRole.Label)
+			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, deleteRole.Name)
 		}
 	}
 	result.CrewID = i.CrewID
@@ -190,13 +190,13 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 					userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 				}
 				if index := getIndex(createdRole, *deleted_roles); index >= 0 {
-					userRolesMap[role.UserID].UnchangedRoles = append(userRolesMap[role.UserID].UnchangedRoles, createdRole.Label)
+					userRolesMap[role.UserID].UnchangedRoles = append(userRolesMap[role.UserID].UnchangedRoles, createdRole.Name)
 					*deleted_roles = (*deleted_roles)[:index+copy((*deleted_roles)[index:], (*deleted_roles)[index+1:])]
 				} else {
 					if userRolesMap[role.UserID] == nil {
 						userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 					}
-					userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Label)
+					userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Name)
 				}
 			}
 		}
@@ -206,7 +206,7 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 			if userRolesMap[role.UserID] == nil {
 				userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 			}
-			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Label)
+			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Name)
 		}
 	}
 	result.CrewID = crew_id
