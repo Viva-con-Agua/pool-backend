@@ -87,10 +87,14 @@ func UpdateDatabase() {
 	if !CheckUpdated(ctx, "event_applications") {
 		UpdateEventApplications(ctx)
 		InsertUpdate(ctx, "event_applications")
-  }
+	}
 	if !CheckUpdated(ctx, "last_login_date_1") {
 		UpdateSetLastLoginDate(ctx)
 		InsertUpdate(ctx, "last_login_date_1")
+	}
+	if !CheckUpdated(ctx, "update_deposit_units_1") {
+		UpdateDepositUnitNorms(ctx)
+		InsertUpdate(ctx, "update_deposit_units_1")
 	}
 }
 
@@ -252,6 +256,21 @@ func UpdateEventApplications(ctx context.Context) {
 func UpdateSetLastLoginDate(ctx context.Context) {
 	update := bson.D{{Key: "last_login_date", Value: time.Now().Unix()}}
 	if err := UserCollection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+}
+
+func UpdateDepositUnitNorms(ctx context.Context) {
+	filterDonation := vmdb.NewFilter()
+	filterDonation.EqualStringList("value", []string{"unknown", "can", "box", "gl", "other"})
+	filterEco := vmdb.NewFilter()
+	filterEco.EqualStringList("value", []string{"merch", "other_ec"})
+	updateDonation := bson.D{{Key: "$set", Value: bson.D{{Key: "norms", Value: "donation"}}}}
+	updateEco := bson.D{{Key: "$set", Value: bson.D{{Key: "norms", Value: "economic"}}}}
+	if err := SourceCollection.UpdateMany(ctx, filterDonation.Bson(), updateDonation); err != nil {
+		log.Print(err)
+	}
+	if err := SourceCollection.UpdateMany(ctx, filterEco.Bson(), updateEco); err != nil {
 		log.Print(err)
 	}
 }

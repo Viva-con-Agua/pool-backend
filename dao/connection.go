@@ -202,6 +202,12 @@ func InitialDatabase() {
 	)
 	UpdateCollection = Database.Collection("updates").CreateIndex("name", true)
 	ReceiptFileCollection = Database.Collection(models.ReceiptFileCollection).CreateIndex("deposit_id", false)
+	Database.Database.CreateView(
+		context.Background(),
+		models.TakingDepositView,
+		models.TakingCollection,
+		models.TakingPipelineDeposit().Pipe,
+	)
 }
 
 func FixDatabase() {

@@ -96,6 +96,7 @@ type (
 )
 
 var TakingCollection = "takings"
+var TakingDepositView = "taking_deposit_view"
 
 func TakingPermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
@@ -140,6 +141,13 @@ func TakingPipeline() *vmdb.Pipeline {
 func TakingPipelineTicker() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	return pipe
+}
+
+func TakingPipelineDeposit() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	return pipe
 }
 
