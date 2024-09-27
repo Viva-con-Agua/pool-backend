@@ -96,6 +96,7 @@ type (
 )
 
 var TakingCollection = "takings"
+var TakingDepositView = "taking_deposit_view"
 
 func TakingPermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
@@ -137,9 +138,30 @@ func TakingPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
+func TakingCountPipeline(filter bson.D) *vmdb.Pipeline {
+	pipe := TakingPipeline()
+	pipe.Match(filter)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
+
 func TakingPipelineTicker() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	return pipe
+}
+
+func TakingPipelineDeposit() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	return pipe
 }
 

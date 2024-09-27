@@ -9,7 +9,6 @@ import (
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -109,6 +108,10 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	return
 }
 
+type Count struct {
+	ListSize int64 `bson:"list_size" json:"list_size"`
+}
+
 func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result []models.Taking, listSize int64, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
@@ -124,15 +127,18 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.Ac
 	); err != nil {
 		return
 	}
-	opts := options.Count().SetHint("_id_")
-	if query.FullCount != "true" {
-		opts.SetSkip(query.Skip).SetLimit(query.Limit)
+	count := new([]Count)
+	if err = TakingCollection.Aggregate(
+		context.Background(),
+		models.TakingCountPipeline(filter).Pipe,
+		count,
+	); err != nil {
+		return
 	}
-	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		print(cErr)
+	if len(*count) == 0 {
 		listSize = 0
 	} else {
-		listSize = cursor
+		listSize = (*count)[0].ListSize
 	}
 	return
 }

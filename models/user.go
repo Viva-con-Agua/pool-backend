@@ -224,7 +224,7 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 
 func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	if user == true {
+	if user {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
 	} else {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
