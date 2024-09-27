@@ -138,6 +138,20 @@ func TakingPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
+func TakingCountPipeline(filter bson.D) *vmdb.Pipeline {
+	pipe := TakingPipeline()
+	pipe.Match(filter)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
+
 func TakingPipelineTicker() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
