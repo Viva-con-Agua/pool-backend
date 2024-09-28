@@ -44,6 +44,10 @@ func main() {
 	crews := api.Group("/crews")
 	token.Crew.Routes(crews)
 
+	//crew routes
+	organisations := api.Group("/organisations")
+	token.Organisation.Routes(organisations)
+
 	mails := api.Group("/mails")
 	token.Mailbox.Routes(mails.Group("/mailbox"))
 	token.Message.Routes(mails.Group("/message"))

@@ -47,6 +47,7 @@ var (
 	MailboxCollection *vmdb.Collection
 	MessageCollection *vmdb.Collection
 
+	OrganisationCollection  *vmdb.Collection
 	ArtistCollection        *vmdb.Collection
 	ParticipationCollection *vmdb.Collection
 	OrganizerCollection     *vmdb.Collection
@@ -100,7 +101,7 @@ func InitialDatabase() {
 	AddressesCollection = Database.Collection(models.AddressesCollection).CreateIndex("user_id", true)
 
 	// CrewsCollection represents the database collection of the Crew model.
-	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true)
+	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true).CreateIndex("organisation_id", true)
 
 	// ProfileCollection represents the database collection of the Profile model.
 	ProfileCollection = Database.Collection(models.ProfileCollection).CreateIndex("user_id", true)
@@ -116,6 +117,7 @@ func InitialDatabase() {
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection).CreateIndex("user_id", false).CreateIndex("mailbox_id", false)
+	OrganisationCollection = Database.Collection(models.OrganisationCollection).CreateIndex("name", true)
 	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
 	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{

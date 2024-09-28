@@ -576,10 +576,10 @@ func (i *EventParam) PublicFilter() bson.D {
 
 func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
-		filter.EqualString("event_asp_id", token.ID)
-	} else if !token.Roles.Validate("employee;admin") {
+	if token.PoolRoles.Validate(ASPEventRole) {
 		filter.EqualString("crew_id", token.CrewID)
+	} else {
+		filter.EqualString("event_asp_id", token.ID)
 	}
 	return filter.Bson()
 }

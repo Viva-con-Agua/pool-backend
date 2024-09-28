@@ -52,9 +52,8 @@ func ReceiptFileGetByID(
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
-	filter := bson.D{{Key: "_id", Value: id.ID}}
 	file := new(models.ReceiptFile)
-	if err = ReceiptFileCollection.FindOne(ctx, filter, file); err != nil {
+	if err = ReceiptFileCollection.FindOne(ctx, id.Filter(), file); err != nil {
 		return
 	}
 	//permission check
@@ -76,8 +75,7 @@ func ReceiptFileZipGetByID(
 		return
 	}
 	deposit := new(models.Deposit)
-	filter := bson.D{{Key: "_id", Value: id.ID}}
-	if err = DepositCollection.AggregateOne(ctx, models.DepositPipeline().Match(filter).Pipe, deposit); err != nil {
+	if err = DepositCollection.AggregateOne(ctx, models.DepositPipeline().Match(id.Filter()).Pipe, deposit); err != nil {
 		return
 	}
 	buf := new(bytes.Buffer)
@@ -111,16 +109,15 @@ func ReceiptFileDeleteByID(
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
-	filter := bson.D{{Key: "_id", Value: id.ID}}
 	file := new(models.ReceiptFile)
-	if err = ReceiptFileCollection.FindOne(ctx, filter, file); err != nil {
+	if err = ReceiptFileCollection.FindOne(ctx, id.Filter(), file); err != nil {
 		return
 	}
 	//permission check
 	if err = Database.DeleteFile(ctx, id.ID); err != nil {
 		return
 	}
-	err = ReceiptFileCollection.DeleteOne(ctx, filter)
+	err = ReceiptFileCollection.DeleteOne(ctx, id.Filter())
 	result = vmod.NewDeletedResponse(id.ID)
 	return
 }

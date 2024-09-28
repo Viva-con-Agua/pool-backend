@@ -11,25 +11,27 @@ import (
 
 type (
 	CrewCreate struct {
-		Name         string `json:"name" bson:"name"`
-		Email        string `json:"email" bson:"email"`
-		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
-		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
-		Additional   string `json:"additional" bson:"additional"`
-		Cities       []City `json:"cities" bson:"cities"`
-		Status       string `json:"status" bson:"status"`
-		AspSelection string `json:"asp_selection" bson:"asp_selection"`
+		Name           string `json:"name" bson:"name"`
+		Email          string `json:"email" bson:"email"`
+		Abbreviation   string `json:"abbreviation" bson:"abbreviation"`
+		Mattermost     string `bson:"mattermost_username" json:"mattermost_username"`
+		Additional     string `json:"additional" bson:"additional"`
+		Cities         []City `json:"cities" bson:"cities"`
+		OrganisationID string `json:"organisation_id" bson:"organisation_id"`
+		Status         string `json:"status" bson:"status"`
+		AspSelection   string `json:"asp_selection" bson:"asp_selection"`
 	}
 	CrewUpdate struct {
-		ID           string `json:"id,omitempty" bson:"_id"`
-		Name         string `json:"name" bson:"name"`
-		Email        string `json:"email" bson:"email"`
-		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
-		Mattermost   string `bson:"mattermost_username" json:"mattermost_username"`
-		Additional   string `json:"additional" bson:"additional"`
-		Status       string `json:"status" bson:"status"`
-		AspSelection string `json:"asp_selection" bson:"asp_selection"`
-		Cities       []City `json:"cities" bson:"cities"`
+		ID             string `json:"id,omitempty" bson:"_id"`
+		Name           string `json:"name" bson:"name"`
+		Email          string `json:"email" bson:"email"`
+		Abbreviation   string `json:"abbreviation" bson:"abbreviation"`
+		Mattermost     string `bson:"mattermost_username" json:"mattermost_username"`
+		OrganisationID string `json:"organisation_id" bson:"organisation_id"`
+		Additional     string `json:"additional" bson:"additional"`
+		Status         string `json:"status" bson:"status"`
+		AspSelection   string `json:"asp_selection" bson:"asp_selection"`
+		Cities         []City `json:"cities" bson:"cities"`
 	}
 	CrewUpdateASP struct {
 		ID         string `json:"id,omitempty" bson:"_id"`
@@ -37,23 +39,26 @@ type (
 		Additional string `json:"additional" bson:"additional"`
 	}
 	Crew struct {
-		ID           string        `json:"id,omitempty" bson:"_id"`
-		Name         string        `json:"name" bson:"name"`
-		Email        string        `json:"email" bson:"email"`
-		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
-		Mattermost   string        `bson:"mattermost_username" json:"mattermost_username"`
-		Additional   string        `json:"additional" bson:"additional"`
-		MailboxID    string        `json:"mailbox_id" bson:"mailbox_id"`
-		Cities       []City        `json:"cities" bson:"cities"`
-		Status       string        `json:"status" bson:"status"`
-		AspSelection string        `json:"asp_selection" bson:"asp_selection"`
-		Modified     vmod.Modified `json:"modified" bson:"modified"`
+		ID             string        `json:"id,omitempty" bson:"_id"`
+		Name           string        `json:"name" bson:"name"`
+		Email          string        `json:"email" bson:"email"`
+		Abbreviation   string        `json:"abbreviation" bson:"abbreviation"`
+		Mattermost     string        `bson:"mattermost_username" json:"mattermost_username"`
+		Additional     string        `json:"additional" bson:"additional"`
+		OrganisationID string        `json:"organisation_id" bson:"organisation_id"`
+		Organisation   Organisation  `json:"organisation" bson:"organisation"`
+		MailboxID      string        `json:"mailbox_id" bson:"mailbox_id"`
+		Cities         []City        `json:"cities" bson:"cities"`
+		Status         string        `json:"status" bson:"status"`
+		AspSelection   string        `json:"asp_selection" bson:"asp_selection"`
+		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
 	CrewPublic struct {
-		ID         string `json:"id,omitempty" bson:"_id"`
-		Name       string `json:"name" bson:"name"`
-		Cities     []City `json:"cities" bson:"cities"`
-		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		ID           string       `json:"id,omitempty" bson:"_id"`
+		Name         string       `json:"name" bson:"name"`
+		Cities       []City       `json:"cities" bson:"cities"`
+		Organisation Organisation `json:"organisation" bson:"organisation"`
+		Mattermost   string       `bson:"mattermost_username" json:"mattermost_username"`
 	}
 	CrewName struct {
 		ID   string `json:"id,omitempty" bson:"_id"`
@@ -68,15 +73,18 @@ type (
 	}
 	CrewList  []Crew
 	CrewQuery struct {
-		ID     []string `query:"id,omitempty" qs:"id"`
-		Name   string   `query:"name" qs:"name"`
-		Status string   `json:"status" bson:"status"`
-		Email  string   `query:"email" qs:"email"`
+		ID             []string `query:"id,omitempty" qs:"id"`
+		Name           string   `query:"name" qs:"name"`
+		Status         string   `json:"status" qs:"status"`
+		Organisation   string   `json:"organisation_name" qs:"organisation_name"`
+		OrganisationID string   `json:"organisation_id" qs:"organisation_id"`
+		Email          string   `query:"email" qs:"email"`
 	}
 	CrewSimple struct {
-		ID    string `json:"id" bson:"id"`
-		Name  string `json:"name" bson:"name"`
-		Email string `json:"email" bson:"email"`
+		ID           string       `json:"id" bson:"id"`
+		Name         string       `json:"name" bson:"name"`
+		Email        string       `json:"email" bson:"email"`
+		Organisation Organisation `json:"organisation" bson:"organisation"`
 	}
 	CrewParam struct {
 		ID string `param:"id"`
