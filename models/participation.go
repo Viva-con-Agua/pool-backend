@@ -101,7 +101,7 @@ var ParticipationCollection = "participations"
 var ParticipationEventView = "participations_event"
 
 func ParticipationPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("employee;admin;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(ParticipationCollection)
 	}
 	return

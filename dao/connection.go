@@ -84,6 +84,7 @@ var (
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
+	Database.Database.Collection(models.CrewCollection).Indexes().DropAll(context.Background())
 
 	// UserCollection represents the database collection of the User model.
 	UserCollection = Database.Collection(models.UserCollection).CreateIndex("email", true)
@@ -101,7 +102,7 @@ func InitialDatabase() {
 	AddressesCollection = Database.Collection(models.AddressesCollection).CreateIndex("user_id", true)
 
 	// CrewsCollection represents the database collection of the Crew model.
-	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true).CreateIndex("organisation_id", true)
+	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true).CreateIndex("organisation_id", false)
 
 	// ProfileCollection represents the database collection of the Profile model.
 	ProfileCollection = Database.Collection(models.ProfileCollection).CreateIndex("user_id", true)

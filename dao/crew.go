@@ -41,7 +41,8 @@ func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToke
 	result = new([]models.Crew)
 	opt := options.Find().SetSort(bson.D{{Key: "name", Value: 1}})
 	opt.Collation = &options.Collation{Locale: "en", Strength: 2}
-	if err = CrewsCollection.Find(ctx, filter, result, opt); err != nil {
+
+	if err = CrewsCollection.Aggregate(ctx, models.CrewPipeline().Match(filter).Pipe, result); err != nil {
 		return
 	}
 	return

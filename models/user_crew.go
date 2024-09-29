@@ -16,32 +16,36 @@ type (
 		CrewID string `json:"crew_id"`
 	}
 	UsersCrewCreate struct {
-		CrewID string `json:"crew_id"`
-		UserID string `json:"user_id"`
+		CrewID         string `json:"crew_id"`
+		UserID         string `json:"user_id"`
+		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
 	}
 	UserCrew struct {
-		ID        string        `bson:"_id" json:"id"`
-		UserID    string        `bson:"user_id" json:"user_id"`
-		Name      string        `bson:"name" json:"name"`
-		Email     string        `bson:"email" json:"email"`
-		Roles     []vmod.Role   `bson:"roles" json:"roles"`
-		CrewID    string        `bson:"crew_id" json:"crew_id"`
-		MailboxID string        `bson:"mailbox_id" json:"mailbox_id"`
-		Modified  vmod.Modified `bson:"modified" json:"modified"`
+		ID             string        `bson:"_id" json:"id"`
+		UserID         string        `bson:"user_id" json:"user_id"`
+		Name           string        `bson:"name" json:"name"`
+		Email          string        `bson:"email" json:"email"`
+		Roles          []vmod.Role   `bson:"roles" json:"roles"`
+		CrewID         string        `bson:"crew_id" json:"crew_id"`
+		OrganisationID string        `bson:"organisation_id" json:"organisation_id"`
+		MailboxID      string        `bson:"mailbox_id" json:"mailbox_id"`
+		Modified       vmod.Modified `bson:"modified" json:"modified"`
 	}
 	UserCrewMinimal struct {
-		ID     string `bson:"_id" json:"id"`
-		UserID string `bson:"user_id" json:"user_id"`
-		Name   string `bson:"name" json:"name"`
-		Email  string `bson:"email" json:"email"`
-		CrewID string `bson:"crew_id" json:"crew_id"`
+		ID             string `bson:"_id" json:"id"`
+		UserID         string `bson:"user_id" json:"user_id"`
+		Name           string `bson:"name" json:"name"`
+		Email          string `bson:"email" json:"email"`
+		CrewID         string `bson:"crew_id" json:"crew_id"`
+		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
 	}
 	UserCrewUpdate struct {
-		ID     string `bson:"_id" json:"id"`
-		UserID string `bson:"user_id" json:"user_id"`
-		Name   string `bson:"name" json:"name"`
-		Email  string `bson:"email" json:"email"`
-		CrewID string `bson:"crew_id" json:"crew_id"`
+		ID             string `bson:"_id" json:"id"`
+		UserID         string `bson:"user_id" json:"user_id"`
+		Name           string `bson:"name" json:"name"`
+		Email          string `bson:"email" json:"email"`
+		CrewID         string `bson:"crew_id" json:"crew_id"`
+		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
 	}
 	UserCrewParam struct {
 		ID string `param:"id"`
@@ -56,15 +60,16 @@ type (
 	}
 )
 
-func NewUserCrew(userID string, crewID string, name string, email string, mailboxID string) *UserCrew {
+func NewUserCrew(userID string, crew *Crew) *UserCrew {
 	return &UserCrew{
-		ID:        uuid.NewString(),
-		UserID:    userID,
-		Name:      name,
-		Email:     email,
-		CrewID:    crewID,
-		MailboxID: mailboxID,
-		Modified:  vmod.NewModified(),
+		ID:             uuid.NewString(),
+		UserID:         userID,
+		Name:           crew.Name,
+		Email:          crew.Email,
+		CrewID:         crew.ID,
+		OrganisationID: crew.OrganisationID,
+		MailboxID:      crew.MailboxID,
+		Modified:       vmod.NewModified(),
 	}
 }
 
@@ -146,6 +151,12 @@ func (i *UserCrewCreate) CrewFilter() bson.D {
 }
 
 func (i *UsersCrewCreate) CrewFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.CrewID)
+	return filter.Bson()
+}
+
+func (i *UserCrewUpdate) CrewFilter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.CrewID)
 	return filter.Bson()

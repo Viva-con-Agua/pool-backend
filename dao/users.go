@@ -6,6 +6,7 @@ import (
 	"pool-backend/models"
 	"time"
 
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcapool"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -160,6 +161,21 @@ func UserSync(ctx context.Context, i *models.ProfileParam, token *vcapool.Access
 	if err = IDjango.Post(result, "/v1/pool/user/"); err != nil {
 		log.Print(err)
 		err = nil
+	}
+	return
+}
+
+func UserOrganisationUpdate(ctx context.Context, i *models.UserOrganisationUpdate, token *vcapool.AccessToken) (result *models.User, err error) {
+	if err = models.OrganisationPermission(token); err != nil {
+		return
+	}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: i.ID}},
+		vmdb.UpdateSet(i),
+		&result,
+	); err != nil {
+		return
 	}
 	return
 }

@@ -18,7 +18,7 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
 		return
 	}
-	result = models.NewUserCrew(i.UserID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	result = models.NewUserCrew(i.UserID, crew)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
@@ -36,7 +36,7 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapoo
 	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
 		return
 	}
-	result = models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	result = models.NewUserCrew(token.ID, crew)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
@@ -53,7 +53,11 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapoo
 	if err = i.UserCrewUpdatePermission(token); err != nil {
 		return
 	}
-
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
+		return
+	}
+	i.OrganisationID = crew.OrganisationID
 	if err = UserCrewCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
@@ -84,6 +88,11 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapo
 		return
 	}
 
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
+		return
+	}
+	i.OrganisationID = crew.OrganisationID
 	if err = UserCrewCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
@@ -155,7 +164,7 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	if crew.Status != "active" {
 		return nil, vcago.NewBadRequest(models.CrewCollection, "crew_is_dissolved", nil)
 	}
-	result = models.NewUserCrew(user.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	result = models.NewUserCrew(user.ID, crew)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}

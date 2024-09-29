@@ -11,41 +11,42 @@ import (
 
 type (
 	OrganisationCreate struct {
-		Name string `json:"name" bson:"name" validate:"required"`
+		Name         string `json:"name" bson:"name" validate:"required"`
+		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Email        string `json:"email" bson:"email"`
 	}
 	Organisation struct {
-		ID       string        `json:"id" bson:"_id"`
-		Name     string        `json:"name" bson:"name"`
-		Modified vmod.Modified `json:"modified" bson:"modified"`
+		ID           string        `json:"id" bson:"_id"`
+		Name         string        `json:"name" bson:"name"`
+		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
+		Email        string        `json:"email" bson:"email"`
+		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
 	OrganisationUpdate struct {
-		ID   string `json:"id" bson:"_id"`
-		Name string `json:"name" bson:"name"`
+		ID           string `json:"id" bson:"_id"`
+		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
+		Email        string `json:"email" bson:"email"`
+		Name         string `json:"name" bson:"name"`
 	}
 	OrganisationParam struct {
 		ID string `param:"id"`
 	}
 	OrganisationQuery struct {
-		ID          string `query:"id" qs:"id"`
-		Name        string `query:"name" qs:"name"`
-		UpdatedTo   string `query:"updated_to" qs:"updated_to"`
-		UpdatedFrom string `query:"updated_from" qs:"updated_from"`
-		CreatedTo   string `query:"created_to" qs:"created_to"`
-		CreatedFrom string `query:"created_from" qs:"created_from"`
+		ID           string `query:"id" qs:"id"`
+		Name         string `query:"name" qs:"name"`
+		Abbreviation string `query:"abbreviation" qs:"abbreviation"`
+		Email        string `query:"email" qs:"email"`
+		UpdatedTo    string `query:"updated_to" qs:"updated_to"`
+		UpdatedFrom  string `query:"updated_from" qs:"updated_from"`
+		CreatedTo    string `query:"created_to" qs:"created_to"`
+		CreatedFrom  string `query:"created_from" qs:"created_from"`
 	}
 )
 
 var OrganisationCollection = "organisations"
 
 func OrganisationPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
-		return vcago.NewPermissionDenied(OrganisationCollection)
-	}
-	return
-}
-
-func OrganisationDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(OrganisationCollection)
 	}
 	return
@@ -53,9 +54,11 @@ func OrganisationDeletePermission(token *vcapool.AccessToken) (err error) {
 
 func (i *OrganisationCreate) Organisation() *Organisation {
 	return &Organisation{
-		ID:       uuid.NewString(),
-		Name:     i.Name,
-		Modified: vmod.NewModified(),
+		ID:           uuid.NewString(),
+		Name:         i.Name,
+		Email:        i.Email,
+		Abbreviation: i.Abbreviation,
+		Modified:     vmod.NewModified(),
 	}
 }
 

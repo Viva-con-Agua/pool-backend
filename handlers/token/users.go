@@ -20,6 +20,7 @@ func (i *UserHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.PUT("/organisation", i.UpdateOrganisation, accessCookie)
 	group.GET("/crew", i.GetUsersByCrew, accessCookie)
 	group.GET("/crew/public", i.GetMinimal, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
@@ -92,6 +93,23 @@ func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
 		return
 	}
 	return c.Selected(result)
+}
+
+func (i *UserHandler) UpdateOrganisation(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserOrganisationUpdate)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(vcapool.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new(models.User)
+	if result, err = dao.UserOrganisationUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Updated(result)
 }
 
 func (i *UserHandler) Delete(cc echo.Context) (err error) {

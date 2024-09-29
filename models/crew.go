@@ -99,6 +99,11 @@ func CrewPermission(token *vcapool.AccessToken) (err error) {
 	}
 	return
 }
+func CrewPipeline() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation	")
+	return pipe
+}
 
 func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("pool_employee;admin") || token.PoolRoles.Validate(ASPRole)) {
@@ -109,15 +114,16 @@ func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
 
 func (i *CrewCreate) Crew() *Crew {
 	return &Crew{
-		ID:           uuid.NewString(),
-		Name:         i.Name,
-		Email:        i.Email,
-		Mattermost:   i.Mattermost,
-		Abbreviation: i.Abbreviation,
-		Additional:   i.Additional,
-		Cities:       i.Cities,
-		Status:       i.Status,
-		Modified:     vmod.NewModified(),
+		ID:             uuid.NewString(),
+		Name:           i.Name,
+		Email:          i.Email,
+		Mattermost:     i.Mattermost,
+		Abbreviation:   i.Abbreviation,
+		Additional:     i.Additional,
+		OrganisationID: i.OrganisationID,
+		Cities:         i.Cities,
+		Status:         i.Status,
+		Modified:       vmod.NewModified(),
 	}
 }
 

@@ -48,7 +48,7 @@ func OrganisationUpdate(ctx context.Context, i *models.OrganisationUpdate, token
 }
 
 func OrganisationDelete(ctx context.Context, i *models.OrganisationParam, token *vcapool.AccessToken) (err error) {
-	if err = models.OrganisationDeletePermission(token); err != nil {
+	if err = models.OrganisationPermission(token); err != nil {
 		return
 	}
 	filter := i.Match()
