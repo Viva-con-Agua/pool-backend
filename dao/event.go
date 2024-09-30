@@ -18,6 +18,24 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.Acce
 		return
 	}
 	event := i.EventDatabase(token)
+
+	if token.Roles.Validate("admin;employee;pool_employee") {
+		if i.CrewID != "" {
+			crew := new(models.Crew)
+			if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: i.CrewID}, token); err != nil {
+				return
+			}
+			event.OrganisationID = crew.OrganisationID
+		} else {
+			event.OrganisationID = i.OrganisationID
+		}
+	} else {
+		crew := new(models.Crew)
+		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: token.CrewID}, token); err != nil {
+			return
+		}
+		event.OrganisationID = crew.OrganisationID
+	}
 	taking := event.TakingDatabase()
 	event.TakingID = taking.ID
 	if err = EventCollection.InsertOne(ctx, event); err != nil {
@@ -163,6 +181,23 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 	if err = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Pipe, event); err != nil {
 		return
 	}
+	if token.Roles.Validate("admin;employee;pool_employee") {
+		if i.CrewID != "" {
+			crew := new(models.Crew)
+			if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: i.CrewID}, token); err != nil {
+				return
+			}
+			i.OrganisationID = crew.OrganisationID
+		} else {
+			i.OrganisationID = i.OrganisationID
+		}
+	} else {
+		crew := new(models.Crew)
+		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: token.CrewID}, token); err != nil {
+			return
+		}
+		i.OrganisationID = crew.OrganisationID
+	}
 	taking := new(models.Taking)
 	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
 		if !vmdb.ErrNoDocuments(err) {
@@ -288,6 +323,13 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 			return
 		}
 		event.EventASPID = aspRole.UserID
+
+		crew := new(models.Crew)
+		if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: event.CrewID}}, &crew); err != nil {
+			return
+		}
+		event.OrganisationID = crew.OrganisationID
+
 	} else {
 		event.EventASPID = admin.ID
 	}

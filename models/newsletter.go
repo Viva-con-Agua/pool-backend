@@ -36,7 +36,7 @@ type (
 var NewsletterCollection = "newsletters"
 
 func NewsletterDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return
@@ -76,7 +76,7 @@ func (i *NewsletterParam) Match() bson.D {
 }
 
 func (i *Newsletter) DeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") && token.ID != i.UserID {
+	if !token.Roles.Validate("admin;employee;pool_employee") && token.ID != i.UserID {
 		return vcago.NewPermissionDenied(NewsletterCollection)
 	}
 	return

@@ -28,6 +28,7 @@ type (
 		Roles          []vmod.Role   `bson:"roles" json:"roles"`
 		CrewID         string        `bson:"crew_id" json:"crew_id"`
 		OrganisationID string        `bson:"organisation_id" json:"organisation_id"`
+		Organisation   string        `bson:"organisation" json:"organisation"`
 		MailboxID      string        `bson:"mailbox_id" json:"mailbox_id"`
 		Modified       vmod.Modified `bson:"modified" json:"modified"`
 	}
@@ -38,6 +39,7 @@ type (
 		Email          string `bson:"email" json:"email"`
 		CrewID         string `bson:"crew_id" json:"crew_id"`
 		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
+		Organisation   string `bson:"organisation" json:"organisation"`
 	}
 	UserCrewUpdate struct {
 		ID             string `bson:"_id" json:"id"`

@@ -159,7 +159,6 @@ type (
 	}
 	UserQuery struct {
 		ID             []string `query:"id"`
-		Search         string   `query:"search"`
 		Email          string   `query:"email"`
 		FirstName      string   `query:"first_name"`
 		LastName       string   `query:"last_name"`
@@ -172,11 +171,8 @@ type (
 		SystemRoles    []string `query:"system_roles"`
 		PoolRoles      []string `query:"pool_roles"`
 		CrewID         string   `query:"crew_id" qs:"crew_id"`
-		SortField      string   `query:"sort"`
-		SortDirection  string   `query:"sort_dir"`
-		Limit          int64    `query:"limit"`
-		Skip           int64    `query:"skip"`
 		FullCount      string   `query:"full_count"`
+		vmdb.Query
 	}
 )
 
@@ -276,7 +272,7 @@ func UserPermittedPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	if token.Roles.Validate("employee;admin") {
+	if token.Roles.Validate("admin;employee;pool_employee") {
 		pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	}
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
@@ -356,21 +352,21 @@ func (i *ProfileUpdate) ToUserUpdate() *ProfileUpdate {
 }
 
 func UsersPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return
 }
 
 func (i *UserParam) UsersDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || i.ID == token.ID) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || i.ID == token.ID) {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return
 }
 
 func UsersDetailsPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return
@@ -414,11 +410,9 @@ func (i *UserQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.ElemMatchList("pool_roles", "name", i.PoolRoles)
 	filter.EqualStringList("active.status", i.ActiveState)
 	filter.EqualStringList("nvm.status", i.NVMState)
-	if token.Roles.Validate("admin") {
+	if token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualStringList("crew.organisation_id", i.OrganisationID)
 		filter.EqualString("crew.crew_id", i.CrewID)
-	} else if token.Roles.Validate("employee;pool_employee") {
-		filter.EqualString("crew.organisation_id", token.OrganisationID)
 	} else {
 		filter.EqualString("crew.crew_id", token.CrewID)
 	}
@@ -434,7 +428,7 @@ func (i *UserQuery) PermittedUserFilter(token *vcapool.AccessToken) bson.D {
 	filter.LikeString("last_name", i.LastName)
 	filter.LikeString("full_name", i.FullName)
 	filter.LikeString("display_name", i.DisplayName)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew.crew_id", token.CrewID)
 	} else {
 		filter.EqualString("crew.crew_id", i.CrewID)

@@ -54,11 +54,12 @@ type (
 		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
 	CrewPublic struct {
-		ID           string       `json:"id,omitempty" bson:"_id"`
-		Name         string       `json:"name" bson:"name"`
-		Cities       []City       `json:"cities" bson:"cities"`
-		Organisation Organisation `json:"organisation" bson:"organisation"`
-		Mattermost   string       `bson:"mattermost_username" json:"mattermost_username"`
+		ID             string       `json:"id,omitempty" bson:"_id"`
+		Name           string       `json:"name" bson:"name"`
+		Cities         []City       `json:"cities" bson:"cities"`
+		Organisation   Organisation `json:"organisation" bson:"organisation"`
+		OrganisationID string       `json:"organisation_id" bson:"organisation_id"`
+		Mattermost     string       `bson:"mattermost_username" json:"mattermost_username"`
 	}
 	CrewName struct {
 		ID   string `json:"id,omitempty" bson:"_id"`
@@ -77,7 +78,7 @@ type (
 		Name           string   `query:"name" qs:"name"`
 		Status         string   `json:"status" qs:"status"`
 		Organisation   string   `json:"organisation_name" qs:"organisation_name"`
-		OrganisationID string   `json:"organisation_id" qs:"organisation_id"`
+		OrganisationID []string `json:"organisation_id" qs:"organisation_id"`
 		Email          string   `query:"email" qs:"email"`
 	}
 	CrewSimple struct {
@@ -94,19 +95,19 @@ type (
 var CrewCollection = "crews"
 
 func CrewPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("pool_employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 func CrewPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
-	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation	")
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	return pipe
 }
 
 func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("pool_employee;admin") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
@@ -138,6 +139,7 @@ func (i *CrewUpdate) ToCrewUpdateASP() *CrewUpdateASP {
 func (i *CrewQuery) Filter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
+	filter.EqualStringList("organisation_id", i.OrganisationID)
 	filter.LikeString("email", i.Email)
 	filter.LikeString("status", i.Status)
 	filter.LikeString("name", i.Name)
@@ -162,7 +164,7 @@ func (i *CrewQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("pool_employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("_id", token.CrewID)
 	} else {
 		filter.EqualString("_id", i.ID)
@@ -172,7 +174,7 @@ func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *CrewParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("pool_employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("_id", token.CrewID)
 	} else {
 		filter.EqualString("_id", i.ID)

@@ -11,6 +11,7 @@ import (
 )
 
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
+
 	database := i.ParticipationDatabase(token)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return

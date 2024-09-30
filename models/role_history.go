@@ -84,14 +84,14 @@ func RolesHistoryPermission(user *User, token *vcapool.AccessToken) (err error) 
 	if user.NVM.Status != "confirmed" {
 		return vcago.NewBadRequest(PoolRoleHistoryCollection, "nvm required", nil)
 	}
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(PoolRoleHistoryCollection)
 	}
 	return
 }
 
 func RolesHistoryAdminPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(PoolRoleHistoryCollection)
 	}
 	return
@@ -171,7 +171,7 @@ func (i *RoleHistoryDatabase) Filter() bson.D {
 
 func (i *RoleHistoryBulkRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew.crew_id", token.CrewID)
 	} else {
 		filter.EqualString("crew.crew_id", i.CrewID)
@@ -182,7 +182,7 @@ func (i *RoleHistoryBulkRequest) PermittedFilter(token *vcapool.AccessToken) bso
 
 func (i *RoleHistoryRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	} else {
 		filter.EqualString("crew_id", i.CrewID)

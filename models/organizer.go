@@ -38,14 +38,14 @@ type (
 var OrganizerCollection = "organizers"
 
 func OrganizerPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(OrganizerCollection)
 	}
 	return
 }
 
 func OrganizerDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(OrganizerCollection)
 	}
 	return

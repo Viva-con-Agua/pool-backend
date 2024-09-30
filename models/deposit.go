@@ -87,7 +87,6 @@ type (
 	DepositQuery struct {
 		ID               []string `query:"id"`
 		Name             string   `query:"deposit_unit_name"`
-		Search           string   `query:"search"`
 		ReasonForPayment string   `query:"reason_for_payment"`
 		CrewID           []string `query:"crew_id"`
 		Status           []string `query:"deposit_status"`
@@ -98,8 +97,7 @@ type (
 		UpdatedFrom      string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo        string   `query:"created_to" qs:"created_to"`
 		CreatedFrom      string   `query:"created_from" qs:"created_from"`
-		SortField        string   `query:"sort"`
-		SortDirection    string   `query:"sort_dir"`
+		vmdb.Query
 	}
 	DepositParam struct {
 		ID     string `param:"id"`
@@ -112,7 +110,7 @@ var DepositUnitCollection = "deposit_units"
 var DepositUnitTakingView = "deposit_unit_taking"
 
 func DepositPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate("finance")) {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
 	return
@@ -239,7 +237,7 @@ func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.SearchString([]string{"deposit_units.taking.name", "reason_for_payment"}, i.Search)
-	if !token.Roles.Validate("admin;employee") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
@@ -254,7 +252,7 @@ func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 func (i *DepositParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("admin;employee") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()

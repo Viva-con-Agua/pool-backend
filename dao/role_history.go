@@ -31,7 +31,7 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 		return
 	}
 
-	if token.Roles.Validate("admin;employee") {
+	if token.Roles.Validate("admin;employee;pool_employee") {
 		RoleHistoryDelete(ctx, &models.RoleHistoryRequest{CrewID: i.CrewID, Confirmed: false}, token)
 	}
 	result = new(models.RoleBulkExport)

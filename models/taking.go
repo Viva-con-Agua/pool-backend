@@ -73,7 +73,6 @@ type (
 	TakingQuery struct {
 		ID              []string `query:"id"`
 		Name            string   `query:"name"`
-		Search          string   `query:"search"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
 		TypeOfEvent     []string `query:"type_of_event"`
@@ -87,18 +86,15 @@ type (
 		StatusNone      bool     `query:"status_none"`
 		StatusWait      bool     `query:"status_wait"`
 		StatusNoIncome  bool     `query:"status_no_income"`
-		SortField       string   `query:"sort"`
-		SortDirection   string   `query:"sort_dir"`
-		Limit           int64    `query:"limit"`
-		Skip            int64    `query:"skip"`
 		FullCount       string   `query:"full_count"`
+		vmdb.Query
 	}
 )
 
 var TakingCollection = "takings"
 
 func TakingPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate("finance")) {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
 	return
@@ -193,7 +189,7 @@ func (i *TakingUpdate) Match() bson.D {
 func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualStringList("crew_id", []string{token.CrewID})
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
@@ -236,7 +232,7 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
@@ -245,7 +241,7 @@ func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
@@ -253,7 +249,7 @@ func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
 
 func (i *Taking) UpdatePermission(token *vcapool.AccessToken) error {
 	if i.Event.ID != "" {
-		if !token.Roles.Validate("employee;admin") {
+		if !token.Roles.Validate("admin;employee;pool_employee") {
 			if !token.PoolRoles.Validate("finance") {
 				return vcago.NewPermissionDenied(TakingCollection)
 			}

@@ -131,7 +131,7 @@ func AddressPermission(token *vcapool.AccessToken) (err error) {
 
 func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if token.Roles.Validate("employee;admin") {
+	if token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualStringList("_id", i.ID)
 		filter.EqualStringList("crew_id", i.CrewID)
 		filter.EqualStringList("user_id", i.UserID)

@@ -114,7 +114,7 @@ func (i *SourceQuery) Filter() bson.D {
 }
 
 func SourceDeletePermission(taking *Taking, token *vcapool.AccessToken) bool {
-	if !token.Roles.Validate("admin;employee") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if taking.State.Confirmed.Amount != 0 {
 			return false
 		}

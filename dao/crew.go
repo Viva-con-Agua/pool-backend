@@ -92,7 +92,7 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 	if crew.AspSelection == "selected" && match < len(strings) && strings[match] == i.AspSelection {
 		RoleHistoryDelete(ctx, &models.RoleHistoryRequest{CrewID: i.ID, Confirmed: false}, token)
 	}
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), &result); err != nil {
 			return
 		}
@@ -101,13 +101,12 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 			return
 		}
 	}
-	if crew.Email != i.Email || crew.Name != i.Name {
+	if crew.Email != i.Email || crew.Name != i.Name || crew.OrganisationID != i.OrganisationID {
 		filter := bson.D{{Key: "crew_id", Value: i.ID}}
-		update := bson.D{{Key: "email", Value: i.Email}, {Key: "name", Value: i.Name}}
+		update := bson.D{{Key: "email", Value: i.Email}, {Key: "name", Value: i.Name}, {Key: "organisation_id", Value: i.OrganisationID}}
 		if err = UserCrewCollection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 			return
 		}
-
 	}
 	return
 }

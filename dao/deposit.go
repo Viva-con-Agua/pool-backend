@@ -25,7 +25,7 @@ func validateDepositUnits(ctx context.Context, takingID string, amount int64, cr
 	if amount > taking.Money.Amount {
 		return vcago.NewBadRequest(models.DepositCollection, "taking_amount_failure", nil)
 	}
-	if (!token.Roles.Validate("admin;employee") && crewID != token.CrewID) || taking.CrewID != crewID {
+	if (!token.Roles.Validate("admin;employee;pool_employee") && crewID != token.CrewID) || taking.CrewID != crewID {
 		return vcago.NewBadRequest(models.DepositCollection, "taking_crew_failure", nil)
 	}
 	return
@@ -74,7 +74,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 		return
 	}
 	i.Money = deposit.Money
-	if deposit.Status == "confirmed" && !token.Roles.Validate("admin;employee") {
+	if deposit.Status == "confirmed" && !token.Roles.Validate("admin;employee;pool_employee") {
 		return nil, vcago.NewBadRequest("deposit", "deposit_confirmed_failure", nil)
 	}
 	depositUpdate, depositUnitCreate, depositUnitUpdate, depositUnitDelete := i.DepositDatabase(deposit)

@@ -38,7 +38,7 @@ func MailboxPipeline(token *vcapool.AccessToken) *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		inboxMatch := vmdb.NewFilter()
 		inboxMatch.EqualString("type", "inbox")
 		inboxMatch.EqualString("user_id", token.ID)
@@ -77,7 +77,7 @@ func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) 
 func (i *MailboxParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		status := bson.A{}
 		status = append(status, bson.D{{Key: "user._id", Value: token.ID}})
 		status = append(status, bson.D{{Key: "crew._id", Value: token.CrewID}})

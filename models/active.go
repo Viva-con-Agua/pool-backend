@@ -78,7 +78,7 @@ func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
 }
 
 func ActivePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation") {
+	if !token.Roles.Validate("admin;employee;pool_employee") && !token.PoolRoles.Validate("network;operation") {
 		return vcago.NewBadRequest(ActiveCollection, "permission denied")
 	}
 	return
@@ -87,7 +87,7 @@ func ActivePermission(token *vcapool.AccessToken) (err error) {
 func (i *ActiveParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("user_id", i.UserID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()

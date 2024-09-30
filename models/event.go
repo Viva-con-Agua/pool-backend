@@ -27,6 +27,7 @@ type (
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		OrganisationID        string           `json:"organisation_id" bson:"organisation_id"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
@@ -48,6 +49,7 @@ type (
 		StartAt               int64             `json:"start_at" bson:"start_at"`
 		EndAt                 int64             `json:"end_at" bson:"end_at"`
 		CrewID                string            `json:"crew_id" bson:"crew_id"`
+		OrganisationID        string            `json:"organisation_id" bson:"organisation_id"`
 		TakingID              string            `json:"taking_id" bson:"taking_id"`
 		EventASPID            string            `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string            `json:"internal_asp_id" bson:"internal_asp_id"`
@@ -219,6 +221,7 @@ type (
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		CrewID                string           `json:"crew_id" bson:"crew_id"`
+		OrganisationID        string           `json:"organisation_id" bson:"organisation_id"`
 		Crew                  Crew             `json:"crew" bson:"crew"`
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
@@ -237,7 +240,6 @@ type (
 
 	EventQuery struct {
 		ID                  []string `query:"id" qs:"id"`
-		Search              string   `query:"search" qs:"search"`
 		Name                string   `query:"name" qs:"name"`
 		CrewID              string   `query:"crew_id" qs:"crew_id"`
 		EventASPID          string   `query:"event_asp_id" qs:"event_asp_id"`
@@ -251,12 +253,10 @@ type (
 		MissingApplications bool     `query:"missing_applications" qs:"missing_applications"`
 		OnlyApply           bool     `query:"only_apply" qs:"only_apply"`
 		CreatedTo           string   `query:"created_to" qs:"created_to"`
+		OrganisationId      []string `query:"organisation_id" qs:"organisation_id"`
 		CreatedFrom         string   `query:"created_from" qs:"created_from"`
-		SortField           string   `query:"sort"`
-		SortDirection       string   `query:"sort_dir"`
-		Limit               int64    `query:"limit"`
-		Skip                int64    `query:"skip"`
 		FullCount           string   `query:"full_count"`
+		vmdb.Query
 	}
 	UserExternal struct {
 		FullName    string `json:"full_name" bson:"full_name"`
@@ -414,7 +414,7 @@ func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
 	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
-	if token.Roles.Validate("employee;admin") {
+	if token.Roles.Validate("admin;employee;pool_employee") {
 		pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	} else if token.PoolRoles.Validate(ASPEventRole) {
 		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
@@ -455,14 +455,14 @@ func EventRolePipeline() *vmdb.Pipeline {
 }
 
 func EventPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
 }
 
 func EventDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
@@ -490,7 +490,7 @@ func (i *EventDatabase) Match() bson.D {
 func (i *EventParam) PermittedDeleteFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 		filter.EqualStringList("event_state.state", []string{"created", "requested"})
 	}
@@ -505,10 +505,10 @@ func (i *EventUpdate) Match() bson.D {
 func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 		filter.EqualString("crew_id", token.CrewID)
-	} else if !token.Roles.Validate("employee;admin") {
+	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
@@ -525,9 +525,9 @@ func (i *Event) FilterCrew() bson.D {
 func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
-	} else if !token.Roles.Validate("employee;admin") {
+	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
@@ -545,6 +545,7 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.LikeString("name", i.Name)
 	filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	filter.EqualStringList("type_of_event", i.Type)
+	filter.EqualStringList("organisation_id", i.OrganisationId)
 	filter.EqualString("crew_id", i.CrewID)
 	filter.GteInt64("start_at", i.StartAt)
 	filter.LteInt64("end_at", i.EndAt)
@@ -586,9 +587,9 @@ func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
 
 func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
-	} else if !token.Roles.Validate("employee;admin") {
+	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		noCrewMatch := vmdb.NewFilter()
 		crewMatch := vmdb.NewFilter()
 		crewMatch.EqualString("crew_id", token.CrewID)
@@ -611,6 +612,7 @@ func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.EqualString("event_asp_id", i.EventASPID)
 	filter.EqualStringList("event_state.state", i.EventState)
 	filter.EqualString("crew_id", i.CrewID)
+	filter.EqualStringList("organisation_id", i.OrganisationId)
 	filter.GteInt64("modified.updated", i.UpdatedFrom)
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
@@ -621,10 +623,10 @@ func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 
 func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 		filter.EqualString("crew_id", token.CrewID)
-	} else if !token.Roles.Validate("employee;admin") {
+	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 
@@ -643,7 +645,7 @@ func (i *EventUpdate) EventStateValidation(token *vcapool.AccessToken, event *Ev
 	if i.EventState.State == "canceled" && (event.EventState.State == "finished" || event.EventState.State == "closed") {
 		return vcago.NewBadRequest(EventCollection, "event can not be canceled, it is already "+event.EventState.State, i)
 	}
-	if !token.Roles.Validate("employee;admin") && (event.EventState.State == "finished" || event.EventState.State == "closed") {
+	if !token.Roles.Validate("admin;employee;pool_employee") && (event.EventState.State == "finished" || event.EventState.State == "closed") {
 		return vcago.NewBadRequest(EventCollection, "event can not be updated, it is already "+event.EventState.State, i)
 	}
 	if event.Taking.Money.Amount != 0 {

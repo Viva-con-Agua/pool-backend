@@ -12,7 +12,7 @@ import (
 
 func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vcapool.AccessToken) (result *models.Newsletter, err error) {
 
-	if !token.Roles.Validate("employee;admin") || i.UserID == "" {
+	if !token.Roles.Validate("admin;employee;pool_employee") || i.UserID == "" {
 		if i.Value == "regional" && token.CrewID == "" {
 			return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 		}

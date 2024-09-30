@@ -89,14 +89,14 @@ type (
 var MessageCollection = "messages"
 
 func MessageCrewPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(MessageCollection)
 	}
 	return
 }
 
 func MessageEventPermission(token *vcapool.AccessToken, event *Event) (err error) {
-	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee") && event.EventASPID != token.ID {
+	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee;pool_employee") && event.EventASPID != token.ID {
 		return vcago.NewPermissionDenied(MessageCollection)
 	}
 	return
@@ -151,7 +151,7 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
 		filter.EqualString("user_id", token.ID)
 	} else {
@@ -163,7 +163,7 @@ func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) b
 func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("mailbox_id", []string{token.MailboxID, crew.MailboxID})
 		filter.EqualString("user_id", token.ID)
 	} else {
@@ -174,7 +174,7 @@ func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) 
 
 func (i *RecipientGroup) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	if !token.Roles.Validate("admin;employee") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew.crew_id", token.CrewID)
 	} else {
 		filter.EqualString("crew.crew_id", i.CrewID)
@@ -195,7 +195,7 @@ func (i *RecipientGroup) FilterEvent() bson.D {
 
 func PermittedMessageCreate(token *vcapool.AccessToken, i *Message, crew *Crew, event *Event) (message *Message, err error) {
 	message = i
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if i.RecipientGroup.Type == "event" && token.ID == event.EventASPID {
 			// IF IS EVENT ASP -> Force Mailbox and From to CrewMailbox and CrewEmail
 			message.MailboxID = crew.MailboxID

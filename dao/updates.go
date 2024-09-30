@@ -87,10 +87,14 @@ func UpdateDatabase() {
 	if !CheckUpdated(ctx, "event_applications") {
 		UpdateEventApplications(ctx)
 		InsertUpdate(ctx, "event_applications")
-  }
+	}
 	if !CheckUpdated(ctx, "last_login_date_1") {
 		UpdateSetLastLoginDate(ctx)
 		InsertUpdate(ctx, "last_login_date_1")
+	}
+	if !CheckUpdated(ctx, "create_default_organisation") {
+		CreateDefaultOrganisation(ctx)
+		InsertUpdate(ctx, "create_default_organisation")
 	}
 }
 
@@ -252,6 +256,31 @@ func UpdateEventApplications(ctx context.Context) {
 func UpdateSetLastLoginDate(ctx context.Context) {
 	update := bson.D{{Key: "last_login_date", Value: time.Now().Unix()}}
 	if err := UserCollection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+}
+
+func CreateDefaultOrganisation(ctx context.Context) {
+	i := models.OrganisationCreate{
+		Name:         "Viva con Agua de Sankt Pauli e.V.",
+		Abbreviation: "VcA DE",
+		Email:        "pool@vivaconagua.org",
+	}
+	result := new(models.Organisation)
+	result = i.Organisation()
+	if err := OrganisationCollection.InsertOne(ctx, result); err != nil {
+		log.Print(err)
+	}
+	update := bson.D{{Key: "organisation_id", Value: result.ID}}
+	if err := CrewsCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+	if err := UserCrewCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+	filter := vmdb.NewFilter()
+	filter.ElemMatchList("system_roles", "name", []string{"employee", "pool_employee", "pool_finance"})
+	if err := UserCollection.UpdateMany(ctx, filter.Bson(), vmdb.UpdateSet(update)); err != nil {
 		log.Print(err)
 	}
 }

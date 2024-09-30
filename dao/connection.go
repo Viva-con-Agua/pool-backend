@@ -118,7 +118,7 @@ func InitialDatabase() {
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection).CreateIndex("user_id", false).CreateIndex("mailbox_id", false)
-	OrganisationCollection = Database.Collection(models.OrganisationCollection).CreateIndex("name", true)
+	OrganisationCollection = Database.Collection(models.OrganisationCollection).CreateIndex("name", true).CreateIndex("abbreviation", true)
 	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
 	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{
