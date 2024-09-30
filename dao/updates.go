@@ -278,6 +278,9 @@ func CreateDefaultOrganisation(ctx context.Context) {
 	if err := UserCrewCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
 		log.Print(err)
 	}
+	if err := EventCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
 	filter := vmdb.NewFilter()
 	filter.ElemMatchList("system_roles", "name", []string{"employee", "pool_employee", "pool_finance"})
 	if err := UserCollection.UpdateMany(ctx, filter.Bson(), vmdb.UpdateSet(update)); err != nil {
