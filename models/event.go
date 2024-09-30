@@ -112,6 +112,7 @@ type (
 		Artists               []Artist         `json:"artists" bson:"artists"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		Organizer             Organizer        `json:"organizer" bson:"organizer"`
+		Organisation          Organisation     `json:"organisation" bson:"organisation"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
 		CrewID                string           `json:"crew_id" bson:"crew_id"`
@@ -133,6 +134,7 @@ type (
 		Artists               []Artist               `json:"artists" bson:"artists"`
 		OrganizerID           string                 `json:"organizer_id" bson:"organizer_id"`
 		Organizer             Organizer              `json:"organizer" bson:"organizer"`
+		Organisation          Organisation           `json:"organisation" bson:"organisation"`
 		StartAt               int64                  `json:"start_at" bson:"start_at"`
 		EndAt                 int64                  `json:"end_at" bson:"end_at"`
 		CrewID                string                 `json:"crew_id" bson:"crew_id"`
@@ -444,6 +446,7 @@ func EventPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
 	pipe.LookupList(ArtistCollection, "artist_ids", "_id", "artists")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	return
 }
 
@@ -611,7 +614,7 @@ func (i *EventQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter.EqualString("event_asp_id", i.EventASPID)
 	filter.EqualStringList("event_state.state", i.EventState)
 	filter.EqualString("crew_id", i.CrewID)
-	filter.EqualStringList("crew.organisation_id", i.OrganisationId)
+	filter.EqualStringList("organisation_id", i.OrganisationId)
 	filter.GteInt64("modified.updated", i.UpdatedFrom)
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)

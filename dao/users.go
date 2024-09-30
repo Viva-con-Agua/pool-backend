@@ -165,7 +165,7 @@ func UserSync(ctx context.Context, i *models.ProfileParam, token *models.AccessT
 }
 
 func UserOrganisationUpdate(ctx context.Context, i *models.UserOrganisationUpdate, token *models.AccessToken) (result *models.User, err error) {
-	if err = models.OrganisationPermission(token); err != nil {
+	if err = token.AccessPermission(); err != nil {
 		return
 	}
 	if err = UserCollection.UpdateOne(

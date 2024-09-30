@@ -18,7 +18,6 @@ func main() {
 	dao.FixDatabase()
 	dao.UpdateDatabase()
 	dao.UpdateTicker()
-	dao.PublishRoles()
 	//dao.ReloadDatabase()
 	//login routes
 	api := e.Group("/v1")

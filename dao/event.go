@@ -17,20 +17,9 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 		return
 	}
 	event := i.EventDatabase(token)
-
-	if token.Roles.Validate("admin;employee;pool_employee") {
-		if i.CrewID != "" {
-			crew := new(models.Crew)
-			if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: i.CrewID}, token); err != nil {
-				return
-			}
-			event.OrganisationID = crew.OrganisationID
-		} else {
-			event.OrganisationID = i.OrganisationID
-		}
-	} else {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		crew := new(models.Crew)
-		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: token.CrewID}, token); err != nil {
+		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: i.CrewID}, token); err != nil {
 			return
 		}
 		event.OrganisationID = crew.OrganisationID
@@ -180,17 +169,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 	if err = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Pipe, event); err != nil {
 		return
 	}
-	if token.Roles.Validate("admin;employee;pool_employee") {
-		if i.CrewID != "" {
-			crew := new(models.Crew)
-			if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: i.CrewID}, token); err != nil {
-				return
-			}
-			i.OrganisationID = crew.OrganisationID
-		} else {
-			i.OrganisationID = i.OrganisationID
-		}
-	} else {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		crew := new(models.Crew)
 		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: token.CrewID}, token); err != nil {
 			return

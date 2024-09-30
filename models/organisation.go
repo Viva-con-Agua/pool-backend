@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/google/uuid"
@@ -43,13 +42,6 @@ type (
 )
 
 var OrganisationCollection = "organisations"
-
-func OrganisationPermission(token *AccessToken) (err error) {
-	if !token.Roles.Validate("admin") {
-		return vcago.NewPermissionDenied(OrganisationCollection)
-	}
-	return
-}
 
 func (i *OrganisationCreate) Organisation() *Organisation {
 	return &Organisation{

@@ -8,7 +8,7 @@ import (
 )
 
 func OrganisationInsert(ctx context.Context, i *models.OrganisationCreate, token *models.AccessToken) (result *models.Organisation, err error) {
-	if err = models.OrganisationPermission(token); err != nil {
+	if err = token.AccessPermission(); err != nil {
 		return
 	}
 	result = i.Organisation()
@@ -36,7 +36,7 @@ func OrganisationGetByID(ctx context.Context, i *models.OrganisationParam) (resu
 }
 
 func OrganisationUpdate(ctx context.Context, i *models.OrganisationUpdate, token *models.AccessToken) (result *models.Organisation, err error) {
-	if err = models.OrganisationPermission(token); err != nil {
+	if err = token.AccessPermission(); err != nil {
 		return
 	}
 	filter := i.Match()
@@ -47,7 +47,7 @@ func OrganisationUpdate(ctx context.Context, i *models.OrganisationUpdate, token
 }
 
 func OrganisationDelete(ctx context.Context, i *models.OrganisationParam, token *models.AccessToken) (err error) {
-	if err = models.OrganisationPermission(token); err != nil {
+	if err = token.AccessPermission(); err != nil {
 		return
 	}
 	filter := i.Match()

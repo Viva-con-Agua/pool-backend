@@ -99,6 +99,10 @@ func UpdateDatabase() {
 		UpdateDepositUnitNorms(ctx)
 		InsertUpdate(ctx, "update_deposit_units_1")
 	}
+	if !CheckUpdated(ctx, "publish_roles_init") {
+		PublishRoles()
+		InsertUpdate(ctx, "publish_roles_init")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
