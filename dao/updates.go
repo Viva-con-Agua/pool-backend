@@ -95,6 +95,10 @@ func UpdateDatabase() {
 	if !CheckUpdated(ctx, "create_default_organisation") {
 		CreateDefaultOrganisation(ctx)
 		InsertUpdate(ctx, "create_default_organisation")
+  }
+	if !CheckUpdated(ctx, "update_deposit_units_1") {
+		UpdateDepositUnitNorms(ctx)
+		InsertUpdate(ctx, "update_deposit_units_1")
 	}
 }
 
@@ -284,6 +288,21 @@ func CreateDefaultOrganisation(ctx context.Context) {
 	filter := vmdb.NewFilter()
 	filter.ElemMatchList("system_roles", "name", []string{"employee", "pool_employee", "pool_finance"})
 	if err := UserCollection.UpdateMany(ctx, filter.Bson(), vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+}
+
+func UpdateDepositUnitNorms(ctx context.Context) {
+	filterDonation := vmdb.NewFilter()
+	filterDonation.EqualStringList("value", []string{"unknown", "can", "box", "gl", "other"})
+	filterEco := vmdb.NewFilter()
+	filterEco.EqualStringList("value", []string{"merch", "other_ec"})
+	updateDonation := bson.D{{Key: "$set", Value: bson.D{{Key: "norms", Value: "donation"}}}}
+	updateEco := bson.D{{Key: "$set", Value: bson.D{{Key: "norms", Value: "economic"}}}}
+	if err := SourceCollection.UpdateMany(ctx, filterDonation.Bson(), updateDonation); err != nil {
+		log.Print(err)
+	}
+	if err := SourceCollection.UpdateMany(ctx, filterEco.Bson(), updateEco); err != nil {
 		log.Print(err)
 	}
 }
