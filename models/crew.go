@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -94,7 +93,7 @@ type (
 
 var CrewCollection = "crews"
 
-func CrewPermission(token *vcapool.AccessToken) (err error) {
+func CrewPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
@@ -106,7 +105,7 @@ func CrewPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
-func CrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+func CrewUpdatePermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
@@ -155,14 +154,14 @@ func (i *CrewQuery) ActiveFilter() bson.D {
 	return filter.Bson()
 }
 
-func (i *CrewQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *CrewQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", token.CrewID)
 	filter.LikeString("status", "active")
 	return filter.Bson()
 }
 
-func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *CrewUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("_id", token.CrewID)
@@ -172,7 +171,7 @@ func (i *CrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *CrewParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *CrewParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("_id", token.CrewID)

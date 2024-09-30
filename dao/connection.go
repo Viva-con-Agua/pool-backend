@@ -8,7 +8,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -177,7 +176,7 @@ func InitialDatabase() {
 		context.Background(),
 		models.EventView,
 		models.EventCollection,
-		models.EventPipeline(&vcapool.AccessToken{ID: ""}),
+		models.EventPipeline(&models.AccessToken{ID: ""}),
 	)
 	EventViewCollection = Database.Collection(models.EventView)
 

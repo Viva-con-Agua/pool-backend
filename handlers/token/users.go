@@ -6,7 +6,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -32,7 +31,7 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -50,7 +49,7 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -67,7 +66,7 @@ func (i *UserHandler) GetUsersByCrew(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -84,7 +83,7 @@ func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -101,7 +100,7 @@ func (i *UserHandler) UpdateOrganisation(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -118,7 +117,7 @@ func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

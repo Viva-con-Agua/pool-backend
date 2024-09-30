@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -75,21 +74,21 @@ func NewUserCrew(userID string, crew *Crew) *UserCrew {
 	}
 }
 
-func (i *UserCrewUpdate) UserCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+func (i *UserCrewUpdate) UserCrewUpdatePermission(token *AccessToken) (err error) {
 	if token.ID != i.UserID {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
-func (i *UserCrewUpdate) UsersCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+func (i *UserCrewUpdate) UsersCrewUpdatePermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
-func (i *UsersCrewCreate) UsersCrewCreatePermission(token *vcapool.AccessToken) (err error) {
+func (i *UsersCrewCreate) UsersCrewCreatePermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
@@ -170,7 +169,7 @@ func (i *UserCrewUpdate) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *UserCrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *UserCrewUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)

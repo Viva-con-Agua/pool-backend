@@ -5,11 +5,10 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func NVMConfirm(ctx context.Context, token *models.AccessToken) (result *models.NVM, err error) {
 	if err = models.NVMConfirmedPermission(token); err != nil {
 		return
 	}
@@ -25,7 +24,7 @@ func NVMConfirm(ctx context.Context, token *vcapool.AccessToken) (result *models
 	return
 }
 
-func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *models.AccessToken) (result *models.NVM, err error) {
 	if err = models.NVMPermission(token); err != nil {
 		return
 	}
@@ -41,7 +40,7 @@ func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.Ac
 	return
 }
 
-func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *models.AccessToken) (result *models.NVM, err error) {
 	if err = models.NVMPermission(token); err != nil {
 		return
 	}
@@ -63,7 +62,7 @@ func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *vcapool.Acc
 	return
 }
 
-func NVMWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func NVMWithdraw(ctx context.Context, token *models.AccessToken) (result *models.NVM, err error) {
 	if err = NVMCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},

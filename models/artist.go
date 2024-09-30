@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -37,14 +36,14 @@ type (
 
 var ArtistCollection = "artists"
 
-func ArtistPermission(token *vcapool.AccessToken) (err error) {
+func ArtistPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return
 }
 
-func ArtistDeletePermission(token *vcapool.AccessToken) (err error) {
+func ArtistDeletePermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}

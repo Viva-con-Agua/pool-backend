@@ -7,7 +7,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,7 +38,7 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -62,7 +61,7 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -81,7 +80,7 @@ func (i *EventHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -111,7 +110,7 @@ func (i *EventHandler) GetPrivateDetails(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -142,7 +141,7 @@ func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -159,7 +158,7 @@ func (i *EventHandler) GetEmailEvents(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -176,7 +175,7 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -199,7 +198,7 @@ func (i *EventHandler) Sync(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -218,7 +217,7 @@ func (i *EventHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

@@ -9,11 +9,10 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func RoleHistoryInsert(ctx context.Context, i *models.RoleHistoryCreate, token *vcapool.AccessToken) (result *models.RoleHistory, err error) {
+func RoleHistoryInsert(ctx context.Context, i *models.RoleHistoryCreate, token *models.AccessToken) (result *models.RoleHistory, err error) {
 	if err = models.RolesHistoryAdminPermission(token); err != nil {
 		return
 	}
@@ -26,7 +25,7 @@ func RoleHistoryInsert(ctx context.Context, i *models.RoleHistoryCreate, token *
 	return
 }
 
-func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest, token *vcapool.AccessToken) (result *models.RoleBulkExport, err error) {
+func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest, token *models.AccessToken) (result *models.RoleBulkExport, err error) {
 	if err = models.RolesBulkPermission(token); err != nil {
 		return
 	}
@@ -64,7 +63,7 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 	return
 }
 
-func RoleHistoryGet(ctx context.Context, i *models.RoleHistoryRequest, token *vcapool.AccessToken) (result *[]models.RoleHistory, list_size int64, err error) {
+func RoleHistoryGet(ctx context.Context, i *models.RoleHistoryRequest, token *models.AccessToken) (result *[]models.RoleHistory, list_size int64, err error) {
 	result = new([]models.RoleHistory)
 	pipeline := models.RolesHistoryPermittedPipeline()
 	if err = PoolRoleHistoryCollection.Aggregate(
@@ -78,7 +77,7 @@ func RoleHistoryGet(ctx context.Context, i *models.RoleHistoryRequest, token *vc
 	return
 }
 
-func RoleHistoryConfirm(ctx context.Context, i *models.RoleHistoryRequest, token *vcapool.AccessToken) (result *[]models.RoleHistory, err error) {
+func RoleHistoryConfirm(ctx context.Context, i *models.RoleHistoryRequest, token *models.AccessToken) (result *[]models.RoleHistory, err error) {
 	if err = models.RolesHistoryAdminPermission(token); err != nil {
 		return
 	}
@@ -95,7 +94,7 @@ func RoleHistoryConfirm(ctx context.Context, i *models.RoleHistoryRequest, token
 	return
 }
 
-func RoleHistoryDelete(ctx context.Context, i *models.RoleHistoryRequest, token *vcapool.AccessToken) (result *models.RoleHistory, err error) {
+func RoleHistoryDelete(ctx context.Context, i *models.RoleHistoryRequest, token *models.AccessToken) (result *models.RoleHistory, err error) {
 	if err = models.RolesHistoryAdminPermission(token); err != nil {
 		return
 	}

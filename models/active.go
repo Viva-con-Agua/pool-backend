@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -70,21 +69,21 @@ func ActiveRequest() *ActiveUpdate {
 	}
 }
 
-func ActiveRequestPermission(token *vcapool.AccessToken) (err error) {
+func ActiveRequestPermission(token *AccessToken) (err error) {
 	if token.CrewID == "" {
 		return vcago.NewBadRequest(ActiveCollection, "not an crew member")
 	}
 	return
 }
 
-func ActivePermission(token *vcapool.AccessToken) (err error) {
+func ActivePermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin;employee;pool_employee") && !token.PoolRoles.Validate("network;operation") {
 		return vcago.NewBadRequest(ActiveCollection, "permission denied")
 	}
 	return
 }
 
-func (i *ActiveParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *ActiveParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("user_id", i.UserID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {

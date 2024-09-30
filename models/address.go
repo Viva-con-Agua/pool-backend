@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -122,14 +121,14 @@ func (i *AddressImport) Address(userID string) (r *Address) {
 	}
 }
 
-func AddressPermission(token *vcapool.AccessToken) (err error) {
+func AddressPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
-func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *AddressQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualStringList("_id", i.ID)
@@ -145,7 +144,7 @@ func (i *AddressQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *AddressUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *AddressUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)
@@ -158,7 +157,7 @@ func (i *AddressUpdate) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *AddressParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *AddressParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)

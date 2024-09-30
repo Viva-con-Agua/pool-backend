@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -17,7 +16,7 @@ func ReceiptFileCreate(
 	ctx context.Context,
 	create *models.ReceiptFileCreate,
 	file *vmod.File,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result *models.ReceiptFile,
 	err error,
@@ -44,7 +43,7 @@ func ReceiptFileCreate(
 func ReceiptFileGetByID(
 	ctx context.Context,
 	id *vmod.IDParam,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result []byte,
 	err error,
@@ -66,7 +65,7 @@ func ReceiptFileGetByID(
 func ReceiptFileZipGetByID(
 	ctx context.Context,
 	id *vmod.IDParam,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result []byte,
 	err error,
@@ -101,7 +100,7 @@ func ReceiptFileZipGetByID(
 func ReceiptFileDeleteByID(
 	ctx context.Context,
 	id *vmod.IDParam,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result *vmod.DeletedResponse,
 	err error,

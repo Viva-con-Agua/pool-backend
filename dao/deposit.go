@@ -8,11 +8,10 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func validateDepositUnits(ctx context.Context, takingID string, amount int64, crewID string, token *vcapool.AccessToken) (err error) {
+func validateDepositUnits(ctx context.Context, takingID string, amount int64, crewID string, token *models.AccessToken) (err error) {
 	taking := new(models.Taking)
 	takingPipeline := models.TakingPipeline()
 	if err = TakingCollection.AggregateOne(
@@ -31,7 +30,7 @@ func validateDepositUnits(ctx context.Context, takingID string, amount int64, cr
 	return
 }
 
-func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.AccessToken) (result *models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
@@ -60,7 +59,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *vcapool.
 	return
 }
 
-func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *models.AccessToken) (result *models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
@@ -182,7 +181,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *vcapool.
 	return
 }
 
-func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+func DepositSync(ctx context.Context, i *models.DepositParam, token *models.AccessToken) (result *models.Deposit, err error) {
 
 	filter := bson.D{{Key: "_id", Value: i.ID}}
 	if err = DepositCollection.AggregateOne(
@@ -260,7 +259,7 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *vcapool.Acc
 	return
 }
 
-func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.AccessToken) (result *[]models.Deposit, err error) {
+func DepositGet(ctx context.Context, i *models.DepositQuery, token *models.AccessToken) (result *[]models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
@@ -277,7 +276,7 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *vcapool.Acce
 	return
 }
 
-func DepositGetByID(ctx context.Context, i *models.DepositParam, token *vcapool.AccessToken) (result *models.Deposit, err error) {
+func DepositGetByID(ctx context.Context, i *models.DepositParam, token *models.AccessToken) (result *models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}

@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -45,7 +44,7 @@ type (
 
 var OrganisationCollection = "organisations"
 
-func OrganisationPermission(token *vcapool.AccessToken) (err error) {
+func OrganisationPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(OrganisationCollection)
 	}

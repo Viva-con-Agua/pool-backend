@@ -5,10 +5,9 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 )
 
-func OrganisationInsert(ctx context.Context, i *models.OrganisationCreate, token *vcapool.AccessToken) (result *models.Organisation, err error) {
+func OrganisationInsert(ctx context.Context, i *models.OrganisationCreate, token *models.AccessToken) (result *models.Organisation, err error) {
 	if err = models.OrganisationPermission(token); err != nil {
 		return
 	}
@@ -36,7 +35,7 @@ func OrganisationGetByID(ctx context.Context, i *models.OrganisationParam) (resu
 	return
 }
 
-func OrganisationUpdate(ctx context.Context, i *models.OrganisationUpdate, token *vcapool.AccessToken) (result *models.Organisation, err error) {
+func OrganisationUpdate(ctx context.Context, i *models.OrganisationUpdate, token *models.AccessToken) (result *models.Organisation, err error) {
 	if err = models.OrganisationPermission(token); err != nil {
 		return
 	}
@@ -47,7 +46,7 @@ func OrganisationUpdate(ctx context.Context, i *models.OrganisationUpdate, token
 	return
 }
 
-func OrganisationDelete(ctx context.Context, i *models.OrganisationParam, token *vcapool.AccessToken) (err error) {
+func OrganisationDelete(ctx context.Context, i *models.OrganisationParam, token *models.AccessToken) (err error) {
 	if err = models.OrganisationPermission(token); err != nil {
 		return
 	}

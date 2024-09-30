@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -80,7 +79,7 @@ func RolesHistoryPermittedPipeline() (pipe *vmdb.Pipeline) {
 	return
 }
 
-func RolesHistoryPermission(user *User, token *vcapool.AccessToken) (err error) {
+func RolesHistoryPermission(user *User, token *AccessToken) (err error) {
 	if user.NVM.Status != "confirmed" {
 		return vcago.NewBadRequest(PoolRoleHistoryCollection, "nvm required", nil)
 	}
@@ -90,7 +89,7 @@ func RolesHistoryPermission(user *User, token *vcapool.AccessToken) (err error) 
 	return
 }
 
-func RolesHistoryAdminPermission(token *vcapool.AccessToken) (err error) {
+func RolesHistoryAdminPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(PoolRoleHistoryCollection)
 	}
@@ -169,7 +168,7 @@ func (i *RoleHistoryDatabase) Filter() bson.D {
 	return filter.Bson()
 }
 
-func (i *RoleHistoryBulkRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *RoleHistoryBulkRequest) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew.crew_id", token.CrewID)
@@ -180,7 +179,7 @@ func (i *RoleHistoryBulkRequest) PermittedFilter(token *vcapool.AccessToken) bso
 	return filter.Bson()
 }
 
-func (i *RoleHistoryRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *RoleHistoryRequest) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)

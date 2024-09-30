@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -36,7 +35,7 @@ func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.Use
 	return
 }
 
-func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.ListUser, list_size int64, err error) {
+func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.ListUser, list_size int64, err error) {
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
@@ -63,7 +62,7 @@ func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models
 	return
 }
 
-func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserBasic, err error) {
+func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *models.AccessToken) (result *[]models.UserBasic, err error) {
 	if err = i.CrewUsersPermission(token); err != nil {
 		return
 	}
@@ -75,7 +74,7 @@ func UsersGetByCrew(ctx context.Context, i *models.UserQuery, token *vcapool.Acc
 	return
 }
 
-func UsersUserGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
+func UsersUserGetByID(ctx context.Context, i *models.UserParam, token *models.AccessToken) (result *models.User, err error) {
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
@@ -92,7 +91,7 @@ func UsersGetByID(ctx context.Context, i *models.UserParam) (result *models.User
 	return
 }
 
-func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.UserMinimal, err error) {
+func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *models.AccessToken) (result *[]models.UserMinimal, err error) {
 	filter := i.PermittedFilter(token)
 	result = new([]models.UserMinimal)
 	if err = UserCollection.Aggregate(ctx, models.UserPipelinePublic().Match(filter).Pipe, result); err != nil {
@@ -101,7 +100,7 @@ func UsersMinimalGet(ctx context.Context, i *models.UserQuery, token *vcapool.Ac
 	return
 }
 
-func UsersDeleteUser(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (err error) {
+func UsersDeleteUser(ctx context.Context, i *models.UserParam, token *models.AccessToken) (err error) {
 	if err = i.UsersDeletePermission(token); err != nil {
 		return
 	}
@@ -150,7 +149,7 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	return
 }
 
-func UserSync(ctx context.Context, i *models.ProfileParam, token *vcapool.AccessToken) (result *models.User, err error) {
+func UserSync(ctx context.Context, i *models.ProfileParam, token *models.AccessToken) (result *models.User, err error) {
 	profile := new(models.Profile)
 	if err = ProfileCollection.FindOne(ctx, i.Match(), profile); err != nil {
 		return
@@ -165,7 +164,7 @@ func UserSync(ctx context.Context, i *models.ProfileParam, token *vcapool.Access
 	return
 }
 
-func UserOrganisationUpdate(ctx context.Context, i *models.UserOrganisationUpdate, token *vcapool.AccessToken) (result *models.User, err error) {
+func UserOrganisationUpdate(ctx context.Context, i *models.UserOrganisationUpdate, token *models.AccessToken) (result *models.User, err error) {
 	if err = models.OrganisationPermission(token); err != nil {
 		return
 	}

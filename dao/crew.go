@@ -7,12 +7,11 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewInsert(ctx context.Context, i *models.CrewCreate, token *models.AccessToken) (result *models.Crew, err error) {
 
 	if err = models.CrewPermission(token); err != nil {
 		return
@@ -33,7 +32,7 @@ func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.Access
 	return
 }
 
-func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *[]models.Crew, err error) {
+func CrewGet(ctx context.Context, i *models.CrewQuery, token *models.AccessToken) (result *[]models.Crew, err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}
@@ -48,7 +47,7 @@ func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToke
 	return
 }
 
-func CrewGetByID(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewGetByID(ctx context.Context, i *models.CrewParam, token *models.AccessToken) (result *models.Crew, err error) {
 	filter := i.PermittedFilter(token)
 	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
 		return
@@ -65,7 +64,7 @@ func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.C
 	return
 }
 
-func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *models.AccessToken) (result *models.Crew, err error) {
 	filter := i.PermittedFilter(token)
 	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
 		return
@@ -73,7 +72,7 @@ func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.Ac
 	return
 }
 
-func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *models.AccessToken) (result *models.Crew, err error) {
 	if err = models.CrewUpdatePermission(token); err != nil {
 		return
 	}
@@ -111,7 +110,7 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 	return
 }
 
-func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value string, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value string, token *models.AccessToken) (result *models.Crew, err error) {
 	if err = models.CrewUpdatePermission(token); err != nil {
 		return
 	}
@@ -127,7 +126,7 @@ func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value stri
 	return
 }
 
-func CrewDelete(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (err error) {
+func CrewDelete(ctx context.Context, i *models.CrewParam, token *models.AccessToken) (err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}

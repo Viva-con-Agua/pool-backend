@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -122,7 +121,7 @@ func NewRoleRequestHistory(i *RoleRequest, user *User) (r *RoleHistoryDatabase) 
 var ASPRole = "other;asp;finance;operation;education;network;socialmedia;awareness"
 var ASPEventRole = "network;operation;education"
 
-func RolesPermission(role string, user *User, token *vcapool.AccessToken) (err error) {
+func RolesPermission(role string, user *User, token *AccessToken) (err error) {
 	if user.NVM.Status != "confirmed" {
 		return vcago.NewBadRequest(PoolRoleCollection, "nvm required", nil)
 	}
@@ -132,21 +131,21 @@ func RolesPermission(role string, user *User, token *vcapool.AccessToken) (err e
 	return
 }
 
-func RolesBulkPermission(token *vcapool.AccessToken) (err error) {
+func RolesBulkPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
 	return
 }
 
-func RolesDeletePermission(role string, token *vcapool.AccessToken) (err error) {
+func RolesDeletePermission(role string, token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(role)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
 	return
 }
 
-func RolesAdminPermission(token *vcapool.AccessToken) (err error) {
+func RolesAdminPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
@@ -249,7 +248,7 @@ func (i *RoleRequest) FilterHistory() bson.D {
 	return filter.Bson()
 }
 
-func (i *RoleBulkRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *RoleBulkRequest) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew.crew_id", token.CrewID)

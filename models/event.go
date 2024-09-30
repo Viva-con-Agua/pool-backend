@@ -7,7 +7,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -345,7 +344,7 @@ func (i *EventDatabase) TakingDatabase() *TakingDatabase {
 		Modified:     vmod.NewModified(),
 	}
 }
-func (i *EventCreate) EventDatabase(token *vcapool.AccessToken) *EventDatabase {
+func (i *EventCreate) EventDatabase(token *AccessToken) *EventDatabase {
 	return &EventDatabase{
 		ID:                    uuid.NewString(),
 		Name:                  i.Name,
@@ -405,7 +404,7 @@ func (i *EventImport) EventDatabase() *EventDatabase {
 	}
 }
 
-func EventPipeline(token *vcapool.AccessToken) (pipe *vmdb.Pipeline) {
+func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
 	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
@@ -454,21 +453,21 @@ func EventRolePipeline() *vmdb.Pipeline {
 	return pipe
 }
 
-func EventPermission(token *vcapool.AccessToken) (err error) {
+func EventPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
 }
 
-func EventDeletePermission(token *vcapool.AccessToken) (err error) {
+func EventDeletePermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
 	return
 }
 
-func (i *EventParam) EventSyncPermission(token *vcapool.AccessToken) (err error) {
+func (i *EventParam) EventSyncPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(EventCollection)
 	}
@@ -487,7 +486,7 @@ func (i *EventDatabase) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *EventParam) PermittedDeleteFilter(token *vcapool.AccessToken) bson.D {
+func (i *EventParam) PermittedDeleteFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
@@ -502,7 +501,7 @@ func (i *EventUpdate) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *EventUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *EventUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
@@ -522,7 +521,7 @@ func (i *Event) FilterCrew() bson.D {
 	return filter.Bson()
 }
 
-func (i *EventParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *EventParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
@@ -575,7 +574,7 @@ func (i *EventParam) PublicFilter() bson.D {
 	return filter.Bson()
 }
 
-func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
+func (i *EventQuery) FilterAsp(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if token.PoolRoles.Validate(ASPEventRole) {
 		filter.EqualString("crew_id", token.CrewID)
@@ -585,7 +584,7 @@ func (i *EventQuery) FilterAsp(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *EventQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
@@ -612,7 +611,7 @@ func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.EqualString("event_asp_id", i.EventASPID)
 	filter.EqualStringList("event_state.state", i.EventState)
 	filter.EqualString("crew_id", i.CrewID)
-	filter.EqualStringList("organisation_id", i.OrganisationId)
+	filter.EqualStringList("crew.organisation_id", i.OrganisationId)
 	filter.GteInt64("modified.updated", i.UpdatedFrom)
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
@@ -621,7 +620,7 @@ func (i *EventQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *EventQuery) FilterEmailEvents(token *vcapool.AccessToken) bson.D {
+func (i *EventQuery) FilterEmailEvents(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
@@ -641,7 +640,7 @@ func (i *Event) ToContent() *vmod.Content {
 	return content
 }
 
-func (i *EventUpdate) EventStateValidation(token *vcapool.AccessToken, event *EventValidate) (err error) {
+func (i *EventUpdate) EventStateValidation(token *AccessToken, event *EventValidate) (err error) {
 	if i.EventState.State == "canceled" && (event.EventState.State == "finished" || event.EventState.State == "closed") {
 		return vcago.NewBadRequest(EventCollection, "event can not be canceled, it is already "+event.EventState.State, i)
 	}

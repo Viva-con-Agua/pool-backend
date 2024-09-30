@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -88,21 +87,21 @@ type (
 
 var MessageCollection = "messages"
 
-func MessageCrewPermission(token *vcapool.AccessToken) (err error) {
+func MessageCrewPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(MessageCollection)
 	}
 	return
 }
 
-func MessageEventPermission(token *vcapool.AccessToken, event *Event) (err error) {
+func MessageEventPermission(token *AccessToken, event *Event) (err error) {
 	if !token.PoolRoles.Validate(ASPRole) && !token.Roles.Validate("admin;employee;pool_employee") && event.EventASPID != token.ID {
 		return vcago.NewPermissionDenied(MessageCollection)
 	}
 	return
 }
 
-func (i *MessageCreate) MessageSub(token *vcapool.AccessToken) *Message {
+func (i *MessageCreate) MessageSub(token *AccessToken) *Message {
 	return &Message{
 		ID:             uuid.NewString(),
 		MessageID:      uuid.NewString(),
@@ -148,7 +147,7 @@ func (i *Message) MessageUpdate() *MessageUpdate {
 	}
 }
 
-func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
+func (i *MessageParam) PermittedFilter(token *AccessToken, crew *Crew) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
@@ -160,7 +159,7 @@ func (i *MessageParam) PermittedFilter(token *vcapool.AccessToken, crew *Crew) b
 	return filter.Bson()
 }
 
-func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) bson.D {
+func (i *MessageUpdate) PermittedFilter(token *AccessToken, crew *Crew) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
@@ -172,7 +171,7 @@ func (i *MessageUpdate) PermittedFilter(token *vcapool.AccessToken, crew *Crew) 
 	return filter.Bson()
 }
 
-func (i *RecipientGroup) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *RecipientGroup) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew.crew_id", token.CrewID)
@@ -193,7 +192,7 @@ func (i *RecipientGroup) FilterEvent() bson.D {
 	return filter.Bson()
 }
 
-func PermittedMessageCreate(token *vcapool.AccessToken, i *Message, crew *Crew, event *Event) (message *Message, err error) {
+func PermittedMessageCreate(token *AccessToken, i *Message, crew *Crew, event *Event) (message *Message, err error) {
 	message = i
 	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if i.RecipientGroup.Type == "event" && token.ID == event.EventASPID {

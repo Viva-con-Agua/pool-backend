@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -95,7 +94,7 @@ type (
 var TakingCollection = "takings"
 var TakingDepositView = "taking_deposit_view"
 
-func TakingPermission(token *vcapool.AccessToken) (err error) {
+func TakingPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate("finance")) {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
@@ -209,7 +208,7 @@ func (i *TakingUpdate) Match() bson.D {
 }
 */
 
-func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *TakingQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
@@ -252,7 +251,7 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *TakingUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
@@ -261,7 +260,7 @@ func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
+func TakingPermittedFilter(i *vmod.IDParam, token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
@@ -270,7 +269,7 @@ func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *Taking) UpdatePermission(token *vcapool.AccessToken) error {
+func (i *Taking) UpdatePermission(token *AccessToken) error {
 	if i.Event.ID != "" {
 		if !token.Roles.Validate("admin;employee;pool_employee") {
 			if !token.PoolRoles.Validate("finance") {

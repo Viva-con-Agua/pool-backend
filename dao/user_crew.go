@@ -6,11 +6,10 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	if err = i.UsersCrewCreatePermission(token); err != nil {
 		return
 	}
@@ -31,7 +30,7 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	return
 }
 
-func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
 		return
@@ -49,7 +48,7 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapoo
 	return
 }
 
-func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	if err = i.UserCrewUpdatePermission(token); err != nil {
 		return
 	}
@@ -83,7 +82,7 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapoo
 	return
 }
 
-func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	if err = i.UsersCrewUpdatePermission(token); err != nil {
 		return
 	}

@@ -6,11 +6,10 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
+func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
 
 	database := i.ParticipationDatabase(token)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
@@ -37,7 +36,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	return
 }
 
-func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *[]models.Participation, err error) {
+func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *[]models.Participation, err error) {
 	if err = models.ParticipationPermission(token); err != nil {
 		return
 	}
@@ -53,7 +52,7 @@ func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *
 	return
 }
 
-func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (result *models.Participation, err error) {
+func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, token *models.AccessToken) (result *models.Participation, err error) {
 	filter := i.PermittedFilter(token)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
@@ -65,7 +64,7 @@ func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, tok
 	return
 }
 
-func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *[]models.UserParticipation, err error) {
+func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *[]models.UserParticipation, err error) {
 	filter := i.FilterUser(token)
 	result = new([]models.UserParticipation)
 	if err = ParticipationCollection.Aggregate(
@@ -79,7 +78,7 @@ func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, tok
 	return
 }
 
-func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *models.EventDetails, err error) {
+func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *models.EventDetails, err error) {
 	filter := i.FilterAspInformation(token)
 	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
@@ -93,7 +92,7 @@ func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, toke
 	return
 }
 
-func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *[]models.EventParticipation, err error) {
+func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *models.AccessToken) (result *[]models.EventParticipation, err error) {
 	filter := i.FilterEvent(token)
 	result = new([]models.EventParticipation)
 	if err = ParticipationCollection.Aggregate(
@@ -106,7 +105,7 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 	return
 }
 
-func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *vcapool.AccessToken) (result *models.Participation, err error) {
+func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *models.AccessToken) (result *models.Participation, err error) {
 	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
@@ -145,7 +144,7 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	return
 }
 
-func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (err error) {
+func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *models.AccessToken) (err error) {
 	if err = models.ParticipationDeletePermission(token); err != nil {
 		return
 	}

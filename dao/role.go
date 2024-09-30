@@ -9,11 +9,10 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func RoleInsert(ctx context.Context, i *models.RoleRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {
+func RoleInsert(ctx context.Context, i *models.RoleRequest, token *models.AccessToken) (result *vmod.Role, err error) {
 	filter := i.MatchUser()
 	user := new(models.User)
 	if err = UserCollection.AggregateOne(
@@ -38,7 +37,7 @@ func RoleInsert(ctx context.Context, i *models.RoleRequest, token *vcapool.Acces
 	return
 }
 
-func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.BulkUserRoles, err error) {
+func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *models.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.BulkUserRoles, err error) {
 	if err = models.RolesBulkPermission(token); err != nil {
 		return
 	}
@@ -136,7 +135,7 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 	return
 }
 
-func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.AspBulkUserRoles, err error) {
+func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *models.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.AspBulkUserRoles, err error) {
 	if err = models.RolesAdminPermission(token); err != nil {
 		return
 	}
@@ -220,7 +219,7 @@ func getIndex(role *vmod.Role, data []vmod.Role) (index int) {
 	}
 	return -1
 }
-func RoleDelete(ctx context.Context, i *models.RoleRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {
+func RoleDelete(ctx context.Context, i *models.RoleRequest, token *models.AccessToken) (result *vmod.Role, err error) {
 	filter := i.MatchUser()
 	user := new(models.User)
 	if err = UserCollection.FindOne(

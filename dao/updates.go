@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -95,7 +94,7 @@ func UpdateDatabase() {
 	if !CheckUpdated(ctx, "create_default_organisation") {
 		CreateDefaultOrganisation(ctx)
 		InsertUpdate(ctx, "create_default_organisation")
-  }
+	}
 	if !CheckUpdated(ctx, "update_deposit_units_1") {
 		UpdateDepositUnitNorms(ctx)
 		InsertUpdate(ctx, "update_deposit_units_1")
@@ -229,7 +228,7 @@ func UpdateProfileBirthdate(ctx context.Context) {
 
 func UpdateEventApplications(ctx context.Context) {
 	eventList := []models.Event{}
-	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&vcapool.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
+	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&models.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
 		log.Print(err)
 	}
 	for _, event := range eventList {

@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -109,14 +108,14 @@ var DepositCollection = "deposits"
 var DepositUnitCollection = "deposit_units"
 var DepositUnitTakingView = "deposit_unit_taking"
 
-func DepositPermission(token *vcapool.AccessToken) (err error) {
+func DepositPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate("finance")) {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
 	return
 }
 
-func (i *DepositParam) DepositSyncPermission(token *vcapool.AccessToken) (err error) {
+func (i *DepositParam) DepositSyncPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
@@ -155,7 +154,7 @@ func UpdateWaitTaking(amount int64) bson.D {
 }
 */
 
-func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositDatabase, d []DepositUnit) {
+func (i *DepositCreate) DepositDatabase(token *AccessToken) (r *DepositDatabase, d []DepositUnit) {
 	d = []DepositUnit{}
 	var amount int64 = 0
 	id := uuid.NewString()
@@ -233,7 +232,7 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 	return
 }
 
-func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *DepositQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.SearchString([]string{"deposit_units.taking.name", "reason_for_payment"}, i.Search)
@@ -249,7 +248,7 @@ func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *DepositParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *DepositParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
