@@ -21,18 +21,18 @@ type (
 		Money    vmod.Money `json:"money" bson:"money"`
 	}
 	DepositUnit struct {
-		ID        string         `json:"id" bson:"_id"`
-		TakingID  string         `json:"taking_id" bson:"taking_id"`
-		Taking    TakingDatabase `json:"taking" bson:"taking"`
-		Money     vmod.Money     `json:"money" bson:"money"`
-		DepositID string         `json:"deposit_id" bson:"deposit_id"`
-		Status    string         `json:"status" bson:"status"`
-		Modified  vmod.Modified  `json:"modified" bson:"modified"`
+		ID        string        `json:"id" bson:"_id"`
+		TakingID  string        `json:"taking_id" bson:"taking_id"`
+		Taking    Taking        `json:"taking" bson:"taking"`
+		Money     vmod.Money    `json:"money" bson:"money"`
+		DepositID string        `json:"deposit_id" bson:"deposit_id"`
+		Status    string        `json:"status" bson:"status"`
+		Modified  vmod.Modified `json:"modified" bson:"modified"`
 	}
 	DepositUnitTaking struct {
 		ID        string          `json:"id" bson:"_id"`
 		TakingID  string          `json:"taking_id" bson:"taking_id"`
-		Taking    TakingDatabase  `json:"taking" bson:"taking"`
+		Taking    Taking          `json:"taking" bson:"taking"`
 		Money     vmod.Money      `json:"money" bson:"money"`
 		DepositID string          `json:"deposit_id" bson:"deposit_id"`
 		Deposit   DepositDatabase `json:"deposit" bson:"deposit"`
@@ -80,6 +80,7 @@ type (
 		Creator          User          `json:"creator" bson:"creator"`
 		Confirmer        User          `json:"confirmer" bson:"confirmer"`
 		HasExternal      bool          `json:"has_external" bson:"has_external"`
+		Receipts         []ReceiptFile `json:"receipts" bson:"receipts"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -127,7 +128,7 @@ func (i *DepositParam) DepositSyncPermission(token *vcapool.AccessToken) (err er
 func DepositPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
-	pipe.LookupUnwind(TakingCollection, "deposit_units.taking_id", "_id", "deposit_units.taking")
+	pipe.LookupUnwind(TakingDepositView, "deposit_units.taking_id", "_id", "deposit_units.taking")
 	pipe.Append(bson.D{
 		{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
@@ -139,6 +140,7 @@ func DepositPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.Lookup(ReceiptFileCollection, "_id", "deposit_id", "receipts")
 	return pipe
 }
 
@@ -223,8 +225,13 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 			amount += value.Money.Amount
 		}
 	}
+	currency := "EUR"
+	if i.DepositUnit != nil && len(i.DepositUnit) != 0 {
+		currency = i.DepositUnit[0].Money.Currency
+	}
 	r = i
 	r.Money.Amount = amount
+	r.Money.Currency = currency
 	return
 }
 

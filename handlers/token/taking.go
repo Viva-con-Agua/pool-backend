@@ -5,6 +5,7 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
@@ -21,6 +22,7 @@ func (i *TakingHandler) Routes(group *echo.Group) {
 	group.PUT("", i.Update, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.DELETE("/:id", i.DeleteByID, accessCookie)
 
 }
 
@@ -68,7 +70,7 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new([]models.Taking)
+	var result []models.Taking
 	var listSize int64
 	if result, listSize, err = dao.TakingGet(c.Ctx(), body, token); err != nil {
 		return
@@ -78,7 +80,7 @@ func (i TakingHandler) Get(cc echo.Context) (err error) {
 
 func (i TakingHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(models.TakingParam)
+	body := new(vmod.IDParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
@@ -93,9 +95,9 @@ func (i TakingHandler) GetByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
-func (i TakingHandler) Delete(cc echo.Context) (err error) {
+func (i TakingHandler) DeleteByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	body := new(models.TakingParam)
+	body := new(vmod.IDParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}

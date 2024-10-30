@@ -30,6 +30,7 @@ type (
 		DropsID       string        `bson:"drops_id" json:"drops_id"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
 		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
+		LastLoginDate int64         `bson:"last_login_date" json:"last_login_date"`
 		Modified      vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {
@@ -44,6 +45,7 @@ type (
 		PrivacyPolicy bool          `bson:"privacy_policy" json:"privacy_policy"`
 		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
 		DropsID       string        `bson:"drops_id" json:"drops_id"`
+		LastLoginDate int64         `bson:"last_login_date" json:"last_login_date"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
 	}
 	User struct {
@@ -59,6 +61,7 @@ type (
 		Confirmed     bool          `bson:"confirmed" json:"confirmed"`
 		LastUpdate    string        `bson:"last_update" json:"last_update"`
 		MailboxID     string        `bson:"mailbox_id" json:"mailbox_id"`
+		LastLoginDate int64         `bson:"last_login_date" json:"last_login_date"`
 		//extends the vcago.User
 		DropsID    string        `bson:"drops_id" json:"drops_id"`
 		Profile    Profile       `json:"profile" bson:"profile,truncate"`
@@ -221,7 +224,7 @@ func NewUserUpdate(user *vmod.User) *UserUpdate {
 
 func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	if user == true {
+	if user {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address")
 	} else {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
@@ -341,7 +344,7 @@ func (i *ProfileUpdate) ToUserUpdate() *ProfileUpdate {
 }
 
 func UsersPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("asp;network;education;finance;operation;awareness;socialmedia;other")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(UserCollection)
 	}
 	return
@@ -450,6 +453,16 @@ func (i *User) RoleContent(roles *BulkUserRoles) *vmod.Content {
 	}
 	content.Fields["AddedRoles"] = strings.Join(roles.AddedRoles, ", ")
 	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
+	return content
+}
+
+func (i *User) AspRoleContent(roles *AspBulkUserRoles) *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["AddedRoles"] = strings.Join(roles.AddedRoles, ", ")
+	content.Fields["DeletedRoles"] = strings.Join(roles.DeletedRoles, ", ")
+	content.Fields["UnchangedRoles"] = strings.Join(roles.UnchangedRoles, ", ")
 	return content
 }
 

@@ -2,13 +2,13 @@ package dao
 
 import (
 	"context"
-	"log"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -93,67 +93,6 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 			}
 		}
 	}
-	if !takingDatabase.State.NoIncome && i.State.NoIncome {
-		event := new(models.EventUpdate)
-		if err = EventCollection.FindOne(
-			ctx,
-			bson.D{{Key: "taking_id", Value: takingDatabase.ID}},
-			event,
-		); err != nil {
-			if !vmdb.ErrNoDocuments(err) {
-				return
-			}
-			err = nil
-		}
-
-		if event.ID != "" {
-			event.EventState.OldState = event.EventState.State
-			event.EventState.State = "closed"
-			e := new(models.Event)
-			if err = EventCollection.UpdateOneAggregate(
-				ctx,
-				event.Match(),
-				vmdb.UpdateSet(event),
-				e,
-				models.EventPipeline(token).Match(event.Match()).Pipe,
-			); err != nil {
-				return
-			}
-
-			// Add takings to CRM
-			var taking *models.Taking
-			if taking, err = TakingGetByID(ctx, &models.TakingParam{ID: takingDatabase.ID}, token); err != nil {
-				log.Print(err)
-			}
-
-			taking.EditorID = token.ID
-			if err = IDjango.Post(taking, "/v1/pool/taking/create/"); err != nil {
-				log.Print(err)
-			}
-
-			// Update CRM event
-			if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
-				log.Print(err)
-			}
-
-			// Add participations to event
-			participations := new([]models.Participation)
-
-			if err = ParticipationCollection.Aggregate(
-				ctx,
-				models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
-				participations,
-			); err != nil {
-				return
-			}
-
-			if err = IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
-				log.Print(err)
-				err = nil
-			}
-
-		}
-	}
 	if err = ActivityCollection.InsertOne(ctx, TakingUpdatedActivity.New(token.ID, takingDatabase.ID)); err != nil {
 		return
 	}
@@ -169,39 +108,46 @@ func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.Ac
 	return
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result *[]models.Taking, listSize int64, err error) {
+type Count struct {
+	ListSize int64 `bson:"list_size" json:"list_size"`
+}
+
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result []models.Taking, listSize int64, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	result = new([]models.Taking)
+	result = []models.Taking{}
 	filter := query.PermittedFilter(token)
 	sort := query.Sort()
 	pipeline := models.TakingPipeline().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
 		pipeline,
-		result,
+		&result,
 	); err != nil {
 		return
 	}
-	opts := options.Count().SetHint("_id_")
-	if query.FullCount != "true" {
-		opts.SetSkip(query.Skip).SetLimit(query.Limit)
+	count := new([]Count)
+	if err = TakingCollection.Aggregate(
+		context.Background(),
+		models.TakingCountPipeline(filter).Pipe,
+		count,
+	); err != nil {
+		return
 	}
-	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		print(cErr)
+	if len(*count) == 0 {
 		listSize = 0
 	} else {
-		listSize = cursor
+		listSize = (*count)[0].ListSize
 	}
 	return
 }
 
-func TakingGetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
+func TakingGetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	filter := param.PermittedFilter(token)
+	filter := models.TakingPermittedFilter(param, token)
 	if err = TakingCollection.AggregateOne(
 		ctx,
 		models.TakingPipeline().Match(filter).Pipe,
@@ -230,10 +176,25 @@ func TakingDeletetByIDSystem(ctx context.Context, id string) (err error) {
 	return
 }
 
-func TakingDeletetByID(ctx context.Context, param *models.TakingParam, token *vcapool.AccessToken) (err error) {
+func TakingDeletetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.AccessToken) (err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	err = TakingCollection.DeleteOne(ctx, param.PermittedFilter(token))
+	taking := new(models.Taking)
+	filter := models.TakingPermittedFilter(param, token)
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		models.TakingPipeline().Match(filter).Pipe,
+		&taking,
+	); err != nil {
+		return
+	}
+	if taking.Event.ID != "" {
+		return vcago.NewBadRequest("taking", "depending_on_event")
+	}
+	if len(taking.DepositUnits) > 0 {
+		return vcago.NewBadRequest("taking", "depending_on_deposit")
+	}
+	err = TakingCollection.DeleteOne(ctx, filter)
 	return
 }

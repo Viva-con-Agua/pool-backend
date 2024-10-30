@@ -24,6 +24,15 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
 	}
+	if event, err = EventGetInternalByID(ctx, &models.EventParam{ID: i.EventID}); err != nil {
+		return
+	}
+	if _, err = EventApplicationsUpdate(ctx, &models.EventApplicationsUpdate{ID: i.EventID, Applications: models.EventApplications{
+		Requested: event.Applications.Requested + 1,
+		Total:     event.Applications.Total + 1,
+	}}); err != nil {
+		return
+	}
 	filter := database.Match()
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
@@ -105,15 +114,15 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 }
 
 func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	event := new(models.Participation)
+	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
 		models.ParticipationPipeline().Match(i.Match()).Pipe,
-		event,
+		participation,
 	); err != nil {
 		return
 	}
-	if err = i.ParticipationUpdatePermission(token, event); err != nil {
+	if err = i.ParticipationUpdatePermission(token, participation); err != nil {
 		return
 	}
 	filter := i.Match()
@@ -126,11 +135,34 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
+	applications := new(models.EventApplications)
+	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
+	applicationsUpdate = result.UpdateEventApplicationsUpdate(1, &applicationsUpdate.Applications)
+	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
+		return
+	}
+	if participation.Status != result.Status {
+		if result.Status == "confirmed" || result.Status == "rejected" {
+			ParticipationNotification(ctx, result)
+		}
+		if result.Status == "withdrawn" {
+			ParticipationWithdrawnNotification(ctx, result)
+		}
+	}
 	return
 }
 
 func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (err error) {
 	if err = models.ParticipationDeletePermission(token); err != nil {
+		return
+	}
+	participation := new(models.Participation)
+	if participation, err = ParticipationGetByID(ctx, i, token); err != nil {
+		return
+	}
+	applications := new(models.EventApplications)
+	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
+	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
 		return
 	}
 	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {

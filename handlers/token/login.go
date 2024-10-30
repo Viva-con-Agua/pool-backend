@@ -39,7 +39,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	}
 	tokenUser := new(vmod.User)
 	if tokenUser, err = HydraClient.Callback(c.Ctx(), body); err != nil {
-		return
+		return vcago.NewBadRequest("Error in callback. Maybe testlogin and oidc skip is enabeled in .env?", err.Error())
 	}
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
@@ -50,6 +50,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		return
 	}
 	if vmdb.ErrNoDocuments(err) {
+
 		err = nil
 		userDatabase := models.NewUserDatabase(tokenUser)
 		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
@@ -75,7 +76,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UserEmail)
-	if c.BindAndValidate(body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
 	result := new(models.User)

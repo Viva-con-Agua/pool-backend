@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcapool"
 
@@ -34,11 +35,12 @@ func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.Use
 	return
 }
 
-func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.ListUser, list_size int64, err error) {
+func UsersGet(i *models.UserQuery, token *vcapool.AccessToken) (result *[]models.ListUser, list_size int64, err error) {
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
-	ctx = context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
 	pipeline := models.SortedUserPermittedPipeline(token).SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
@@ -46,12 +48,13 @@ func UsersGet(ctx context.Context, i *models.UserQuery, token *vcapool.AccessTok
 	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	opts := options.Count().SetHint("_id_")
 	if i.FullCount != "true" {
 		opts.SetSkip(i.Skip).SetLimit(i.Limit)
 	}
 	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		print(cErr)
 		list_size = 0
 	} else {
 		list_size = cursor

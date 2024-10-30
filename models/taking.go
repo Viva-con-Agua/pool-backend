@@ -13,29 +13,32 @@ import (
 
 type (
 	TakingCreate struct {
-		Name      string         `json:"name" bson:"name"`
-		CrewID    string         `json:"crew_id" bson:"crew_id"`
-		NewSource []SourceCreate `json:"new_sources"`
-		Comment   string         `json:"comment"`
+		Name         string         `json:"name" bson:"name"`
+		CrewID       string         `json:"crew_id" bson:"crew_id"`
+		NewSource    []SourceCreate `json:"new_sources"`
+		DateOfTaking int64          `json:"date_of_taking" bson:"date_of_taking"`
+		Comment      string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID      string            `json:"id" bson:"_id"`
-		Name    string            `json:"name" bson:"name"`
-		CrewID  string            `json:"crew_id" bson:"crew_id"`
-		Sources []SourceUpdate    `json:"sources" bson:"-"`
-		State   TakingStateUpdate `json:"state" bson:"state"`
-		Comment string            `json:"comment"`
+		ID           string            `json:"id" bson:"_id"`
+		Name         string            `json:"name" bson:"name"`
+		CrewID       string            `json:"crew_id" bson:"crew_id"`
+		Sources      []SourceUpdate    `json:"sources" bson:"-"`
+		State        TakingStateUpdate `json:"state" bson:"state"`
+		DateOfTaking int64             `json:"date_of_taking" bson:"date_of_taking"`
+		Comment      string            `json:"comment"`
 	}
 
 	TakingDatabase struct {
-		ID       string        `json:"id" bson:"_id"`
-		Name     string        `json:"name" bson:"name"`
-		CrewID   string        `json:"crew_id" bson:"crew_id"`
-		Type     string        `json:"type" bson:"type"`
-		Comment  string        `json:"comment" bson:"comment"`
-		State    TakingState   `json:"state" bson:"state"`
-		Currency string        `json:"-" bson:"currency"`
-		Modified vmod.Modified `json:"modified" bson:"modified"`
+		ID           string        `json:"id" bson:"_id"`
+		Name         string        `json:"name" bson:"name"`
+		CrewID       string        `json:"crew_id" bson:"crew_id"`
+		Type         string        `json:"type" bson:"type"`
+		Comment      string        `json:"comment" bson:"comment"`
+		State        TakingState   `json:"state" bson:"state"`
+		Currency     string        `json:"-" bson:"currency"`
+		DateOfTaking int64         `json:"date_of_taking" bson:"date_of_taking"`
+		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Taking struct {
 		ID           string              `json:"id" bson:"_id"`
@@ -46,12 +49,14 @@ type (
 		Event        Event               `json:"event" bson:"event"`
 		Source       []Source            `json:"sources" bson:"sources"`
 		State        TakingState         `json:"state" bson:"state"`
+		DateOfTaking int64               `json:"date_of_taking" bson:"date_of_taking"`
 		Comment      string              `json:"comment" bson:"comment"`
 		EditorID     string              `json:"editor_id" bson:"-"`
 		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
 		Activities   []Activity          `json:"activities" bson:"activities"`
 		Money        vmod.Money          `json:"money" bson:"money"`
 		Creator      UserDatabase        `json:"creator" bson:"creator"`
+		Modified     vmod.Modified       `json:"modified" bson:"modified"`
 	}
 	TakingState struct {
 		Open      vmod.Money `json:"open" bson:"open"`
@@ -72,6 +77,8 @@ type (
 		Search          string   `query:"search"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
+		TypeOfEvent     []string `query:"type_of_event"`
+		ArtistName      string   `query:"artist_name"`
 		EventState      []string `query:"event_state"`
 		EventEndFrom    string   `query:"event_end_from"`
 		EventEndTo      string   `query:"event_end_to"`
@@ -90,6 +97,7 @@ type (
 )
 
 var TakingCollection = "takings"
+var TakingDepositView = "taking_deposit_view"
 
 func TakingPermission(token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
@@ -106,6 +114,7 @@ func TakingPipeline() *vmdb.Pipeline {
 	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
 	}}})
@@ -130,15 +139,47 @@ func TakingPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
+func TakingCountPipeline(filter bson.D) *vmdb.Pipeline {
+	pipe := TakingPipeline()
+	pipe.Match(filter)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
+
+func TakingPipelineTicker() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	return pipe
+}
+
+func TakingPipelineDeposit() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
+	return pipe
+}
+
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
+	currency := "EUR"
+	if len(i.NewSource) > 0 {
+		currency = i.NewSource[0].Money.Currency
+	}
 	return &TakingDatabase{
-		ID:       uuid.NewString(),
-		Name:     i.Name,
-		CrewID:   i.CrewID,
-		Type:     "manually",
-		Currency: i.NewSource[0].Money.Currency,
-		Comment:  i.Comment,
-		Modified: vmod.NewModified(),
+		ID:           uuid.NewString(),
+		Name:         i.Name,
+		CrewID:       i.CrewID,
+		Type:         "manually",
+		Currency:     currency,
+		DateOfTaking: i.DateOfTaking,
+		Comment:      i.Comment,
+		Modified:     vmod.NewModified(),
 	}
 }
 
@@ -183,7 +224,9 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter.LikeString("name", i.Name)
 	filter.SearchString([]string{"name", "event.name"}, i.Search)
 	filter.EqualStringList("event.event_state.state", i.EventState)
+	filter.EqualStringList("event.type_of_event", i.TypeOfEvent)
 	filter.LikeString("event.name", i.EventName)
+	filter.LikeString("event.artists.name", i.ArtistName)
 	filter.GteInt64("event.end_at", i.EventEndFrom)
 	filter.LteInt64("event.end_at", i.EventEndTo)
 	status := bson.A{}
@@ -222,7 +265,7 @@ func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *TakingParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if !token.Roles.Validate("employee;admin") {

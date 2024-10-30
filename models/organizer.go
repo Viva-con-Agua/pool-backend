@@ -38,7 +38,7 @@ type (
 var OrganizerCollection = "organizers"
 
 func OrganizerPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(OrganizerCollection)
 	}
 	return

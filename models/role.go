@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -52,6 +54,12 @@ type BulkUserRoles struct {
 	DeletedRoles []string `bson:"deleted" json:"deleted"`
 }
 
+type AspBulkUserRoles struct {
+	AddedRoles     []string `bson:"created" json:"created"`
+	DeletedRoles   []string `bson:"deleted" json:"deleted"`
+	UnchangedRoles []string `bson:"unchanged" json:"unchanged"`
+}
+
 var PoolRoleCollection = "pool_roles"
 
 func (i *RoleRequest) NewRole() (r *vmod.Role, err error) {
@@ -76,8 +84,43 @@ func (i *RoleRequest) NewRole() (r *vmod.Role, err error) {
 		return nil, vcago.NewValidationError("role not supported: " + i.Role)
 	}
 }
+func (i *RoleRequest) NewRoleHistory(user *User) (r *RoleHistoryDatabase) {
+	return &RoleHistoryDatabase{
+		ID:        uuid.NewString(),
+		Role:      i.Role,
+		UserID:    user.ID,
+		CrewID:    user.Crew.CrewID,
+		StartDate: time.Now().Unix(),
+		Confirmed: false,
+		Modified:  vmod.NewModified(),
+	}
+}
 
-var ASPRole = "asp;finance;operation;education;network;socialmedia;awareness"
+func NewRoleHistory(i *vmod.Role, user *User) (r *RoleHistoryDatabase) {
+	return &RoleHistoryDatabase{
+		ID:        uuid.NewString(),
+		Role:      i.Name,
+		UserID:    user.ID,
+		CrewID:    user.Crew.CrewID,
+		StartDate: time.Now().Unix(),
+		Confirmed: true,
+		Modified:  vmod.NewModified(),
+	}
+}
+func NewRoleRequestHistory(i *RoleRequest, user *User) (r *RoleHistoryDatabase) {
+	return &RoleHistoryDatabase{
+		ID:        uuid.NewString(),
+		Role:      i.Role,
+		UserID:    user.ID,
+		CrewID:    user.Crew.CrewID,
+		StartDate: time.Now().Unix(),
+		Confirmed: true,
+		Modified:  vmod.NewModified(),
+	}
+}
+
+var ASPRole = "other;asp;finance;operation;education;network;socialmedia;awareness"
+var ASPEventRole = "network;operation;education"
 
 func RolesPermission(role string, user *User, token *vcapool.AccessToken) (err error) {
 	if user.NVM.Status != "confirmed" {
@@ -90,7 +133,7 @@ func RolesPermission(role string, user *User, token *vcapool.AccessToken) (err e
 }
 
 func RolesBulkPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("finance;operation;education;network;socialmedia;awareness;other")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
 	return
@@ -98,6 +141,13 @@ func RolesBulkPermission(token *vcapool.AccessToken) (err error) {
 
 func RolesDeletePermission(role string, token *vcapool.AccessToken) (err error) {
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(role)) {
+		return vcago.NewPermissionDenied(PoolRoleCollection)
+	}
+	return
+}
+
+func RolesAdminPermission(token *vcapool.AccessToken) (err error) {
+	if !token.Roles.Validate("employee;admin") {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
 	}
 	return
@@ -201,6 +251,12 @@ func (i *RoleRequest) Filter() bson.D {
 	filter.EqualString("user_id", i.UserID)
 	return filter.Bson()
 }
+func (i *RoleRequest) FilterHistory() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("role", i.Role)
+	filter.EqualString("user_id", i.UserID)
+	return filter.Bson()
+}
 
 func (i *RoleBulkRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
@@ -209,7 +265,7 @@ func (i *RoleBulkRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
 		filter.ElemMatchList("pool_roles", "name", token.PoolRoles)
 	} else {
 		filter.EqualString("crew.crew_id", i.CrewID)
-		filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"})
+		filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other", "asp"})
 	}
 	return filter.Bson()
 }

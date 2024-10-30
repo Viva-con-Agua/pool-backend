@@ -101,7 +101,7 @@ var ParticipationCollection = "participations"
 var ParticipationEventView = "participations_event"
 
 func ParticipationPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(ParticipationCollection)
 	}
 	return
@@ -120,12 +120,8 @@ func (i *ParticipationUpdate) ParticipationUpdatePermission(token *vcapool.Acces
 		if !token.Roles.Validate("employee;admin") && token.ID != participation.UserID {
 			return vcago.NewPermissionDenied(ParticipationCollection)
 		}
-	case "rejected":
-		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID {
-			return vcago.NewPermissionDenied(ParticipationCollection)
-		}
-	case "confirmed":
-		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate("network;operation;education") && token.ID != participation.Event.EventASPID && participation.Event.TypeOfEvent != "crew_meeting" {
+	case "confirmed", "rejected":
+		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate(ASPEventRole) && token.ID != participation.Event.EventASPID {
 			return vcago.NewPermissionDenied(ParticipationCollection)
 		}
 	}
@@ -168,6 +164,21 @@ func (i *Participation) ToContent() *vmod.Content {
 	return content
 }
 
+func (i *Participation) UpdateEventApplicationsUpdate(value int, applications *EventApplications) *EventApplicationsUpdate {
+	switch i.Status {
+	case "confirmed":
+		applications.Confirmed = i.Event.Applications.Confirmed + value
+	case "rejected":
+		applications.Rejected = i.Event.Applications.Rejected + value
+	case "requested":
+		applications.Requested = i.Event.Applications.Requested + value
+	case "withdrawn":
+		applications.Withdrawn = i.Event.Applications.Withdrawn + value
+	}
+	applications.Total = i.Event.Applications.Total + value
+	return &EventApplicationsUpdate{ID: i.EventID, Applications: *applications}
+}
+
 func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken, event *Event) *ParticipationDatabase {
 	eventStatus := "requested"
 	if event.TypeOfEvent == "crew_meeting" {
@@ -196,7 +207,7 @@ func (i *ParticipationStateRequest) IsRequested() bool {
 	return i.Status == "requested"
 }
 func (i *ParticipationStateRequest) IsConfirmed() bool {
-	return  i.Status == "confirmed"
+	return i.Status == "confirmed"
 }
 func (i *ParticipationStateRequest) IsWithdrawn() bool {
 	return i.Status == "withdrawn"
@@ -251,7 +262,7 @@ func (i *ParticipationQuery) FilterAspInformation(token *vcapool.AccessToken) bs
 func (i *EventParam) FilterEvent(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event.event_asp_id", token.ID)
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("event.crew_id", token.CrewID)
@@ -289,7 +300,7 @@ func (i *ParticipationUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D
 func (i *ParticipationParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate("network;operation;education")) {
+	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("user_id", token.ID)
 	} else if !token.Roles.Validate("employee;admin") {
 		filter.EqualString("crew_id", token.CrewID)
