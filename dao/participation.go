@@ -18,7 +18,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 		bson.D{{Key: "_id", Value: i.EventID}},
 		event,
 	); err != nil {
-			return
+		return
 	}
 	database := i.ParticipationDatabase(token, event)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
