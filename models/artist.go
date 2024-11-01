@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -49,6 +51,16 @@ func ArtistDeletePermission(token *vcapool.AccessToken) (err error) {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return
+}
+
+func ToArtistList(artists []Artist) string {
+	names := make([]string, len(artists))
+	for i, artist := range artists {
+		names[i] = artist.Name
+	}
+
+	result := strings.Join(names, ", ")
+	return result
 }
 
 func (i *ArtistCreate) Artist() *Artist {

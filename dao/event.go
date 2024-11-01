@@ -38,6 +38,10 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.Acce
 	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(filter).Pipe, &result); err != nil {
 		return
 	}
+	history := result.NewEventStateHistory("", result.EventState.State, token)
+	if err = EventStateHistoryInsert(ctx, history, token); err != nil {
+		return
+	}
 	return
 }
 
@@ -183,6 +187,10 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 		return
 	}
 	if event.EventState.State != result.EventState.State {
+		history := result.NewEventStateHistory(event.EventState.State, result.EventState.State, token)
+		if err = EventStateHistoryInsert(ctx, history, token); err != nil {
+			return
+		}
 		if result.EventState.State == "canceled" {
 			EventParticipantsNotification(ctx, result, "event_cancel")
 			updateTaking := bson.D{{Key: "state.no_income", Value: true}}
@@ -194,7 +202,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 		if result.EventState.State == "published" ||
 			result.EventState.State == "canceled" ||
 			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
-			EventStateNotification(ctx, result, "event_state")
+			EventStateNotification(ctx, result)
 		}
 	} else if event.StartAt != result.StartAt ||
 		event.EndAt != result.EndAt ||
@@ -203,7 +211,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.Acce
 		EventParticipantsNotification(ctx, result, "event_update")
 	}
 	if event.EventASPID != result.EventASPID && result.EventASPID != token.ID {
-		EventASPNotification(ctx, result, "event_asp")
+		EventASPNotification(ctx, result)
 	}
 	if event.EndAt != i.EndAt {
 		updateTaking := bson.D{{Key: "date_of_taking", Value: i.EndAt}}
@@ -374,7 +382,7 @@ func EventParticipantsNotification(ctx context.Context, i *models.Event, templat
 	return
 }
 
-func EventASPNotification(ctx context.Context, i *models.Event, template string) (err error) {
+func EventASPNotification(ctx context.Context, i *models.Event) (err error) {
 
 	if i.EventASPID == "" {
 		return vcago.NewNotFound(models.EventCollection, i)
@@ -385,6 +393,7 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 		return
 	}
 
+	template := "event_asp"
 	mail := vcago.NewMailData(user.Email, "pool-backend", template, "pool", user.Country)
 	mail.AddUser(user.User())
 	mail.AddContent(i.ToContent())
@@ -397,7 +406,7 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 	return
 }
 
-func EventStateNotification(ctx context.Context, i *models.Event, template string) (err error) {
+func EventStateNotification(ctx context.Context, i *models.Event) (err error) {
 
 	if i.EventASPID == "" {
 		return vcago.NewNotFound(models.EventCollection, i)
@@ -408,6 +417,7 @@ func EventStateNotification(ctx context.Context, i *models.Event, template strin
 		return
 	}
 
+	template := "event_state"
 	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())
@@ -416,5 +426,25 @@ func EventStateNotification(ctx context.Context, i *models.Event, template strin
 	//notification.AddUser(user.User())
 	//notification.AddContent(i.ToContent())
 	//vcago.Nats.Publish("system.notification.job", notification)
+	return
+}
+
+func EventHistoryAdminNotification(ctx context.Context, data []models.EventStateHistoryNotification) (err error) {
+	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "events_published", "pool", "de")
+	mail.AddContent(models.EventHistoryAdminContent(data))
+	vcago.Nats.Publish("system.mail.job", mail)
+
+	mail2 := vcago.NewMailData("festival@vivaconagua.org", "pool-backend", "events_published", "pool", "de")
+	mail2.AddContent(models.EventHistoryAdminContent(data))
+	vcago.Nats.Publish("system.mail.job", mail2)
+	return
+}
+
+func EventHistoryCrewNotification(ctx context.Context, data_collection map[string][]models.EventStateHistoryNotification) (err error) {
+	for email, data := range data_collection {
+		mail := vcago.NewMailData(email, "pool-backend", "events_crew_published", "pool", "de")
+		mail.AddContent(models.EventHistoryAdminContent(data))
+		vcago.Nats.Publish("system.mail.job", mail)
+	}
 	return
 }
