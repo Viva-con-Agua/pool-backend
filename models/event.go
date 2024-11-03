@@ -138,7 +138,7 @@ type (
 		StartAt               int64                  `json:"start_at" bson:"start_at"`
 		EndAt                 int64                  `json:"end_at" bson:"end_at"`
 		CrewID                string                 `json:"crew_id" bson:"crew_id"`
-		Crew                  Crew                   `json:"crew" bson:"crew"`
+		Crew                  CrewPublic             `json:"crew" bson:"crew"`
 		EventASPID            string                 `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string                 `json:"internal_asp_id" bson:"internal_asp_id"`
 		Application           EventApplication       `json:"application" bson:"application"`
@@ -196,6 +196,7 @@ type (
 		InternalASPID         string            `json:"internal_asp_id" bson:"internal_asp_id"`
 		EventASP              User              `json:"event_asp" bson:"event_asp"`
 		InteralASP            User              `json:"internal_asp" bson:"internal_asp"`
+		OrganisationID        string            `json:"organisation_id" bson:"organisation_id"`
 		ExternalASP           UserExternal      `json:"external_asp" bson:"external_asp"`
 		TakingID              string            `json:"taking_id" bson:"taking_id"`
 		DepositID             string            `json:"deposit_id" bson:"deposit_id"`
@@ -415,6 +416,7 @@ func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
 	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	if token.Roles.Validate("admin;employee;pool_employee") {
 		pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	} else if token.PoolRoles.Validate(ASPEventRole) {
