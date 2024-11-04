@@ -14,7 +14,7 @@ func EventStateHistoryInsert(ctx context.Context, i *models.EventStateHistoryCre
 	return
 }
 
-func EventStateGet(ctx context.Context, i *models.EventStateHistoryQuery, token *vcapool.AccessToken) (result *[]models.EventStateHistory, list_size int64, err error) {
+func EventStateHistoryGet(ctx context.Context, i *models.EventStateHistoryQuery, token *vcapool.AccessToken) (result *[]models.EventStateHistory, list_size int64, err error) {
 	result = new([]models.EventStateHistory)
 	if err = EventStateHistoryCollection.Aggregate(
 		ctx,
