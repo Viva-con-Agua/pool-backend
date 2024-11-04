@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -92,9 +91,17 @@ func UpdateDatabase() {
 		UpdateSetLastLoginDate(ctx)
 		InsertUpdate(ctx, "last_login_date_1")
 	}
+	if !CheckUpdated(ctx, "create_default_organisation") {
+		CreateDefaultOrganisation(ctx)
+		InsertUpdate(ctx, "create_default_organisation")
+	}
 	if !CheckUpdated(ctx, "update_deposit_units_1") {
 		UpdateDepositUnitNorms(ctx)
 		InsertUpdate(ctx, "update_deposit_units_1")
+	}
+	if !CheckUpdated(ctx, "publish_roles_init") {
+		PublishRoles()
+		InsertUpdate(ctx, "publish_roles_init")
 	}
 }
 
@@ -225,7 +232,7 @@ func UpdateProfileBirthdate(ctx context.Context) {
 
 func UpdateEventApplications(ctx context.Context) {
 	eventList := []models.Event{}
-	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&vcapool.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
+	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&models.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
 		log.Print(err)
 	}
 	for _, event := range eventList {
@@ -256,6 +263,34 @@ func UpdateEventApplications(ctx context.Context) {
 func UpdateSetLastLoginDate(ctx context.Context) {
 	update := bson.D{{Key: "last_login_date", Value: time.Now().Unix()}}
 	if err := UserCollection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+}
+
+func CreateDefaultOrganisation(ctx context.Context) {
+	i := models.OrganisationCreate{
+		Name:         "Viva con Agua de Sankt Pauli e.V.",
+		Abbreviation: "VcA DE",
+		Email:        "pool@vivaconagua.org",
+	}
+	result := new(models.Organisation)
+	result = i.Organisation()
+	if err := OrganisationCollection.InsertOne(ctx, result); err != nil {
+		log.Print(err)
+	}
+	update := bson.D{{Key: "organisation_id", Value: result.ID}}
+	if err := CrewsCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+	if err := UserCrewCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+	if err := EventCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+	filter := vmdb.NewFilter()
+	filter.ElemMatchList("system_roles", "name", []string{"employee", "pool_employee", "pool_finance"})
+	if err := UserCollection.UpdateMany(ctx, filter.Bson(), vmdb.UpdateSet(update)); err != nil {
 		log.Print(err)
 	}
 }

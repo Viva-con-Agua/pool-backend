@@ -6,7 +6,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,6 +19,7 @@ func (i *UserHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.PUT("/organisation", i.UpdateOrganisation, accessCookie)
 	group.GET("/crew", i.GetUsersByCrew, accessCookie)
 	group.GET("/crew/public", i.GetMinimal, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
@@ -31,7 +31,7 @@ func (i *UserHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func (i *UserHandler) GetUsersByCrew(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -83,7 +83,7 @@ func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -94,13 +94,30 @@ func (i *UserHandler) GetMinimal(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+func (i *UserHandler) UpdateOrganisation(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserOrganisationUpdate)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	token := new(models.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
+	result := new(models.User)
+	if result, err = dao.UserOrganisationUpdate(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Updated(result)
+}
+
 func (i *UserHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UserParam)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

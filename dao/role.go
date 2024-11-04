@@ -9,11 +9,10 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func RoleInsert(ctx context.Context, i *models.RoleRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {
+func RoleInsert(ctx context.Context, i *models.RoleRequest, token *models.AccessToken) (result *vmod.Role, err error) {
 	filter := i.MatchUser()
 	user := new(models.User)
 	if err = UserCollection.AggregateOne(
@@ -38,7 +37,7 @@ func RoleInsert(ctx context.Context, i *models.RoleRequest, token *vcapool.Acces
 	return
 }
 
-func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.BulkUserRoles, err error) {
+func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *models.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.BulkUserRoles, err error) {
 	if err = models.RolesBulkPermission(token); err != nil {
 		return
 	}
@@ -84,7 +83,7 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 				if userRolesMap[role.UserID] == nil {
 					userRolesMap[role.UserID] = &models.BulkUserRoles{}
 				}
-				userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Label)
+				userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Name)
 			}
 		}
 
@@ -129,14 +128,14 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *vcapo
 			if userRolesMap[role.UserID] == nil {
 				userRolesMap[role.UserID] = &models.BulkUserRoles{}
 			}
-			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, deleteRole.Label)
+			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, deleteRole.Name)
 		}
 	}
 	result.CrewID = i.CrewID
 	return
 }
 
-func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *vcapool.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.AspBulkUserRoles, err error) {
+func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id string, token *models.AccessToken) (result *models.RoleBulkExport, userRolesMap map[string]*models.AspBulkUserRoles, err error) {
 	if err = models.RolesAdminPermission(token); err != nil {
 		return
 	}
@@ -190,13 +189,13 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 					userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 				}
 				if index := getIndex(createdRole, *deleted_roles); index >= 0 {
-					userRolesMap[role.UserID].UnchangedRoles = append(userRolesMap[role.UserID].UnchangedRoles, createdRole.Label)
+					userRolesMap[role.UserID].UnchangedRoles = append(userRolesMap[role.UserID].UnchangedRoles, createdRole.Name)
 					*deleted_roles = (*deleted_roles)[:index+copy((*deleted_roles)[index:], (*deleted_roles)[index+1:])]
 				} else {
 					if userRolesMap[role.UserID] == nil {
 						userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 					}
-					userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Label)
+					userRolesMap[role.UserID].AddedRoles = append(userRolesMap[role.UserID].AddedRoles, createdRole.Name)
 				}
 			}
 		}
@@ -206,7 +205,7 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 			if userRolesMap[role.UserID] == nil {
 				userRolesMap[role.UserID] = &models.AspBulkUserRoles{}
 			}
-			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Label)
+			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Name)
 		}
 	}
 	result.CrewID = crew_id
@@ -220,7 +219,7 @@ func getIndex(role *vmod.Role, data []vmod.Role) (index int) {
 	}
 	return -1
 }
-func RoleDelete(ctx context.Context, i *models.RoleRequest, token *vcapool.AccessToken) (result *vmod.Role, err error) {
+func RoleDelete(ctx context.Context, i *models.RoleRequest, token *models.AccessToken) (result *vmod.Role, err error) {
 	filter := i.MatchUser()
 	user := new(models.User)
 	if err = UserCollection.FindOne(

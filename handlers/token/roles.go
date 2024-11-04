@@ -7,7 +7,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,7 +29,7 @@ func (i *RoleHandler) Create(cc echo.Context) (err error) {
 	if c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -52,7 +51,7 @@ func (i *RoleHandler) CreateBulk(cc echo.Context) (err error) {
 	if c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -69,7 +68,7 @@ func (i *RoleHandler) CreateBulk(cc echo.Context) (err error) {
 	if err = dao.RoleNotification(c.Ctx(), userRolesMap); err != nil {
 		return
 	}
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		dao.RoleAdminNotification(c.Ctx(), &models.CrewParam{ID: body.CrewID})
 	}
 	return c.Created(result)
@@ -81,7 +80,7 @@ func (i *RoleHandler) Delete(cc echo.Context) (err error) {
 	if c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

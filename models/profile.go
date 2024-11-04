@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -57,7 +56,7 @@ type (
 
 var ProfileCollection = "profiles"
 
-func (i *ProfileParam) ProfileSyncPermission(token *vcapool.AccessToken) (err error) {
+func (i *ProfileParam) ProfileSyncPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(ProfileCollection)
 	}
@@ -95,7 +94,7 @@ func (i *ProfileImport) Profile(userID string) *Profile {
 	}
 }
 
-func (i *ProfileUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *ProfileUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)

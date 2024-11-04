@@ -8,16 +8,22 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.AccessToken) (result *models.Event, err error) {
+func EventInsert(ctx context.Context, i *models.EventCreate, token *models.AccessToken) (result *models.Event, err error) {
 	if err = models.EventPermission(token); err != nil {
 		return
 	}
 	event := i.EventDatabase(token)
+	if !token.Roles.Validate("admin;employee;pool_employee") {
+		crew := new(models.Crew)
+		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: i.CrewID}, token); err != nil {
+			return
+		}
+		event.OrganisationID = crew.OrganisationID
+	}
 	taking := event.TakingDatabase()
 	event.TakingID = taking.ID
 	if err = EventCollection.InsertOne(ctx, event); err != nil {
@@ -45,7 +51,7 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.Acce
 	return
 }
 
-func EventGet(i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListEvent, list_size int64, err error) {
+func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models.ListEvent, list_size int64, err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -68,7 +74,7 @@ func EventGet(i *models.EventQuery, token *vcapool.AccessToken) (result *[]model
 	return
 }
 
-func EventGetByID(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
+func EventGetByID(ctx context.Context, i *models.EventParam, token *models.AccessToken) (result *models.Event, err error) {
 	filter := i.PermittedFilter(token)
 	if err = EventCollection.AggregateOne(
 		ctx,
@@ -92,7 +98,7 @@ func EventGetInternalByID(ctx context.Context, i *models.EventParam) (result *mo
 	return
 }
 
-func EventAspGetByID(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
+func EventAspGetByID(ctx context.Context, i *models.EventParam, token *models.AccessToken) (result *models.Event, err error) {
 	filter := i.PermittedFilter(token)
 	if err = EventCollection.AggregateOne(
 		ctx,
@@ -139,7 +145,7 @@ func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_si
 	return
 }
 
-func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.EventPublic, err error) {
+func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.EventPublic, err error) {
 	filter := i.FilterEmailEvents(token)
 	result = new([]models.EventPublic)
 	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Pipe, result); err != nil {
@@ -148,7 +154,7 @@ func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *v
 	return
 }
 
-func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.AccessToken) (result *[]models.ListDetailsEvent, err error) {
+func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.ListDetailsEvent, err error) {
 	filter := i.FilterAsp(token)
 	result = new([]models.ListDetailsEvent)
 	if err = EventCollection.Aggregate(ctx, models.EventPipeline(token).Match(filter).Pipe, result); err != nil {
@@ -158,12 +164,19 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *vcapool.Acces
 	return
 }
 
-func EventUpdate(ctx context.Context, i *models.EventUpdate, token *vcapool.AccessToken) (result *models.Event, err error) {
+func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.AccessToken) (result *models.Event, err error) {
 
 	event := new(models.EventValidate)
 	filter := i.PermittedFilter(token)
 	if err = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Pipe, event); err != nil {
 		return
+	}
+	if !token.Roles.Validate("admin;employee;pool_employee") {
+		crew := new(models.Crew)
+		if crew, err = CrewGetByID(ctx, &models.CrewParam{ID: token.CrewID}, token); err != nil {
+			return
+		}
+		i.OrganisationID = crew.OrganisationID
 	}
 	taking := new(models.Taking)
 	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
@@ -235,7 +248,7 @@ func EventApplicationsUpdate(ctx context.Context, i *models.EventApplicationsUpd
 	return
 }
 
-func EventDelete(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (err error) {
+func EventDelete(ctx context.Context, i *models.EventParam, token *models.AccessToken) (err error) {
 	if err = models.EventDeletePermission(token); err != nil {
 		return
 	}
@@ -294,6 +307,13 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 			return
 		}
 		event.EventASPID = aspRole.UserID
+
+		crew := new(models.Crew)
+		if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: event.CrewID}}, &crew); err != nil {
+			return
+		}
+		event.OrganisationID = crew.OrganisationID
+
 	} else {
 		event.EventASPID = admin.ID
 	}
@@ -341,7 +361,7 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 	return
 }
 
-func EventSync(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *models.Event, err error) {
+func EventSync(ctx context.Context, i *models.EventParam, token *models.AccessToken) (result *models.Event, err error) {
 	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(i.Match()).Pipe, &result); err != nil {
 		return
 	}

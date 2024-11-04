@@ -8,7 +8,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -48,6 +47,7 @@ var (
 	MailboxCollection *vmdb.Collection
 	MessageCollection *vmdb.Collection
 
+	OrganisationCollection  *vmdb.Collection
 	ArtistCollection        *vmdb.Collection
 	ParticipationCollection *vmdb.Collection
 	OrganizerCollection     *vmdb.Collection
@@ -84,6 +84,7 @@ var (
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
+	Database.Database.Collection(models.CrewCollection).Indexes().DropAll(context.Background())
 
 	// UserCollection represents the database collection of the User model.
 	UserCollection = Database.Collection(models.UserCollection).CreateIndex("email", true)
@@ -101,7 +102,7 @@ func InitialDatabase() {
 	AddressesCollection = Database.Collection(models.AddressesCollection).CreateIndex("user_id", true)
 
 	// CrewsCollection represents the database collection of the Crew model.
-	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true)
+	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true).CreateIndex("organisation_id", false)
 
 	// ProfileCollection represents the database collection of the Profile model.
 	ProfileCollection = Database.Collection(models.ProfileCollection).CreateIndex("user_id", true)
@@ -118,6 +119,7 @@ func InitialDatabase() {
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection).CreateIndex("user_id", false).CreateIndex("mailbox_id", false)
+	OrganisationCollection = Database.Collection(models.OrganisationCollection).CreateIndex("name", true).CreateIndex("abbreviation", true)
 	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
 	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{
@@ -176,7 +178,7 @@ func InitialDatabase() {
 		context.Background(),
 		models.EventView,
 		models.EventCollection,
-		models.EventPipeline(&vcapool.AccessToken{ID: ""}),
+		models.EventPipeline(&models.AccessToken{ID: ""}),
 	)
 	EventViewCollection = Database.Collection(models.EventView)
 

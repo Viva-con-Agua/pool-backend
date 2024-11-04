@@ -7,7 +7,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -73,14 +72,14 @@ func EventStatePipeline() (pipe *vmdb.Pipeline) {
 	return
 }
 
-func EventStateHistoryPermission(token *vcapool.AccessToken) (err error) {
+func EventStateHistoryPermission(token *AccessToken) (err error) {
 	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
 		return vcago.NewPermissionDenied(PoolRoleHistoryCollection)
 	}
 	return
 }
 
-func (i *Event) NewEventStateHistory(old string, new string, token *vcapool.AccessToken) *EventStateHistoryCreate {
+func (i *Event) NewEventStateHistory(old string, new string, token *AccessToken) *EventStateHistoryCreate {
 	return &EventStateHistoryCreate{
 		ID:       uuid.NewString(),
 		UserID:   token.ID,
