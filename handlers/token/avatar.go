@@ -8,7 +8,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 )
@@ -29,7 +28,7 @@ func (i *AvatarHandler) Routes(group *echo.Group) {
 
 func (i *AvatarHandler) Upload(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -81,7 +80,7 @@ func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

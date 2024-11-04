@@ -6,11 +6,10 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	if err = i.UsersCrewCreatePermission(token); err != nil {
 		return
 	}
@@ -18,7 +17,7 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
 		return
 	}
-	result = models.NewUserCrew(i.UserID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	result = models.NewUserCrew(i.UserID, crew)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
@@ -31,12 +30,12 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	return
 }
 
-func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
 		return
 	}
-	result = models.NewUserCrew(token.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	result = models.NewUserCrew(token.ID, crew)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
@@ -49,11 +48,15 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *vcapoo
 	return
 }
 
-func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	if err = i.UserCrewUpdatePermission(token); err != nil {
 		return
 	}
-
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
+		return
+	}
+	i.OrganisationID = crew.OrganisationID
 	if err = UserCrewCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
@@ -79,11 +82,16 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapoo
 	return
 }
 
-func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *vcapool.AccessToken) (result *models.UserCrew, err error) {
+func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models.AccessToken) (result *models.UserCrew, err error) {
 	if err = i.UsersCrewUpdatePermission(token); err != nil {
 		return
 	}
 
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, i.CrewFilter(), crew); err != nil {
+		return
+	}
+	i.OrganisationID = crew.OrganisationID
 	if err = UserCrewCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
@@ -155,7 +163,7 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	if crew.Status != "active" {
 		return nil, vcago.NewBadRequest(models.CrewCollection, "crew_is_dissolved", nil)
 	}
-	result = models.NewUserCrew(user.ID, crew.ID, crew.Name, crew.Email, crew.MailboxID)
+	result = models.NewUserCrew(user.ID, crew)
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}

@@ -6,13 +6,12 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vcapool.AccessToken) (result *models.Newsletter, err error) {
+func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *models.AccessToken) (result *models.Newsletter, err error) {
 
-	if !token.Roles.Validate("employee;admin") || i.UserID == "" {
+	if !token.Roles.Validate("admin;employee;pool_employee") || i.UserID == "" {
 		if i.Value == "regional" && token.CrewID == "" {
 			return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 		}
@@ -36,7 +35,7 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *vc
 	return
 }
 
-func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *vcapool.AccessToken) (result *models.Newsletter, err error) {
+func NewsletterDelete(ctx context.Context, i *models.NewsletterParam, token *models.AccessToken) (result *models.Newsletter, err error) {
 	filter := i.Match()
 	if err = NewsletterCollection.FindOne(ctx, filter, &result); err != nil {
 		return
@@ -69,7 +68,7 @@ func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *
 	return
 }
 
-func NewsletterSync(ctx context.Context, i *models.User, token *vcapool.AccessToken) (result *[]models.Newsletter, err error) {
+func NewsletterSync(ctx context.Context, i *models.User, token *models.AccessToken) (result *[]models.Newsletter, err error) {
 	export := &models.NewsletterExport{
 		UserID:     i.ID,
 		Newsletter: i.Newsletter,

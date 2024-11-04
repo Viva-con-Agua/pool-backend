@@ -8,7 +8,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,7 +28,7 @@ func (i *ReceiptFileHandler) Routes(group *echo.Group) {
 
 func (i *ReceiptFileHandler) Upload(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -50,7 +49,7 @@ func (i *ReceiptFileHandler) Upload(cc echo.Context) (err error) {
 
 func (i *ReceiptFileHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -67,7 +66,7 @@ func (i *ReceiptFileHandler) GetByID(cc echo.Context) (err error) {
 
 func (i *ReceiptFileHandler) GetZipByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -84,7 +83,7 @@ func (i *ReceiptFileHandler) GetZipByID(cc echo.Context) (err error) {
 
 func (i *ReceiptFileHandler) DeleteByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

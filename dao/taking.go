@@ -7,7 +7,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -16,7 +15,7 @@ var (
 	TakingUpdatedActivity = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
 )
 
-func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.AccessToken) (result *models.Taking, err error) {
+func TakingInsert(ctx context.Context, i *models.TakingCreate, token *models.AccessToken) (result *models.Taking, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
@@ -45,7 +44,7 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *vcapool.Ac
 	return
 }
 
-func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *vcapool.AccessToken) (result *models.Taking, err error) {
+func TakingUpdate(ctx context.Context, i *models.TakingUpdate, token *models.AccessToken) (result *models.Taking, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
@@ -112,7 +111,7 @@ type Count struct {
 	ListSize int64 `bson:"list_size" json:"list_size"`
 }
 
-func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.AccessToken) (result []models.Taking, listSize int64, err error) {
+func TakingGet(ctx context.Context, query *models.TakingQuery, token *models.AccessToken) (result []models.Taking, listSize int64, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
@@ -143,7 +142,7 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *vcapool.Ac
 	return
 }
 
-func TakingGetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.AccessToken) (result *models.Taking, err error) {
+func TakingGetByID(ctx context.Context, param *vmod.IDParam, token *models.AccessToken) (result *models.Taking, err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
@@ -176,7 +175,7 @@ func TakingDeletetByIDSystem(ctx context.Context, id string) (err error) {
 	return
 }
 
-func TakingDeletetByID(ctx context.Context, param *vmod.IDParam, token *vcapool.AccessToken) (err error) {
+func TakingDeletetByID(ctx context.Context, param *vmod.IDParam, token *models.AccessToken) (err error) {
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}

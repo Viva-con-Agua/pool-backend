@@ -7,12 +7,11 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewInsert(ctx context.Context, i *models.CrewCreate, token *models.AccessToken) (result *models.Crew, err error) {
 
 	if err = models.CrewPermission(token); err != nil {
 		return
@@ -33,7 +32,7 @@ func CrewInsert(ctx context.Context, i *models.CrewCreate, token *vcapool.Access
 	return
 }
 
-func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *[]models.Crew, err error) {
+func CrewGet(ctx context.Context, i *models.CrewQuery, token *models.AccessToken) (result *[]models.Crew, err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}
@@ -41,13 +40,14 @@ func CrewGet(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToke
 	result = new([]models.Crew)
 	opt := options.Find().SetSort(bson.D{{Key: "name", Value: 1}})
 	opt.Collation = &options.Collation{Locale: "en", Strength: 2}
-	if err = CrewsCollection.Find(ctx, filter, result, opt); err != nil {
+
+	if err = CrewsCollection.Aggregate(ctx, models.CrewPipeline().Match(filter).Pipe, result); err != nil {
 		return
 	}
 	return
 }
 
-func CrewGetByID(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewGetByID(ctx context.Context, i *models.CrewParam, token *models.AccessToken) (result *models.Crew, err error) {
 	filter := i.PermittedFilter(token)
 	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
 		return
@@ -64,7 +64,7 @@ func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.C
 	return
 }
 
-func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *models.AccessToken) (result *models.Crew, err error) {
 	filter := i.PermittedFilter(token)
 	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
 		return
@@ -72,7 +72,7 @@ func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *vcapool.Ac
 	return
 }
 
-func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *models.AccessToken) (result *models.Crew, err error) {
 	if err = models.CrewUpdatePermission(token); err != nil {
 		return
 	}
@@ -91,7 +91,7 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 	if crew.AspSelection == "selected" && match < len(strings) && strings[match] == i.AspSelection {
 		RoleHistoryDelete(ctx, &models.RoleHistoryRequest{CrewID: i.ID, Confirmed: false}, token)
 	}
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if err = CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i.ToCrewUpdateASP()), &result); err != nil {
 			return
 		}
@@ -100,18 +100,17 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *vcapool.Access
 			return
 		}
 	}
-	if crew.Email != i.Email || crew.Name != i.Name {
+	if crew.Email != i.Email || crew.Name != i.Name || crew.OrganisationID != i.OrganisationID {
 		filter := bson.D{{Key: "crew_id", Value: i.ID}}
-		update := bson.D{{Key: "email", Value: i.Email}, {Key: "name", Value: i.Name}}
+		update := bson.D{{Key: "email", Value: i.Email}, {Key: "name", Value: i.Name}, {Key: "organisation_id", Value: i.OrganisationID}}
 		if err = UserCrewCollection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 			return
 		}
-
 	}
 	return
 }
 
-func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value string, token *vcapool.AccessToken) (result *models.Crew, err error) {
+func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value string, token *models.AccessToken) (result *models.Crew, err error) {
 	if err = models.CrewUpdatePermission(token); err != nil {
 		return
 	}
@@ -127,7 +126,7 @@ func CrewUpdateAspSelection(ctx context.Context, i *models.CrewParam, value stri
 	return
 }
 
-func CrewDelete(ctx context.Context, i *models.CrewParam, token *vcapool.AccessToken) (err error) {
+func CrewDelete(ctx context.Context, i *models.CrewParam, token *models.AccessToken) (err error) {
 	if err = models.CrewPermission(token); err != nil {
 		return
 	}

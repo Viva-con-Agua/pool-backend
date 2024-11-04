@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -17,7 +16,7 @@ func ReceiptFileCreate(
 	ctx context.Context,
 	create *models.ReceiptFileCreate,
 	file *vmod.File,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result *models.ReceiptFile,
 	err error,
@@ -44,7 +43,7 @@ func ReceiptFileCreate(
 func ReceiptFileGetByID(
 	ctx context.Context,
 	id *vmod.IDParam,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result []byte,
 	err error,
@@ -52,9 +51,8 @@ func ReceiptFileGetByID(
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
-	filter := bson.D{{Key: "_id", Value: id.ID}}
 	file := new(models.ReceiptFile)
-	if err = ReceiptFileCollection.FindOne(ctx, filter, file); err != nil {
+	if err = ReceiptFileCollection.FindOne(ctx, id.Filter(), file); err != nil {
 		return
 	}
 	//permission check
@@ -67,7 +65,7 @@ func ReceiptFileGetByID(
 func ReceiptFileZipGetByID(
 	ctx context.Context,
 	id *vmod.IDParam,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result []byte,
 	err error,
@@ -76,8 +74,7 @@ func ReceiptFileZipGetByID(
 		return
 	}
 	deposit := new(models.Deposit)
-	filter := bson.D{{Key: "_id", Value: id.ID}}
-	if err = DepositCollection.AggregateOne(ctx, models.DepositPipeline().Match(filter).Pipe, deposit); err != nil {
+	if err = DepositCollection.AggregateOne(ctx, models.DepositPipeline().Match(id.Filter()).Pipe, deposit); err != nil {
 		return
 	}
 	buf := new(bytes.Buffer)
@@ -103,7 +100,7 @@ func ReceiptFileZipGetByID(
 func ReceiptFileDeleteByID(
 	ctx context.Context,
 	id *vmod.IDParam,
-	token *vcapool.AccessToken,
+	token *models.AccessToken,
 ) (
 	result *vmod.DeletedResponse,
 	err error,
@@ -111,16 +108,15 @@ func ReceiptFileDeleteByID(
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
-	filter := bson.D{{Key: "_id", Value: id.ID}}
 	file := new(models.ReceiptFile)
-	if err = ReceiptFileCollection.FindOne(ctx, filter, file); err != nil {
+	if err = ReceiptFileCollection.FindOne(ctx, id.Filter(), file); err != nil {
 		return
 	}
 	//permission check
 	if err = Database.DeleteFile(ctx, id.ID); err != nil {
 		return
 	}
-	err = ReceiptFileCollection.DeleteOne(ctx, filter)
+	err = ReceiptFileCollection.DeleteOne(ctx, id.Filter())
 	result = vmod.NewDeletedResponse(id.ID)
 	return
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -79,13 +78,14 @@ type (
 	}
 
 	ParticipationQuery struct {
-		ID       []string `query:"id" qs:"id"`
-		EventID  []string `query:"event_id" qs:"event_id"`
-		Comment  []string `query:"comment" bson:"comment"`
-		Status   []string `query:"status" bson:"status"`
-		UserId   []string `query:"user_id" bson:"user_id"`
-		CrewName []string `query:"crew_name" bson:"crew_name"`
-		CrewId   []string `query:"crew_id" qs:"crew_id"`
+		ID             []string `query:"id" qs:"id"`
+		EventID        []string `query:"event_id" qs:"event_id"`
+		Comment        []string `query:"comment" bson:"comment"`
+		Status         []string `query:"status" bson:"status"`
+		UserId         []string `query:"user_id" bson:"user_id"`
+		CrewName       []string `query:"crew_name" bson:"crew_name"`
+		CrewId         []string `query:"crew_id" qs:"crew_id"`
+		OrganisationId []string `query:"organisation_id" qs:"organisation_id"`
 	}
 	ParticipationStateRequest struct {
 		ID     string `json:"id"`
@@ -100,28 +100,28 @@ type (
 var ParticipationCollection = "participations"
 var ParticipationEventView = "participations_event"
 
-func ParticipationPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+func ParticipationPermission(token *AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(ParticipationCollection)
 	}
 	return
 }
 
-func ParticipationDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+func ParticipationDeletePermission(token *AccessToken) (err error) {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(ParticipationCollection)
 	}
 	return
 }
 
-func (i *ParticipationUpdate) ParticipationUpdatePermission(token *vcapool.AccessToken, participation *Participation) (err error) {
+func (i *ParticipationUpdate) ParticipationUpdatePermission(token *AccessToken, participation *Participation) (err error) {
 	switch i.Status {
 	case "requested", "withdrawn":
-		if !token.Roles.Validate("employee;admin") && token.ID != participation.UserID {
+		if !token.Roles.Validate("admin;employee;pool_employee") && token.ID != participation.UserID {
 			return vcago.NewPermissionDenied(ParticipationCollection)
 		}
 	case "confirmed", "rejected":
-		if !token.Roles.Validate("employee;admin") && !token.PoolRoles.Validate(ASPEventRole) && token.ID != participation.Event.EventASPID {
+		if !token.Roles.Validate("admin;employee;pool_employee") && !token.PoolRoles.Validate(ASPEventRole) && token.ID != participation.Event.EventASPID {
 			return vcago.NewPermissionDenied(ParticipationCollection)
 		}
 	}
@@ -179,7 +179,7 @@ func (i *Participation) UpdateEventApplicationsUpdate(value int, applications *E
 	return &EventApplicationsUpdate{ID: i.EventID, Applications: *applications}
 }
 
-func (i *ParticipationCreate) ParticipationDatabase(token *vcapool.AccessToken) *ParticipationDatabase {
+func (i *ParticipationCreate) ParticipationDatabase(token *AccessToken) *ParticipationDatabase {
 	return &ParticipationDatabase{
 		ID:       uuid.NewString(),
 		UserID:   token.ID,
@@ -200,31 +200,19 @@ func (i *ParticipationImport) ParticipationDatabase() *ParticipationDatabase {
 	}
 }
 func (i *ParticipationStateRequest) IsRequested() bool {
-	if i.Status == "requested" {
-		return true
-	}
-	return false
+	return i.Status == "requested"
 }
 func (i *ParticipationStateRequest) IsConfirmed() bool {
-	if i.Status == "confirmed" {
-		return true
-	}
-	return false
+	return i.Status == "confirmed"
 }
 func (i *ParticipationStateRequest) IsWithdrawn() bool {
-	if i.Status == "withdrawn" {
-		return true
-	}
-	return false
+	return i.Status == "withdrawn"
 }
 func (i *ParticipationStateRequest) IsRejected() bool {
-	if i.Status == "rejected" {
-		return true
-	}
-	return false
+	return i.Status == "rejected"
 }
 
-func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.EqualStringList("event_id", i.EventID)
@@ -232,13 +220,14 @@ func (i *ParticipationQuery) PermittedFilter(token *vcapool.AccessToken) bson.D 
 	filter.EqualStringList("comment", i.Comment)
 	filter.EqualStringList("user_id", i.UserId)
 	filter.EqualStringList("crew.name", i.CrewName)
-	if token.Roles.Validate("employee;admin") {
+	filter.EqualStringList("crew.organisation_id", i.OrganisationId)
+	if token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualStringList("crew_id", i.CrewId)
 	}
 	return filter.Bson()
 }
 
-func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationQuery) FilterUser(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.EqualStringList("event_id", i.EventID)
@@ -246,6 +235,7 @@ func (i *ParticipationQuery) FilterUser(token *vcapool.AccessToken) bson.D {
 	filter.EqualStringList("comment", i.Comment)
 	filter.EqualStringList("crew.name", i.CrewName)
 	filter.EqualStringList("crew_id", i.CrewId)
+	filter.EqualStringList("crew.organisation_id", i.OrganisationId)
 	filter.EqualString("user_id", token.ID)
 	return filter.Bson()
 }
@@ -257,22 +247,22 @@ func (i *Event) FilterParticipants() bson.D {
 	return filter.Bson()
 }
 
-func (i *ParticipationQuery) FilterAspInformation(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationQuery) FilterAspInformation(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("event_id", i.EventID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("status", "confirmed")
 		filter.EqualString("user_id", token.ID)
 	}
 	return filter.Bson()
 }
 
-func (i *EventParam) FilterEvent(token *vcapool.AccessToken) bson.D {
+func (i *EventParam) FilterEvent(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event.event_asp_id", token.ID)
-	} else if !token.Roles.Validate("employee;admin") {
+	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("event.crew_id", token.CrewID)
 	}
 	return filter.Bson()
@@ -296,33 +286,33 @@ func (i *ParticipationStateRequest) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *ParticipationUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.PoolRoles.Validate("admin;employee") {
+	if !token.PoolRoles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("event.crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
 
-func (i *ParticipationParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("user_id", token.ID)
-	} else if !token.Roles.Validate("employee;admin") {
+	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
 
-func (i *ParticipationStateRequest) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *ParticipationStateRequest) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	if i.IsWithdrawn() {
 		filter.EqualString("user_id", token.ID)
 	} else if i.IsConfirmed() || i.IsRejected() {
-		if !token.Roles.Validate("employee;admin") {
+		if !token.Roles.Validate("admin;employee;pool_employee") {
 			filter.EqualString("crew_id", token.CrewID)
 		}
 	} else {
