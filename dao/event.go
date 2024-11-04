@@ -7,10 +7,10 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func EventInsert(ctx context.Context, i *models.EventCreate, token *vcapool.AccessToken) (result *models.Event, err error) {
@@ -56,14 +56,14 @@ func EventGet(i *models.EventQuery, token *vcapool.AccessToken) (result *[]model
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	opts := options.Count().SetHint("_id_")
-	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit)
-	}
-	if cursor, cErr := EventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		list_size = 0
+
+	count := vmod.Count{}
+	var cErr error
+	if cErr = EventCollection.AggregateOne(ctx, pipeline, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
 	} else {
-		list_size = cursor
+		list_size = int64(count.Total)
 	}
 	return
 }
@@ -127,16 +127,14 @@ func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_si
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	opts := options.Count().SetHint("_id_")
-	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit)
-	}
-	if cursor, cErr := PublicEventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		list_size = 0
+
+	count := vmod.Count{}
+	var cErr error
+	if cErr = EventCollection.AggregateOne(ctx, pipeline, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
 	} else {
-		list_size = cursor
+		list_size = int64(count.Total)
 	}
 	return
 }

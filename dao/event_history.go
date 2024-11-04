@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/Viva-con-Agua/vcapool"
 )
 
@@ -16,13 +17,21 @@ func EventStateHistoryInsert(ctx context.Context, i *models.EventStateHistoryCre
 
 func EventStateHistoryGet(ctx context.Context, i *models.EventStateHistoryQuery, token *vcapool.AccessToken) (result *[]models.EventStateHistory, list_size int64, err error) {
 	result = new([]models.EventStateHistory)
+	pipeline := models.EventStatePipeline().Match(i.Filter()).Count().Pipe
 	if err = EventStateHistoryCollection.Aggregate(
 		ctx,
-		models.EventStatePipeline().Match(i.Filter()).Pipe,
+		pipeline,
 		result,
 	); err != nil {
 		return
 	}
-	list_size = int64(len(*result))
+	count := vmod.Count{}
+	var cErr error
+	if cErr = EventStateHistoryCollection.AggregateOne(ctx, pipeline, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
+	} else {
+		list_size = int64(count.Total)
+	}
 	return
 }
