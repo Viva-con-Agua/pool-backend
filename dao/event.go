@@ -65,8 +65,7 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 
 	count := vmod.Count{}
 	var cErr error
-	if cErr = EventCollection.AggregateOne(ctx, pipeline, &count); cErr != nil {
-		print(cErr)
+	if cErr = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
 		list_size = 1
 	} else {
 		list_size = int64(count.Total)
@@ -136,7 +135,7 @@ func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_si
 
 	count := vmod.Count{}
 	var cErr error
-	if cErr = EventCollection.AggregateOne(ctx, pipeline, &count); cErr != nil {
+	if cErr = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
 	} else {

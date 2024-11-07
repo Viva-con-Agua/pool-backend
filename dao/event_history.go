@@ -16,17 +16,17 @@ func EventStateHistoryInsert(ctx context.Context, i *models.EventStateHistoryCre
 
 func EventStateHistoryGet(ctx context.Context, i *models.EventStateHistoryQuery, token *models.AccessToken) (result *[]models.EventStateHistory, list_size int64, err error) {
 	result = new([]models.EventStateHistory)
-	pipeline := models.EventStatePipeline().Match(i.Filter()).Count().Pipe
+	pipeline := models.EventStatePipeline().Match(i.Filter())
 	if err = EventStateHistoryCollection.Aggregate(
 		ctx,
-		pipeline,
+		pipeline.Pipe,
 		result,
 	); err != nil {
 		return
 	}
 	count := vmod.Count{}
 	var cErr error
-	if cErr = EventStateHistoryCollection.AggregateOne(ctx, pipeline, &count); cErr != nil {
+	if cErr = EventStateHistoryCollection.AggregateOne(ctx, pipeline.Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
 	} else {
