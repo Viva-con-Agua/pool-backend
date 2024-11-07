@@ -40,8 +40,9 @@ var (
 	AvatarCollection *vmdb.Collection
 
 	// PoolRoleCollection represents the database collection of the PoolRole Collection.
-	PoolRoleCollection        *vmdb.Collection
-	PoolRoleHistoryCollection *vmdb.Collection
+	PoolRoleCollection          *vmdb.Collection
+	PoolRoleHistoryCollection   *vmdb.Collection
+	EventStateHistoryCollection *vmdb.Collection
 
 	MailboxCollection *vmdb.Collection
 	MessageCollection *vmdb.Collection
@@ -112,6 +113,7 @@ func InitialDatabase() {
 	// PoolRoleCollection represents the database collection of the PoolRole Collection.
 	PoolRoleCollection = Database.Collection(models.PoolRoleCollection).CreateIndex("user_id", false).CreateMultiIndex(bson.D{{Key: "name", Value: 1}, {Key: "user_id", Value: 1}}, true)
 	PoolRoleHistoryCollection = Database.Collection(models.PoolRoleHistoryCollection).CreateIndex("user_id", false).CreateIndex("crew_id", false)
+	EventStateHistoryCollection = Database.Collection(models.EventStateHistoryCollection).CreateIndex("user_id", false).CreateIndex("crew_id", false).CreateIndex("event_id", false).CreateIndex("new_state", false).CreateIndex("date", false)
 
 	//
 	MailboxCollection = Database.Collection(models.MailboxCollection)

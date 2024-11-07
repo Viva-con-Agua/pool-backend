@@ -11,11 +11,18 @@ import (
 
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
 
-	database := i.ParticipationDatabase(token)
+	event := new(models.Event)
+	if err = EventCollection.FindOne(
+		ctx,
+		bson.D{{Key: "_id", Value: i.EventID}},
+		event,
+	); err != nil {
+		return
+	}
+	database := i.ParticipationDatabase(token, event)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
 	}
-	event := new(models.Event)
 	if event, err = EventGetInternalByID(ctx, &models.EventParam{ID: i.EventID}); err != nil {
 		return
 	}

@@ -21,7 +21,8 @@ func OrganisationInsert(ctx context.Context, i *models.OrganisationCreate, token
 func OrganisationGet(ctx context.Context, i *models.OrganisationQuery) (result *[]models.Organisation, err error) {
 	filter := i.Filter()
 	result = new([]models.Organisation)
-	if err = OrganisationCollection.Find(ctx, filter, result); err != nil {
+
+	if err = OrganisationCollection.Aggregate(ctx, models.OrganisationPipeline().Match(filter).Pipe, result); err != nil {
 		return
 	}
 	return
