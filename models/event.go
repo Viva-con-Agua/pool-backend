@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -269,6 +270,7 @@ type (
 	Location struct {
 		Name        string   `json:"name" bson:"name"`
 		Street      string   `json:"street" bson:"street"`
+		Zip         string   `json:"zip" bson:"zip"`
 		City        string   `json:"city" bson:"city"`
 		Country     string   `json:"country" bson:"country"`
 		CountryCode string   `json:"country_code" bson:"country_code"`
@@ -656,4 +658,18 @@ func (i *EventUpdate) EventStateValidation(token *AccessToken, event *EventValid
 		return vcago.NewBadRequest(EventCollection, "taking_failure", nil)
 	}
 	return
+}
+
+func (i *Event) GetLocation() string {
+	if i.Location.PlaceID != "" {
+		return fmt.Sprintf("%v, %v %v", i.Location.Name, i.Location.Zip, i.Location.City)
+	}
+	return fmt.Sprintf("Online: %v", i.MeetingURL)
+}
+
+func (i *EventPublic) GetLocation() string {
+	if i.Location.PlaceID != "" {
+		return fmt.Sprintf("%v, %v %v", i.Location.Name, i.Location.Zip, i.Location.City)
+	}
+	return "Online"
 }

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func UserInsert(ctx context.Context, i *models.UserDatabase) (result *models.User, err error) {
@@ -48,16 +48,14 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	opts := options.Count().SetHint("_id_")
-	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit)
-	}
-	if cursor, cErr := UserViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		list_size = 0
+
+	count := vmod.Count{}
+	var cErr error
+	if cErr = UserViewCollection.AggregateOne(ctx, models.UserPermittedPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
 	} else {
-		list_size = cursor
+		list_size = int64(count.Total)
 	}
 	return
 }

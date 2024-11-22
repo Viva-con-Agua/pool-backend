@@ -7,9 +7,9 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func EventInsert(ctx context.Context, i *models.EventCreate, token *models.AccessToken) (result *models.Event, err error) {
@@ -44,6 +44,10 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 	if err = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(filter).Pipe, &result); err != nil {
 		return
 	}
+	history := result.NewEventStateHistory("", result.EventState.State, token)
+	if err = EventStateHistoryInsert(ctx, history, token); err != nil {
+		return
+	}
 	return
 }
 
@@ -58,14 +62,13 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	opts := options.Count().SetHint("_id_")
-	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit)
-	}
-	if cursor, cErr := EventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		list_size = 0
+
+	count := vmod.Count{}
+	var cErr error
+	if cErr = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+		list_size = 1
 	} else {
-		list_size = cursor
+		list_size = int64(count.Total)
 	}
 	return
 }
@@ -129,16 +132,14 @@ func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_si
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	opts := options.Count().SetHint("_id_")
-	if i.FullCount != "true" {
-		opts.SetSkip(i.Skip).SetLimit(i.Limit)
-	}
-	if cursor, cErr := PublicEventViewCollection.Collection.CountDocuments(ctx, filter, opts); cErr != nil {
-		list_size = 0
+
+	count := vmod.Count{}
+	var cErr error
+	if cErr = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
 	} else {
-		list_size = cursor
+		list_size = int64(count.Total)
 	}
 	return
 }
@@ -196,6 +197,10 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		return
 	}
 	if event.EventState.State != result.EventState.State {
+		history := result.NewEventStateHistory(event.EventState.State, result.EventState.State, token)
+		if err = EventStateHistoryInsert(ctx, history, token); err != nil {
+			return
+		}
 		if result.EventState.State == "canceled" {
 			EventParticipantsNotification(ctx, result, "event_cancel")
 			updateTaking := bson.D{{Key: "state.no_income", Value: true}}
@@ -207,7 +212,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		if result.EventState.State == "published" ||
 			result.EventState.State == "canceled" ||
 			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
-			EventStateNotification(ctx, result, "event_state")
+			EventStateNotification(ctx, result)
 		}
 	} else if event.StartAt != result.StartAt ||
 		event.EndAt != result.EndAt ||
@@ -216,7 +221,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		EventParticipantsNotification(ctx, result, "event_update")
 	}
 	if event.EventASPID != result.EventASPID && result.EventASPID != token.ID {
-		EventASPNotification(ctx, result, "event_asp")
+		EventASPNotification(ctx, result)
 	}
 	if event.EndAt != i.EndAt {
 		updateTaking := bson.D{{Key: "date_of_taking", Value: i.EndAt}}
@@ -394,7 +399,7 @@ func EventParticipantsNotification(ctx context.Context, i *models.Event, templat
 	return
 }
 
-func EventASPNotification(ctx context.Context, i *models.Event, template string) (err error) {
+func EventASPNotification(ctx context.Context, i *models.Event) (err error) {
 
 	if i.EventASPID == "" {
 		return vcago.NewNotFound(models.EventCollection, i)
@@ -405,6 +410,7 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 		return
 	}
 
+	template := "event_asp"
 	mail := vcago.NewMailData(user.Email, "pool-backend", template, "pool", user.Country)
 	mail.AddUser(user.User())
 	mail.AddContent(i.ToContent())
@@ -417,7 +423,7 @@ func EventASPNotification(ctx context.Context, i *models.Event, template string)
 	return
 }
 
-func EventStateNotification(ctx context.Context, i *models.Event, template string) (err error) {
+func EventStateNotification(ctx context.Context, i *models.Event) (err error) {
 
 	if i.EventASPID == "" {
 		return vcago.NewNotFound(models.EventCollection, i)
@@ -428,6 +434,7 @@ func EventStateNotification(ctx context.Context, i *models.Event, template strin
 		return
 	}
 
+	template := "event_state"
 	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
 	mail.AddUser(eventAps.User())
 	mail.AddContent(i.ToContent())
@@ -436,5 +443,25 @@ func EventStateNotification(ctx context.Context, i *models.Event, template strin
 	//notification.AddUser(user.User())
 	//notification.AddContent(i.ToContent())
 	//vcago.Nats.Publish("system.notification.job", notification)
+	return
+}
+
+func EventHistoryAdminNotification(ctx context.Context, data []models.EventStateHistoryNotification) (err error) {
+	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "events_published", "pool", "de")
+	mail.AddContent(models.EventHistoryAdminContent(data))
+	vcago.Nats.Publish("system.mail.job", mail)
+
+	mail2 := vcago.NewMailData("festival@vivaconagua.org", "pool-backend", "events_published", "pool", "de")
+	mail2.AddContent(models.EventHistoryAdminContent(data))
+	vcago.Nats.Publish("system.mail.job", mail2)
+	return
+}
+
+func EventHistoryCrewNotification(ctx context.Context, data_collection map[string][]models.EventStateHistoryNotification) (err error) {
+	for email, data := range data_collection {
+		mail := vcago.NewMailData(email, "pool-backend", "events_crew_published", "pool", "de")
+		mail.AddContent(models.EventHistoryAdminContent(data))
+		vcago.Nats.Publish("system.mail.job", mail)
+	}
 	return
 }

@@ -17,10 +17,14 @@ func UpdateTicker() {
 	EventStateFinishTicker()
 	EventStateClosedTicker()
 	UserActiveStateTicker()
+	//SendWeeklyNotification()
+	SendWeeklyCrewNotification()
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
+				//SendWeeklyNotification()
+				//SendWeeklyCrewNotification()
 				EventStateFinishTicker()
 				EventStateClosedTicker()
 				UserActiveStateTicker()
@@ -111,4 +115,77 @@ func UserActiveStateTicker() {
 		}
 	}
 
+}
+
+// SendWeeklyNotification Send a notification mail to festival@ and netzwerk@ for all published events last 7 days
+func SendWeeklyNotification() {
+
+	h, _, _ := time.Now().Clock()
+	if time.Now().Weekday() != time.Monday {
+		return
+	} else if h < 9 || h >= 10 {
+		return
+	}
+
+	filter := models.EventPublishedLastWeek()
+
+	events := []models.EventStateHistory{}
+	pipeline := models.EventStatePipeline().Match(filter).Pipe
+	if err := EventStateHistoryCollection.Aggregate(context.Background(), pipeline, &events); err != nil {
+		log.Print(err)
+	}
+
+	eventNotifications := []models.EventStateHistoryNotification{}
+	for _, e := range events {
+		eventNotifications = append(eventNotifications, models.EventStateHistoryNotification{
+			EventID:       e.EventID,
+			EventName:     e.Event.Name,
+			EventCrew:     e.Crew.Name,
+			EventStart:    time.Unix(e.Event.StartAt, 0).Format("02.01.2006 15:04"),
+			EventArtist:   models.ToArtistList(e.Event.Artists),
+			EventLocation: e.Event.GetLocation(),
+			PublishedDate: time.Unix(e.Date, 0).Format("02.01.2006"),
+		})
+	}
+
+	if err := EventHistoryAdminNotification(context.Background(), eventNotifications); err != nil {
+		log.Print(err)
+
+	}
+}
+
+// SendWeeklyCrewNotification Send a notification mail to each crew email address for all published events last 7 days
+func SendWeeklyCrewNotification() {
+
+	h, _, _ := time.Now().Clock()
+	if time.Now().Weekday() != time.Monday {
+		return
+	} else if h < 9 || h >= 10 {
+		return
+	}
+
+	filter := models.EventPublishedLastWeek()
+	events := []models.EventStateHistory{}
+	pipeline := models.EventStatePipeline().Match(filter).Pipe
+	if err := EventStateHistoryCollection.Aggregate(context.Background(), pipeline, &events); err != nil {
+		log.Print(err)
+	}
+	m := make(map[string][]models.EventStateHistoryNotification)
+	for _, e := range events {
+		if e.CrewID == "" {
+			continue
+		}
+		m[e.Crew.Email] = append(m[e.Crew.Email], models.EventStateHistoryNotification{
+			EventID:       e.EventID,
+			EventName:     e.Event.Name,
+			EventCrew:     e.Crew.Name,
+			EventStart:    time.Unix(e.Event.StartAt, 0).Format("02.01.2006 15:04"),
+			EventArtist:   models.ToArtistList(e.Event.Artists),
+			EventLocation: e.Event.GetLocation(),
+			PublishedDate: time.Unix(e.Date, 0).Format("02.01.2006"),
+		})
+	}
+	if err := EventHistoryCrewNotification(context.Background(), m); err != nil {
+		log.Print(err)
+	}
 }

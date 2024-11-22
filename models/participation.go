@@ -179,13 +179,17 @@ func (i *Participation) UpdateEventApplicationsUpdate(value int, applications *E
 	return &EventApplicationsUpdate{ID: i.EventID, Applications: *applications}
 }
 
-func (i *ParticipationCreate) ParticipationDatabase(token *AccessToken) *ParticipationDatabase {
+func (i *ParticipationCreate) ParticipationDatabase(token *AccessToken, event *Event) *ParticipationDatabase {
+	eventStatus := "requested"
+	if event.TypeOfEvent == "crew_meeting" {
+		eventStatus = "confirmed"
+	}
 	return &ParticipationDatabase{
 		ID:       uuid.NewString(),
 		UserID:   token.ID,
 		EventID:  i.EventID,
 		Comment:  i.Comment,
-		Status:   "requested",
+		Status:   eventStatus,
 		CrewID:   token.CrewID,
 		Modified: vmod.NewModified(),
 	}
