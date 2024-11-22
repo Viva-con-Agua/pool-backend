@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -21,18 +20,18 @@ type (
 		Money    vmod.Money `json:"money" bson:"money"`
 	}
 	DepositUnit struct {
-		ID        string         `json:"id" bson:"_id"`
-		TakingID  string         `json:"taking_id" bson:"taking_id"`
-		Taking    TakingDatabase `json:"taking" bson:"taking"`
-		Money     vmod.Money     `json:"money" bson:"money"`
-		DepositID string         `json:"deposit_id" bson:"deposit_id"`
-		Status    string         `json:"status" bson:"status"`
-		Modified  vmod.Modified  `json:"modified" bson:"modified"`
+		ID        string        `json:"id" bson:"_id"`
+		TakingID  string        `json:"taking_id" bson:"taking_id"`
+		Taking    Taking        `json:"taking" bson:"taking"`
+		Money     vmod.Money    `json:"money" bson:"money"`
+		DepositID string        `json:"deposit_id" bson:"deposit_id"`
+		Status    string        `json:"status" bson:"status"`
+		Modified  vmod.Modified `json:"modified" bson:"modified"`
 	}
 	DepositUnitTaking struct {
 		ID        string          `json:"id" bson:"_id"`
 		TakingID  string          `json:"taking_id" bson:"taking_id"`
-		Taking    TakingDatabase  `json:"taking" bson:"taking"`
+		Taking    Taking          `json:"taking" bson:"taking"`
 		Money     vmod.Money      `json:"money" bson:"money"`
 		DepositID string          `json:"deposit_id" bson:"deposit_id"`
 		Deposit   DepositDatabase `json:"deposit" bson:"deposit"`
@@ -80,13 +79,13 @@ type (
 		Creator          User          `json:"creator" bson:"creator"`
 		Confirmer        User          `json:"confirmer" bson:"confirmer"`
 		HasExternal      bool          `json:"has_external" bson:"has_external"`
+		Receipts         []ReceiptFile `json:"receipts" bson:"receipts"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
 	DepositQuery struct {
 		ID               []string `query:"id"`
 		Name             string   `query:"deposit_unit_name"`
-		Search           string   `query:"search"`
 		ReasonForPayment string   `query:"reason_for_payment"`
 		CrewID           []string `query:"crew_id"`
 		Status           []string `query:"deposit_status"`
@@ -97,8 +96,7 @@ type (
 		UpdatedFrom      string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo        string   `query:"created_to" qs:"created_to"`
 		CreatedFrom      string   `query:"created_from" qs:"created_from"`
-		SortField        string   `query:"sort"`
-		SortDirection    string   `query:"sort_dir"`
+		vmdb.Query
 	}
 	DepositParam struct {
 		ID     string `param:"id"`
@@ -110,14 +108,14 @@ var DepositCollection = "deposits"
 var DepositUnitCollection = "deposit_units"
 var DepositUnitTakingView = "deposit_unit_taking"
 
-func DepositPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+func DepositPermission(token *AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate("finance")) {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
 	return
 }
 
-func (i *DepositParam) DepositSyncPermission(token *vcapool.AccessToken) (err error) {
+func (i *DepositParam) DepositSyncPermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
@@ -127,7 +125,7 @@ func (i *DepositParam) DepositSyncPermission(token *vcapool.AccessToken) (err er
 func DepositPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
-	pipe.LookupUnwind(TakingCollection, "deposit_units.taking_id", "_id", "deposit_units.taking")
+	pipe.LookupUnwind(TakingDepositView, "deposit_units.taking_id", "_id", "deposit_units.taking")
 	pipe.Append(bson.D{
 		{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
@@ -139,6 +137,7 @@ func DepositPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.Lookup(ReceiptFileCollection, "_id", "deposit_id", "receipts")
 	return pipe
 }
 
@@ -155,7 +154,7 @@ func UpdateWaitTaking(amount int64) bson.D {
 }
 */
 
-func (i *DepositCreate) DepositDatabase(token *vcapool.AccessToken) (r *DepositDatabase, d []DepositUnit) {
+func (i *DepositCreate) DepositDatabase(token *AccessToken) (r *DepositDatabase, d []DepositUnit) {
 	d = []DepositUnit{}
 	var amount int64 = 0
 	id := uuid.NewString()
@@ -233,11 +232,11 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 	return
 }
 
-func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *DepositQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.SearchString([]string{"deposit_units.taking.name", "reason_for_payment"}, i.Search)
-	if !token.Roles.Validate("admin;employee") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
@@ -249,10 +248,10 @@ func (i *DepositQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *DepositParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *DepositParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("admin;employee") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()

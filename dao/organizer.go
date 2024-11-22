@@ -5,10 +5,9 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 )
 
-func OrganizerInsert(ctx context.Context, i *models.OrganizerCreate, token *vcapool.AccessToken) (result *models.Organizer, err error) {
+func OrganizerInsert(ctx context.Context, i *models.OrganizerCreate, token *models.AccessToken) (result *models.Organizer, err error) {
 	if err = models.OrganizerPermission(token); err != nil {
 		return
 	}
@@ -36,7 +35,7 @@ func OrganizerGetByID(ctx context.Context, i *models.OrganizerParam) (result *mo
 	return
 }
 
-func OrganizerUpdate(ctx context.Context, i *models.OrganizerUpdate, token *vcapool.AccessToken) (result *models.Organizer, err error) {
+func OrganizerUpdate(ctx context.Context, i *models.OrganizerUpdate, token *models.AccessToken) (result *models.Organizer, err error) {
 	if err = models.OrganizerPermission(token); err != nil {
 		return
 	}
@@ -47,7 +46,7 @@ func OrganizerUpdate(ctx context.Context, i *models.OrganizerUpdate, token *vcap
 	return
 }
 
-func OrganizerDelete(ctx context.Context, i *models.OrganizerParam, token *vcapool.AccessToken) (err error) {
+func OrganizerDelete(ctx context.Context, i *models.OrganizerParam, token *models.AccessToken) (err error) {
 	if err = models.OrganizerDeletePermission(token); err != nil {
 		return
 	}

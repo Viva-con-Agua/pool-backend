@@ -7,11 +7,10 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func MessageInsert(ctx context.Context, i *models.MessageCreate, token *vcapool.AccessToken) (result *models.Message, err error) {
+func MessageInsert(ctx context.Context, i *models.MessageCreate, token *models.AccessToken) (result *models.Message, err error) {
 	crew := new(models.Crew)
 	CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew)
 	event := new(models.Event)
@@ -26,7 +25,7 @@ func MessageInsert(ctx context.Context, i *models.MessageCreate, token *vcapool.
 	return
 }
 
-func MessageGetByID(ctx context.Context, i *models.MessageParam, token *vcapool.AccessToken) (result *models.Message, err error) {
+func MessageGetByID(ctx context.Context, i *models.MessageParam, token *models.AccessToken) (result *models.Message, err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
 		log.Print("No crew for user")
@@ -38,7 +37,7 @@ func MessageGetByID(ctx context.Context, i *models.MessageParam, token *vcapool.
 	return
 }
 
-func MessageUpdate(ctx context.Context, i *models.MessageUpdate, token *vcapool.AccessToken) (result *models.Message, err error) {
+func MessageUpdate(ctx context.Context, i *models.MessageUpdate, token *models.AccessToken) (result *models.Message, err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
 		log.Print("No crew for user")
@@ -55,7 +54,7 @@ func MessageUpdate(ctx context.Context, i *models.MessageUpdate, token *vcapool.
 	return
 }
 
-func MessageDelete(ctx context.Context, i *models.MessageParam, token *vcapool.AccessToken) (err error) {
+func MessageDelete(ctx context.Context, i *models.MessageParam, token *models.AccessToken) (err error) {
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
 		log.Print("No crew for user")
@@ -67,7 +66,7 @@ func MessageDelete(ctx context.Context, i *models.MessageParam, token *vcapool.A
 	return
 }
 
-func MessageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
+func MessageCrewUser(ctx context.Context, i *models.RecipientGroup, token *models.AccessToken) (result []models.TOData, err error) {
 	if err = models.MessageCrewPermission(token); err != nil {
 		return
 	}
@@ -83,7 +82,7 @@ func MessageCrewUser(ctx context.Context, i *models.RecipientGroup, token *vcapo
 	return
 }
 
-func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcapool.AccessToken) (result []models.TOData, err error) {
+func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *models.AccessToken) (result []models.TOData, err error) {
 	event := new(models.Event)
 	filter := i.FilterEvent()
 	if err = EventCollection.FindOne(ctx, filter, event); err != nil {
@@ -104,7 +103,7 @@ func MessageEventUser(ctx context.Context, i *models.RecipientGroup, token *vcap
 	return
 }
 
-func MessageSendCycular(ctx context.Context, i *models.MessageParam, token *vcapool.AccessToken) (result *models.Message, mail *vcago.CycularMail, err error) {
+func MessageSendCycular(ctx context.Context, i *models.MessageParam, token *models.AccessToken) (result *models.Message, mail *vcago.CycularMail, err error) {
 	// get message via filter by mailbox and message ids
 	crew := new(models.Crew)
 	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: token.CrewID}}, crew); err != nil {
