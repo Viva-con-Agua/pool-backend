@@ -7,101 +7,76 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type Updated struct {
-	ID   string `bson:"_id"`
-	Name string `bson:"name"`
-}
-
-func CheckUpdated(ctx context.Context, name string) bool {
-	update := new(Updated)
-	if err := UpdateCollection.FindOne(ctx, bson.D{{Key: "name", Value: name}}, update); err != nil {
-		if vmdb.ErrNoDocuments(err) {
-			return false
-		}
-		log.Print(err)
-	}
-	return true
-}
-
-func InsertUpdate(ctx context.Context, name string) {
-	update := &Updated{ID: uuid.NewString(), Name: name}
-	if err := UpdateCollection.InsertOne(ctx, update); err != nil {
-		log.Print(err)
-	}
-
-}
-
 func UpdateDatabase() {
 	ctx := context.Background()
-	if !CheckUpdated(ctx, "update_crew_mailbox") {
+	if !Updates.Check(ctx, "update_crew_mailbox") {
 		UpdateCrewMaibox(ctx)
-		InsertUpdate(ctx, "update_crew_mailbox")
+		Updates.Insert(ctx, "update_crew_mailbox")
 	}
-	if !CheckUpdated(ctx, "update_usercrew3_mailbox") {
+	if !Updates.Check(ctx, "update_usercrew3_mailbox") {
 		UpdateUserCrewMaibox(ctx)
-		InsertUpdate(ctx, "update_usercrew3_mailbox")
+		Updates.Insert(ctx, "update_usercrew3_mailbox")
 	}
-	if !CheckUpdated(ctx, "update_delete_confirmed") {
+	if !Updates.Check(ctx, "update_delete_confirmed") {
 		UpdateDeleteUnconfirmd(ctx)
-		InsertUpdate(ctx, "update_delete_confirmed")
+		Updates.Insert(ctx, "update_delete_confirmed")
 	}
-	if !CheckUpdated(ctx, "update_confirm_admin") {
+	if !Updates.Check(ctx, "update_confirm_admin") {
 		UpdateConfirmAdmin(ctx)
-		InsertUpdate(ctx, "update_confirm_admin")
+		Updates.Insert(ctx, "update_confirm_admin")
 	}
-	if !CheckUpdated(ctx, "taking_currency1") {
+	if !Updates.Check(ctx, "taking_currency1") {
 		UpdateTakingCurrency(ctx)
-		InsertUpdate(ctx, "taking_currency1")
+		Updates.Insert(ctx, "taking_currency1")
 	}
-	if !CheckUpdated(ctx, "deposit_currency") {
+	if !Updates.Check(ctx, "deposit_currency") {
 		UpdateDepositCurrency(ctx)
-		InsertUpdate(ctx, "deposit_currency")
+		Updates.Insert(ctx, "deposit_currency")
 	}
-	if !CheckUpdated(ctx, "deposit_unit_currency") {
+	if !Updates.Check(ctx, "deposit_unit_currency") {
 		UpdateDepositUnitCurrency(ctx)
-		InsertUpdate(ctx, "deposit_unit_currency")
+		Updates.Insert(ctx, "deposit_unit_currency")
 	}
-	if !CheckUpdated(ctx, "taking_no_income_event_canceled") {
+	if !Updates.Check(ctx, "taking_no_income_event_canceled") {
 		UpdateEventCanceledNoIncome(ctx)
-		InsertUpdate(ctx, "taking_no_income_event_canceled")
+		Updates.Insert(ctx, "taking_no_income_event_canceled")
 	}
-	if !CheckUpdated(ctx, "currency_problem") {
+	if !Updates.Check(ctx, "currency_problem") {
 		UpdateDepositCurrency(ctx)
 		UpdateDepositUnitCurrency(ctx)
 		UpdateTakingCurrency(ctx)
-		InsertUpdate(ctx, "currency_problem")
+		Updates.Insert(ctx, "currency_problem")
 	}
-	if !CheckUpdated(ctx, "date_of_taking_1") {
+	if !Updates.Check(ctx, "date_of_taking_1") {
 		UpdateDateOfTaking1(ctx)
-		InsertUpdate(ctx, "date_of_taking_1")
+		Updates.Insert(ctx, "date_of_taking_1")
 	}
-	if !CheckUpdated(ctx, "birthdate_1") {
+	if !Updates.Check(ctx, "birthdate_1") {
 		UpdateProfileBirthdate(ctx)
-		InsertUpdate(ctx, "birthdate_1")
+		Updates.Insert(ctx, "birthdate_1")
 	}
-	if !CheckUpdated(ctx, "event_applications") {
+	if !Updates.Check(ctx, "event_applications") {
 		UpdateEventApplications(ctx)
-		InsertUpdate(ctx, "event_applications")
+		Updates.Insert(ctx, "event_applications")
 	}
-	if !CheckUpdated(ctx, "last_login_date_1") {
+	if !Updates.Check(ctx, "last_login_date_1") {
 		UpdateSetLastLoginDate(ctx)
-		InsertUpdate(ctx, "last_login_date_1")
+		Updates.Insert(ctx, "last_login_date_1")
 	}
-	if !CheckUpdated(ctx, "create_default_organisation") {
+	if !Updates.Check(ctx, "create_default_organisation") {
 		CreateDefaultOrganisation(ctx)
-		InsertUpdate(ctx, "create_default_organisation")
+		Updates.Insert(ctx, "create_default_organisation")
 	}
-	if !CheckUpdated(ctx, "update_deposit_units_1") {
+	if !Updates.Check(ctx, "update_deposit_units_1") {
 		UpdateDepositUnitNorms(ctx)
-		InsertUpdate(ctx, "update_deposit_units_1")
+		Updates.Insert(ctx, "update_deposit_units_1")
 	}
-	if !CheckUpdated(ctx, "publish_roles_init") {
+	if !Updates.Check(ctx, "publish_roles_init") {
 		PublishRoles()
-		InsertUpdate(ctx, "publish_roles_init")
+		Updates.Insert(ctx, "publish_roles_init")
 	}
 }
 
