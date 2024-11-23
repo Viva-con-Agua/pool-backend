@@ -74,9 +74,10 @@ func UpdateDatabase() {
 		UpdateDepositUnitNorms(ctx)
 		Updates.Insert(ctx, "update_deposit_units_1")
 	}
-	if !Updates.Check(ctx, "publish_roles_init") {
+	if !Updates.Check(ctx, "publish_roles_initial") {
+		log.Print("publish_roles_initial")
 		PublishRoles()
-		Updates.Insert(ctx, "publish_roles_init")
+		Updates.Insert(ctx, "publish_roles_initial")
 	}
 }
 

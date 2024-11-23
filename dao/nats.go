@@ -30,6 +30,7 @@ func PublishRoles() {
 			Root: []string{"employee", "pool_employee", "pool_finance"},
 		}},
 	}
+	log.Print(result)
 	vcago.Nats.Publish("webapp_role.update", result)
 }
 
