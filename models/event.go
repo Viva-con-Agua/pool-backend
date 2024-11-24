@@ -556,8 +556,8 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.GteInt64("start_at", i.StartAt)
 	filter.LteInt64("end_at", i.EndAt)
 	if i.OnlyApply {
-		filter.GteInt64("application.start_date", strconv.FormatInt(time.Now().Unix(), 10))
-		filter.LteInt64("application.end_date", strconv.FormatInt(time.Now().Unix(), 10))
+		filter.LteInt64("application.start_date", strconv.FormatInt(time.Now().Unix(), 10))
+		filter.GteInt64("application.end_date", strconv.FormatInt(time.Now().Unix(), 10))
 	}
 	filter.GteInt64("modified.updated", i.UpdatedFrom)
 	filter.GteInt64("modified.created", i.CreatedFrom)
@@ -603,8 +603,8 @@ func (i *EventQuery) PermittedFilter(token *AccessToken) bson.D {
 		filter.Append(bson.E{Key: "$or", Value: bson.A{noCrewMatch.Bson(), crewMatch.Bson()}})
 	}
 	if i.OnlyApply {
-		filter.GteInt64("application.start_date", strconv.FormatInt(time.Now().Unix(), 10))
-		filter.LteInt64("application.end_date", strconv.FormatInt(time.Now().Unix(), 10))
+		filter.LteInt64("application.start_date", strconv.FormatInt(time.Now().Unix(), 10))
+		filter.GteInt64("application.end_date", strconv.FormatInt(time.Now().Unix(), 10))
 	}
 	if i.MissingApplications {
 		filter.Append(bson.E{Key: "$expr", Value: bson.D{{Key: "$gt", Value: bson.A{"$application.supporter_count", "$applications.confirmed"}}}})
