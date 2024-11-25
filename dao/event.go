@@ -435,34 +435,30 @@ func EventStateNotification(ctx context.Context, i *models.Event) (err error) {
 		return
 	}
 
-	template := "event_state"
-	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
-	mail.AddUser(eventAps.User())
-	mail.AddContent(i.ToContent())
-	vcago.Nats.Publish("system.mail.job", mail)
-	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
-	//notification.AddUser(user.User())
-	//notification.AddContent(i.ToContent())
-	//vcago.Nats.Publish("system.notification.job", notification)
+	notifyAboutStateChange(eventAps, i)
 	return
 }
 
-func EventStateNotificationCreator(i *models.Event) (err error) {
+func notifyAboutStateChange(notifyUser *models.User, i *models.Event) {
+	template := "event_state"
+	mail := vcago.NewMailData(notifyUser.Email, "pool-backend", template, "pool", notifyUser.Country)
+	mail.AddUser(notifyUser.User())
+	mail.AddContent(i.ToContent())
+	vcago.Nats.Publish("system.mail.job", mail)
 
+	//notification := vcago.NewMNotificationData(notifyUser.Email, "pool-backend", template, notifyUser.Country, token.ID)
+	//notification.AddUser(notifyUser.User())
+	//notification.AddContent(i.ToContent())
+	//vcago.Nats.Publish("system.notification.job", notification)
+}
+
+func EventStateNotificationCreator(i *models.Event) (err error) {
 	// if event_asp is creator -> stop.
 	if i.EventASPID == i.Creator.ID {
 		return
 	}
 
-	template := "event_state"
-	mail := vcago.NewMailData(i.Creator.Email, "pool-backend", template, "pool", i.Creator.Country)
-	mail.AddUser(i.Creator)
-	mail.AddContent(i.ToContent())
-	vcago.Nats.Publish("system.mail.job", mail)
-	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
-	//notification.AddUser(user.User())
-	//notification.AddContent(i.ToContent())
-	//vcago.Nats.Publish("system.notification.job", notification)
+	notifyAboutStateChange(i.Creator, i)
 	return
 }
 
