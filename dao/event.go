@@ -458,7 +458,7 @@ func EventStateNotificationCreator(i *models.Event) (err error) {
 		return
 	}
 
-	notifyAboutStateChange(i.Creator, i)
+	notifyAboutStateChange(&i.Creator, i)
 	return
 }
 
