@@ -430,12 +430,12 @@ func EventStateNotification(ctx context.Context, i *models.Event) (err error) {
 		return vcago.NewNotFound(models.EventCollection, i)
 	}
 
-	eventAps := new(models.User)
-	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
+	eventAsp := new(models.User)
+	if eventAsp, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
 		return
 	}
 
-	notifyAboutStateChange(eventAps, i)
+	notifyAboutStateChange(eventAsp, i)
 	return
 }
 
