@@ -79,6 +79,10 @@ func UpdateDatabase() {
 		PublishRoles()
 		Updates.Insert(ctx, "publish_roles_initial")
 	}
+	if !Updates.Check(ctx, "date_of_deposit") {
+		UpdateDateOfDeposit(ctx)
+		Updates.Insert(ctx, "date_of_deposit")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -283,5 +287,21 @@ func UpdateDepositUnitNorms(ctx context.Context) {
 	}
 	if err := SourceCollection.UpdateMany(ctx, filterEco.Bson(), updateEco); err != nil {
 		log.Print(err)
+	}
+}
+
+func UpdateDateOfDeposit(ctx context.Context) {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("status", []string{"wait", "confirmed"})
+	deposits := []models.Deposit{}
+	if err := DepositCollection.Find(ctx, bson.D{{}}, &deposits); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range deposits {
+		updateFilter := bson.D{{Key: "_id", Value: entry.ID}}
+		update := bson.D{{Key: "date_of_deposit", Value: entry.Modified.Created}}
+		if err := DepositCollection.UpdateOne(ctx, updateFilter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
 	}
 }
