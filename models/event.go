@@ -244,7 +244,7 @@ type (
 	EventQuery struct {
 		ID                  []string `query:"id" qs:"id"`
 		Name                string   `query:"name" qs:"name"`
-		CrewID              string   `query:"crew_id" qs:"crew_id"`
+		CrewID              []string `query:"crew_id" qs:"crew_id"`
 		EventASPID          string   `query:"event_asp_id" qs:"event_asp_id"`
 		Type                []string `query:"type" qs:"type"`
 		EventState          []string `query:"event_state" qs:"event_state"`
@@ -552,7 +552,7 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
 	filter.EqualStringList("type_of_event", i.Type)
 	filter.EqualStringList("organisation_id", i.OrganisationId)
-	filter.EqualString("crew_id", i.CrewID)
+	filter.EqualStringList("crew_id", i.CrewID)
 	filter.GteInt64("start_at", i.StartAt)
 	filter.LteInt64("end_at", i.EndAt)
 	if i.OnlyApply {
@@ -563,7 +563,7 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
-	filter.SearchString([]string{"_id", "name", "crew.name"}, i.Search)
+	filter.SearchString([]string{"_id", "name", "crew.name", "artists.name", "location.name"}, i.Search)
 
 	return filter.Bson()
 }
@@ -617,13 +617,13 @@ func (i *EventQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter.EqualString("internal_asp_id", i.InternalASPID)
 	filter.EqualString("event_asp_id", i.EventASPID)
 	filter.EqualStringList("event_state.state", i.EventState)
-	filter.EqualString("crew_id", i.CrewID)
+	filter.EqualStringList("crew_id", i.CrewID)
 	filter.EqualStringList("organisation_id", i.OrganisationId)
 	filter.GteInt64("modified.updated", i.UpdatedFrom)
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
-	filter.SearchString([]string{"_id", "name", "crew.name"}, i.Search)
+	filter.SearchString([]string{"_id", "name", "crew.name", "artists.name", "location.name"}, i.Search)
 	return filter.Bson()
 }
 
