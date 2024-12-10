@@ -212,6 +212,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		if result.EventState.State == "published" ||
 			result.EventState.State == "canceled" ||
 			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
+			EventStateNotificationCreator(result)
 			EventStateNotification(ctx, result)
 		}
 	} else if event.StartAt != result.StartAt ||
@@ -429,20 +430,35 @@ func EventStateNotification(ctx context.Context, i *models.Event) (err error) {
 		return vcago.NewNotFound(models.EventCollection, i)
 	}
 
-	eventAps := new(models.User)
-	if eventAps, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
+	eventAsp := new(models.User)
+	if eventAsp, err = UsersGetByID(ctx, &models.UserParam{ID: i.EventASPID}); err != nil {
 		return
 	}
 
+	notifyAboutStateChange(eventAsp, i)
+	return
+}
+
+func notifyAboutStateChange(notifyUser *models.User, i *models.Event) {
 	template := "event_state"
-	mail := vcago.NewMailData(eventAps.Email, "pool-backend", template, "pool", eventAps.Country)
-	mail.AddUser(eventAps.User())
+	mail := vcago.NewMailData(notifyUser.Email, "pool-backend", template, "pool", notifyUser.Country)
+	mail.AddUser(notifyUser.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
-	//notification := vcago.NewMNotificationData(user.Email, "pool-backend", template, user.Country, token.ID)
-	//notification.AddUser(user.User())
+
+	//notification := vcago.NewMNotificationData(notifyUser.Email, "pool-backend", template, notifyUser.Country, token.ID)
+	//notification.AddUser(notifyUser.User())
 	//notification.AddContent(i.ToContent())
 	//vcago.Nats.Publish("system.notification.job", notification)
+}
+
+func EventStateNotificationCreator(i *models.Event) (err error) {
+	// if event_asp is creator -> stop.
+	if i.EventASPID == i.Creator.ID {
+		return
+	}
+
+	notifyAboutStateChange(&i.Creator, i)
 	return
 }
 
