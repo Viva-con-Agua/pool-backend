@@ -513,9 +513,12 @@ func (i *EventUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter.EqualString("_id", i.ID)
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
-		filter.EqualString("crew_id", token.CrewID)
 	} else if !token.Roles.Validate("admin;employee;pool_employee") {
-		filter.EqualString("crew_id", token.CrewID)
+		crewMatch := vmdb.NewFilter()
+		crewMatch.EqualString("crew_id", token.CrewID)
+		eventAspMatch := vmdb.NewFilter()
+		eventAspMatch.EqualString("event_asp_id", token.ID)
+		filter.Append(bson.E{Key: "$or", Value: bson.A{eventAspMatch.Bson(), crewMatch.Bson()}})
 	}
 	return filter.Bson()
 }
@@ -534,8 +537,13 @@ func (i *EventParam) PermittedFilter(token *AccessToken) bson.D {
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event_asp_id", token.ID)
 	} else if !token.Roles.Validate("admin;employee;pool_employee") {
-		filter.EqualString("crew_id", token.CrewID)
+		crewMatch := vmdb.NewFilter()
+		crewMatch.EqualString("crew_id", token.CrewID)
+		eventAspMatch := vmdb.NewFilter()
+		eventAspMatch.EqualString("event_asp_id", token.ID)
+		filter.Append(bson.E{Key: "$or", Value: bson.A{eventAspMatch.Bson(), crewMatch.Bson()}})
 	}
+
 	return filter.Bson()
 }
 
