@@ -299,7 +299,11 @@ func UpdateDateOfDeposit(ctx context.Context) {
 	}
 	for _, entry := range deposits {
 		updateFilter := bson.D{{Key: "_id", Value: entry.ID}}
-		update := bson.D{{Key: "date_of_deposit", Value: entry.Modified.Created}}
+		value := entry.Modified.Created
+		if entry.Status == "open" {
+			value = 0
+		}
+		update := bson.D{{Key: "date_of_deposit", Value: value}}
 		if err := DepositCollection.UpdateOne(ctx, updateFilter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
