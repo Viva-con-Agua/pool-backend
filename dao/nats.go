@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"pool-backend/models"
 
@@ -36,8 +35,6 @@ func PublishRoles() {
 }
 
 func SubscribeUserUpdate(m *models.UserUpdate) {
-	fmt.Printf("Updated User:\n")
-	fmt.Printf("%v\n", m)
 	result := new(models.User)
 	if err := UserCollection.UpdateOne(
 		context.Background(),
