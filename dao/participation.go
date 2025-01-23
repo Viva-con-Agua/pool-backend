@@ -6,13 +6,30 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	database := i.ParticipationDatabase(token)
+func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
+
+	event := new(models.Event)
+	if err = EventCollection.FindOne(
+		ctx,
+		bson.D{{Key: "_id", Value: i.EventID}},
+		event,
+	); err != nil {
+		return
+	}
+	database := i.ParticipationDatabase(token, event)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
+		return
+	}
+	if event, err = EventGetInternalByID(ctx, &models.EventParam{ID: i.EventID}); err != nil {
+		return
+	}
+	if _, err = EventApplicationsUpdate(ctx, &models.EventApplicationsUpdate{ID: i.EventID, Applications: models.EventApplications{
+		Requested: event.Applications.Requested + 1,
+		Total:     event.Applications.Total + 1,
+	}}); err != nil {
 		return
 	}
 	filter := database.Match()
@@ -26,7 +43,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	return
 }
 
-func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *[]models.Participation, err error) {
+func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *[]models.Participation, err error) {
 	if err = models.ParticipationPermission(token); err != nil {
 		return
 	}
@@ -42,7 +59,7 @@ func ParticipationGet(ctx context.Context, i *models.ParticipationQuery, token *
 	return
 }
 
-func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (result *models.Participation, err error) {
+func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, token *models.AccessToken) (result *models.Participation, err error) {
 	filter := i.PermittedFilter(token)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
@@ -54,7 +71,7 @@ func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, tok
 	return
 }
 
-func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *[]models.UserParticipation, err error) {
+func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *[]models.UserParticipation, err error) {
 	filter := i.FilterUser(token)
 	result = new([]models.UserParticipation)
 	if err = ParticipationCollection.Aggregate(
@@ -68,7 +85,7 @@ func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, tok
 	return
 }
 
-func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, token *vcapool.AccessToken) (result *models.EventDetails, err error) {
+func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *models.EventDetails, err error) {
 	filter := i.FilterAspInformation(token)
 	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
@@ -82,7 +99,7 @@ func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, toke
 	return
 }
 
-func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vcapool.AccessToken) (result *[]models.EventParticipation, err error) {
+func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *models.AccessToken) (result *[]models.EventParticipation, err error) {
 	filter := i.FilterEvent(token)
 	result = new([]models.EventParticipation)
 	if err = ParticipationCollection.Aggregate(
@@ -95,16 +112,16 @@ func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *vca
 	return
 }
 
-func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *vcapool.AccessToken) (result *models.Participation, err error) {
-	event := new(models.Participation)
+func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, token *models.AccessToken) (result *models.Participation, err error) {
+	participation := new(models.Participation)
 	if err = ParticipationCollection.AggregateOne(
 		ctx,
 		models.ParticipationPipeline().Match(i.Match()).Pipe,
-		event,
+		participation,
 	); err != nil {
 		return
 	}
-	if err = i.ParticipationUpdatePermission(token, event); err != nil {
+	if err = i.ParticipationUpdatePermission(token, participation); err != nil {
 		return
 	}
 	filter := i.Match()
@@ -117,7 +134,13 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
-	if event.Status != result.Status {
+	applications := new(models.EventApplications)
+	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
+	applicationsUpdate = result.UpdateEventApplicationsUpdate(1, &applicationsUpdate.Applications)
+	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
+		return
+	}
+	if participation.Status != result.Status {
 		if result.Status == "confirmed" || result.Status == "rejected" {
 			ParticipationNotification(ctx, result)
 		}
@@ -128,8 +151,17 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	return
 }
 
-func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *vcapool.AccessToken) (err error) {
+func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, token *models.AccessToken) (err error) {
 	if err = models.ParticipationDeletePermission(token); err != nil {
+		return
+	}
+	participation := new(models.Participation)
+	if participation, err = ParticipationGetByID(ctx, i, token); err != nil {
+		return
+	}
+	applications := new(models.EventApplications)
+	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
+	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
 		return
 	}
 	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {

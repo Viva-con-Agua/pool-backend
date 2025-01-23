@@ -6,11 +6,10 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ActiveWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *models.Active, err error) {
+func ActiveWithdraw(ctx context.Context, token *models.AccessToken) (result *models.Active, err error) {
 	if err = ActiveCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "user_id", Value: token.ID}},
@@ -37,7 +36,7 @@ func ActiveWithdraw(ctx context.Context, token *vcapool.AccessToken) (result *mo
 	return
 }
 
-func ActiveReject(ctx context.Context, i *models.ActiveParam, token *vcapool.AccessToken) (result *models.Active, err error) {
+func ActiveReject(ctx context.Context, i *models.ActiveParam, token *models.AccessToken) (result *models.Active, err error) {
 	//check permissions for update an other users active model.
 	if err = models.ActivePermission(token); err != nil {
 		return
@@ -69,7 +68,7 @@ func ActiveReject(ctx context.Context, i *models.ActiveParam, token *vcapool.Acc
 	return
 }
 
-func ActiveConfirm(ctx context.Context, i *models.ActiveParam, token *vcapool.AccessToken) (result *models.Active, err error) {
+func ActiveConfirm(ctx context.Context, i *models.ActiveParam, token *models.AccessToken) (result *models.Active, err error) {
 	//check permissions for update an other users active model.
 	if err = models.ActivePermission(token); err != nil {
 		return
@@ -86,7 +85,7 @@ func ActiveConfirm(ctx context.Context, i *models.ActiveParam, token *vcapool.Ac
 	return
 }
 
-func ActiveRequest(ctx context.Context, token *vcapool.AccessToken) (result *models.Active, err error) {
+func ActiveRequest(ctx context.Context, token *models.AccessToken) (result *models.Active, err error) {
 	//check permissions for active request
 	if err = models.ActiveRequestPermission(token); err != nil {
 		return

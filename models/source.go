@@ -3,7 +3,6 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -113,8 +112,8 @@ func (i *SourceQuery) Filter() bson.D {
 	return filter.Bson()
 }
 
-func SourceDeletePermission(taking *Taking, token *vcapool.AccessToken) bool {
-	if !token.Roles.Validate("admin;employee") {
+func SourceDeletePermission(taking *Taking, token *AccessToken) bool {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if taking.State.Confirmed.Amount != 0 {
 			return false
 		}

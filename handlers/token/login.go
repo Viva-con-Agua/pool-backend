@@ -9,7 +9,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,7 +38,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 	}
 	tokenUser := new(vmod.User)
 	if tokenUser, err = HydraClient.Callback(c.Ctx(), body); err != nil {
-		return
+		return vcago.NewBadRequest("Error in callback. Maybe testlogin and oidc skip is enabeled in .env?", err.Error())
 	}
 	result := new(models.User)
 	if err = dao.UserCollection.AggregateOne(
@@ -50,6 +49,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 		return
 	}
 	if vmdb.ErrNoDocuments(err) {
+
 		err = nil
 		userDatabase := models.NewUserDatabase(tokenUser)
 		if result, err = dao.UserInsert(c.Ctx(), userDatabase); err != nil {
@@ -75,7 +75,7 @@ func (i *LoginHandler) Callback(cc echo.Context) (err error) {
 func (i *LoginHandler) LoginAPI(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UserEmail)
-	if c.BindAndValidate(body); err != nil {
+	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
 	result := new(models.User)
@@ -120,7 +120,7 @@ func (i *LoginHandler) Refresh(cc echo.Context) (err error) {
 
 func (i *LoginHandler) Logout(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

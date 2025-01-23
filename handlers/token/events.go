@@ -7,7 +7,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,7 +38,7 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -62,15 +61,17 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
+
 	result := new([]models.ListEvent)
-	if result, err = dao.EventGet(c.Ctx(), body, token); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.EventGet(body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i *EventHandler) GetByID(cc echo.Context) (err error) {
@@ -79,7 +80,7 @@ func (i *EventHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -109,7 +110,7 @@ func (i *EventHandler) GetPrivateDetails(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -127,10 +128,11 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.EventPublic)
-	if result, err = dao.EventGetPublic(c.Ctx(), body); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.EventGetPublic(body); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
@@ -139,7 +141,7 @@ func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -156,7 +158,7 @@ func (i *EventHandler) GetEmailEvents(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -173,7 +175,7 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -196,7 +198,7 @@ func (i *EventHandler) Sync(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -215,7 +217,7 @@ func (i *EventHandler) Delete(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

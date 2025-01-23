@@ -6,7 +6,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -31,7 +30,7 @@ func (i *DepositHandler) Create(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -49,7 +48,7 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.Deposit)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -65,7 +64,7 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -82,7 +81,7 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -98,7 +97,7 @@ func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -35,14 +34,14 @@ type (
 
 var NewsletterCollection = "newsletters"
 
-func NewsletterDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+func NewsletterDeletePermission(token *AccessToken) (err error) {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return
 }
 
-func (i *NewsletterCreate) Newsletter(token *vcapool.AccessToken) *Newsletter {
+func (i *NewsletterCreate) Newsletter(token *AccessToken) *Newsletter {
 	return &Newsletter{
 		ID:       uuid.NewString(),
 		Value:    i.Value,
@@ -75,8 +74,8 @@ func (i *NewsletterParam) Match() bson.D {
 	return filter.Bson()
 }
 
-func (i *Newsletter) DeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") && token.ID != i.UserID {
+func (i *Newsletter) DeletePermission(token *AccessToken) (err error) {
+	if !token.Roles.Validate("admin;employee;pool_employee") && token.ID != i.UserID {
 		return vcago.NewPermissionDenied(NewsletterCollection)
 	}
 	return

@@ -1,8 +1,9 @@
 package dao
 
 import (
+	"pool-backend/models"
+
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 )
 
 type Check struct {
@@ -17,7 +18,7 @@ func (i *Check) Return() error {
 	return i.Error
 }
 
-func (i *Check) ASP(token *vcapool.AccessToken) *Check {
+func (i *Check) ASP(token *models.AccessToken) *Check {
 	if !token.PoolRoles.Validate("finance;network;education;") {
 		i.Error = vcago.NewPermissionDenied("permission_denied", nil)
 	}

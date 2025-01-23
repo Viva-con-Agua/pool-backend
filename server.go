@@ -37,10 +37,15 @@ func main() {
 	token.Address.Routes(tokenUser.Group("/address"))
 	token.Avatar.Routes(tokenUser.Group("/avatar"))
 	token.Newsletter.Routes(tokenUser.Group("/newsletter"))
+
 	token.User.Routes(tokenUser)
 	//crew routes
 	crews := api.Group("/crews")
 	token.Crew.Routes(crews)
+
+	//crew routes
+	organisations := api.Group("/organisations")
+	token.Organisation.Routes(organisations)
 
 	mails := api.Group("/mails")
 	token.Mailbox.Routes(mails.Group("/mailbox"))
@@ -56,6 +61,7 @@ func main() {
 	token.Source.Routes(finances.Group("/source"))
 	token.Taking.Routes(finances.Group("/taking"))
 	token.Deposit.Routes(finances.Group("/deposit"))
+	token.ReceiptFile.Routes(finances.Group("/receipt"))
 
 	key.Import.Routes(api.Group("/import"))
 

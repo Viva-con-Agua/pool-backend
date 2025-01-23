@@ -19,6 +19,21 @@ func InitialNats() {
 	vcago.Nats.Subscribe("system.notification.publish", SubscribeNotificationPublish)
 }
 
+func PublishRoles() {
+	result := vmod.WebappAccess{
+		Name: "pool",
+		Roles: []vmod.AccessRole{{
+			Name: "pool_employee",
+			Root: []string{"employee", "pool_employee"},
+		}, {
+			Name: "pool_finance",
+			Root: []string{"employee", "pool_employee", "pool_finance"},
+		}},
+	}
+	log.Print(result)
+	vcago.Nats.Publish("webapp_role.update", result)
+}
+
 func SubscribeUserUpdate(m *models.UserUpdate) {
 	result := new(models.User)
 	if err := UserCollection.UpdateOne(

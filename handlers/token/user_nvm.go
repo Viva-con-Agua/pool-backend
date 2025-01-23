@@ -7,7 +7,6 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,7 +26,7 @@ func (i *NVMHandler) Routes(group *echo.Group) {
 
 func (i *NVMHandler) Confirm(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -50,7 +49,7 @@ func (i *NVMHandler) ConfirmUser(cc echo.Context) (err error) {
 		return
 	}
 	//get requested user from token
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -72,7 +71,7 @@ func (i *NVMHandler) RejectUser(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
@@ -90,7 +89,7 @@ func (i *NVMHandler) RejectUser(cc echo.Context) (err error) {
 
 func (i *NVMHandler) Withdraw(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
-	token := new(vcapool.AccessToken)
+	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}

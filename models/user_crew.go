@@ -4,7 +4,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -16,32 +15,38 @@ type (
 		CrewID string `json:"crew_id"`
 	}
 	UsersCrewCreate struct {
-		CrewID string `json:"crew_id"`
-		UserID string `json:"user_id"`
+		CrewID         string `json:"crew_id"`
+		UserID         string `json:"user_id"`
+		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
 	}
 	UserCrew struct {
-		ID        string        `bson:"_id" json:"id"`
-		UserID    string        `bson:"user_id" json:"user_id"`
-		Name      string        `bson:"name" json:"name"`
-		Email     string        `bson:"email" json:"email"`
-		Roles     []vmod.Role   `bson:"roles" json:"roles"`
-		CrewID    string        `bson:"crew_id" json:"crew_id"`
-		MailboxID string        `bson:"mailbox_id" json:"mailbox_id"`
-		Modified  vmod.Modified `bson:"modified" json:"modified"`
+		ID             string        `bson:"_id" json:"id"`
+		UserID         string        `bson:"user_id" json:"user_id"`
+		Name           string        `bson:"name" json:"name"`
+		Email          string        `bson:"email" json:"email"`
+		Roles          []vmod.Role   `bson:"roles" json:"roles"`
+		CrewID         string        `bson:"crew_id" json:"crew_id"`
+		OrganisationID string        `bson:"organisation_id" json:"organisation_id"`
+		Organisation   string        `bson:"organisation" json:"organisation"`
+		MailboxID      string        `bson:"mailbox_id" json:"mailbox_id"`
+		Modified       vmod.Modified `bson:"modified" json:"modified"`
 	}
 	UserCrewMinimal struct {
-		ID     string `bson:"_id" json:"id"`
-		UserID string `bson:"user_id" json:"user_id"`
-		Name   string `bson:"name" json:"name"`
-		Email  string `bson:"email" json:"email"`
-		CrewID string `bson:"crew_id" json:"crew_id"`
+		ID             string `bson:"_id" json:"id"`
+		UserID         string `bson:"user_id" json:"user_id"`
+		Name           string `bson:"name" json:"name"`
+		Email          string `bson:"email" json:"email"`
+		CrewID         string `bson:"crew_id" json:"crew_id"`
+		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
+		Organisation   string `bson:"organisation" json:"organisation"`
 	}
 	UserCrewUpdate struct {
-		ID     string `bson:"_id" json:"id"`
-		UserID string `bson:"user_id" json:"user_id"`
-		Name   string `bson:"name" json:"name"`
-		Email  string `bson:"email" json:"email"`
-		CrewID string `bson:"crew_id" json:"crew_id"`
+		ID             string `bson:"_id" json:"id"`
+		UserID         string `bson:"user_id" json:"user_id"`
+		Name           string `bson:"name" json:"name"`
+		Email          string `bson:"email" json:"email"`
+		CrewID         string `bson:"crew_id" json:"crew_id"`
+		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
 	}
 	UserCrewParam struct {
 		ID string `param:"id"`
@@ -56,33 +61,34 @@ type (
 	}
 )
 
-func NewUserCrew(userID string, crewID string, name string, email string, mailboxID string) *UserCrew {
+func NewUserCrew(userID string, crew *Crew) *UserCrew {
 	return &UserCrew{
-		ID:        uuid.NewString(),
-		UserID:    userID,
-		Name:      name,
-		Email:     email,
-		CrewID:    crewID,
-		MailboxID: mailboxID,
-		Modified:  vmod.NewModified(),
+		ID:             uuid.NewString(),
+		UserID:         userID,
+		Name:           crew.Name,
+		Email:          crew.Email,
+		CrewID:         crew.ID,
+		OrganisationID: crew.OrganisationID,
+		MailboxID:      crew.MailboxID,
+		Modified:       vmod.NewModified(),
 	}
 }
 
-func (i *UserCrewUpdate) UserCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+func (i *UserCrewUpdate) UserCrewUpdatePermission(token *AccessToken) (err error) {
 	if token.ID != i.UserID {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
-func (i *UserCrewUpdate) UsersCrewUpdatePermission(token *vcapool.AccessToken) (err error) {
+func (i *UserCrewUpdate) UsersCrewUpdatePermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
 	return
 }
 
-func (i *UsersCrewCreate) UsersCrewCreatePermission(token *vcapool.AccessToken) (err error) {
+func (i *UsersCrewCreate) UsersCrewCreatePermission(token *AccessToken) (err error) {
 	if !token.Roles.Validate("admin") {
 		return vcago.NewPermissionDenied(CrewCollection)
 	}
@@ -151,13 +157,19 @@ func (i *UsersCrewCreate) CrewFilter() bson.D {
 	return filter.Bson()
 }
 
+func (i *UserCrewUpdate) CrewFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("_id", i.CrewID)
+	return filter.Bson()
+}
+
 func (i *UserCrewUpdate) Match() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
 
-func (i *UserCrewUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *UserCrewUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)

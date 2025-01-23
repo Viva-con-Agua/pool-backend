@@ -5,7 +5,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -36,7 +35,7 @@ var AvatarCollection = "avatar"
 var FSChunkCollection = "fs.chunks"
 var FSFilesCollection = "fs.files"
 
-func NewAvatar(token *vcapool.AccessToken) *Avatar {
+func NewAvatar(token *AccessToken) *Avatar {
 	id := uuid.NewString()
 	return &Avatar{
 		ID:       id,
@@ -46,14 +45,14 @@ func NewAvatar(token *vcapool.AccessToken) *Avatar {
 	}
 }
 
-func (i *AvatarUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *AvatarUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)
 	return filter.Bson()
 }
 
-func (i *AvatarParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *AvatarParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
 	filter.EqualString("user_id", token.ID)

@@ -1,10 +1,11 @@
 package models
 
 import (
+	"strings"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -37,18 +38,28 @@ type (
 
 var ArtistCollection = "artists"
 
-func ArtistPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPEventRole)) {
+func ArtistPermission(token *AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return
 }
 
-func ArtistDeletePermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+func ArtistDeletePermission(token *AccessToken) (err error) {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(ArtistCollection)
 	}
 	return
+}
+
+func ToArtistList(artists []Artist) string {
+	names := make([]string, len(artists))
+	for i, artist := range artists {
+		names[i] = artist.Name
+	}
+
+	result := strings.Join(names, ", ")
+	return result
 }
 
 func (i *ArtistCreate) Artist() *Artist {

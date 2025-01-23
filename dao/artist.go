@@ -5,10 +5,9 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 )
 
-func ArtistInsert(ctx context.Context, i *models.ArtistCreate, token *vcapool.AccessToken) (result *models.Artist, err error) {
+func ArtistInsert(ctx context.Context, i *models.ArtistCreate, token *models.AccessToken) (result *models.Artist, err error) {
 	if err = models.ArtistPermission(token); err != nil {
 		return
 	}
@@ -36,7 +35,7 @@ func ArtistGetByID(ctx context.Context, i *models.ArtistParam) (result *models.A
 	return
 }
 
-func ArtistUpdate(ctx context.Context, i *models.ArtistUpdate, token *vcapool.AccessToken) (result *models.Artist, err error) {
+func ArtistUpdate(ctx context.Context, i *models.ArtistUpdate, token *models.AccessToken) (result *models.Artist, err error) {
 	if err = models.ArtistPermission(token); err != nil {
 		return
 	}
@@ -47,7 +46,7 @@ func ArtistUpdate(ctx context.Context, i *models.ArtistUpdate, token *vcapool.Ac
 	return
 }
 
-func ArtistDelete(ctx context.Context, i *models.ArtistParam, token *vcapool.AccessToken) (err error) {
+func ArtistDelete(ctx context.Context, i *models.ArtistParam, token *models.AccessToken) (err error) {
 	if err = models.ArtistDeletePermission(token); err != nil {
 		return
 	}

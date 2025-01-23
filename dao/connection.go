@@ -40,12 +40,14 @@ var (
 	AvatarCollection *vmdb.Collection
 
 	// PoolRoleCollection represents the database collection of the PoolRole Collection.
-	PoolRoleCollection        *vmdb.Collection
-	PoolRoleHistoryCollection *vmdb.Collection
+	PoolRoleCollection          *vmdb.Collection
+	PoolRoleHistoryCollection   *vmdb.Collection
+	EventStateHistoryCollection *vmdb.Collection
 
 	MailboxCollection *vmdb.Collection
 	MessageCollection *vmdb.Collection
 
+	OrganisationCollection  *vmdb.Collection
 	ArtistCollection        *vmdb.Collection
 	ParticipationCollection *vmdb.Collection
 	OrganizerCollection     *vmdb.Collection
@@ -63,6 +65,8 @@ var (
 
 	ReasonForPaymentCollection *vmdb.Collection
 	UserViewCollection         *vmdb.Collection
+	EventViewCollection        *vmdb.Collection
+	PublicEventViewCollection  *vmdb.Collection
 
 	NewsletterCollection *vmdb.Collection
 
@@ -70,13 +74,18 @@ var (
 	ParticipationEventPipe = vmdb.NewPipeline()
 	ActitityUserPipe       = vmdb.NewPipeline()
 	UserPipe               = vmdb.NewPipeline()
+	EventPipe              = vmdb.NewPipeline()
+	PublicEventPipe        = vmdb.NewPipeline()
 	UpdateCollection       *vmdb.Collection
+	Updates                *vmdb.CollectionUpdate
+	ReceiptFileCollection  *vmdb.Collection
 
 	TestLogin bool
 )
 
 func InitialDatabase() {
 	Database = vmdb.NewDatabase("pool-backend").Connect()
+	Database.Database.Collection(models.CrewCollection).Indexes().DropAll(context.Background())
 
 	// UserCollection represents the database collection of the User model.
 	UserCollection = Database.Collection(models.UserCollection).CreateIndex("email", true)
@@ -94,7 +103,7 @@ func InitialDatabase() {
 	AddressesCollection = Database.Collection(models.AddressesCollection).CreateIndex("user_id", true)
 
 	// CrewsCollection represents the database collection of the Crew model.
-	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true)
+	CrewsCollection = Database.Collection(models.CrewCollection).CreateIndex("name", true).CreateIndex("organisation_id", false)
 
 	// ProfileCollection represents the database collection of the Profile model.
 	ProfileCollection = Database.Collection(models.ProfileCollection).CreateIndex("user_id", true)
@@ -105,11 +114,13 @@ func InitialDatabase() {
 	// PoolRoleCollection represents the database collection of the PoolRole Collection.
 	PoolRoleCollection = Database.Collection(models.PoolRoleCollection).CreateIndex("user_id", false).CreateMultiIndex(bson.D{{Key: "name", Value: 1}, {Key: "user_id", Value: 1}}, true)
 	PoolRoleHistoryCollection = Database.Collection(models.PoolRoleHistoryCollection).CreateIndex("user_id", false).CreateIndex("crew_id", false)
+	EventStateHistoryCollection = Database.Collection(models.EventStateHistoryCollection).CreateIndex("user_id", false).CreateIndex("crew_id", false).CreateIndex("event_id", false).CreateIndex("new_state", false).CreateIndex("date", false)
 
 	//
 	MailboxCollection = Database.Collection(models.MailboxCollection)
 
 	MessageCollection = Database.Collection(models.MessageCollection).CreateIndex("user_id", false).CreateIndex("mailbox_id", false)
+	OrganisationCollection = Database.Collection(models.OrganisationCollection).CreateIndex("name", true).CreateIndex("abbreviation", true)
 	ArtistCollection = Database.Collection(models.ArtistCollection).CreateIndex("name", true)
 	ParticipationCollection = Database.Collection(models.ParticipationCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{
@@ -119,9 +130,9 @@ func InitialDatabase() {
 	OrganizerCollection = Database.Collection(models.OrganizerCollection).CreateIndex("name", true)
 	EventCollection = Database.Collection(models.EventCollection)
 	SourceCollection = Database.Collection(models.SourceCollection)
-	TakingCollection = Database.Collection(models.TakingCollection)
+	TakingCollection = Database.Collection(models.TakingCollection).CreateIndex("crew_id", false)
 	DepositCollection = Database.Collection(models.DepositCollection)
-	DepositUnitCollection = Database.Collection(models.DepositUnitCollection).CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true)
+	DepositUnitCollection = Database.Collection(models.DepositUnitCollection).CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true).CreateIndex("taking_id", false).CreateIndex("deposit_id", false)
 
 	FSChunkCollection = Database.Collection(models.FSChunkCollection)
 	FSFilesCollection = Database.Collection(models.FSFilesCollection)
@@ -148,6 +159,30 @@ func InitialDatabase() {
 	)
 	UserViewCollection = Database.Collection(models.UserView)
 
+	PublicEventPipe.Lookup(models.ParticipationCollection, "_id", "event_id", "participations")
+	PublicEventPipe.LookupUnwind(models.OrganizerCollection, "organizer_id", "_id", "organizer")
+	PublicEventPipe.LookupList(models.ArtistCollection, "artist_ids", "_id", "artists")
+	PublicEventPipe.LookupUnwind(models.CrewCollection, "crew_id", "_id", "crew")
+	Database.Database.CreateView(
+		context.Background(),
+		models.PublicEventView,
+		models.EventCollection,
+		models.EventPipelinePublic().Pipe,
+	)
+	PublicEventViewCollection = Database.Collection(models.PublicEventView)
+
+	EventPipe.Lookup(models.ParticipationCollection, "_id", "event_id", "participations")
+	EventPipe.LookupUnwind(models.OrganizerCollection, "organizer_id", "_id", "organizer")
+	EventPipe.LookupList(models.ArtistCollection, "artist_ids", "_id", "artists")
+	EventPipe.LookupUnwind(models.CrewCollection, "crew_id", "_id", "crew")
+	Database.Database.CreateView(
+		context.Background(),
+		models.EventView,
+		models.EventCollection,
+		models.EventPipeline(&models.AccessToken{ID: ""}),
+	)
+	EventViewCollection = Database.Collection(models.EventView)
+
 	DepositUnitTakingPipe.LookupUnwind(models.DepositCollection, "deposit_id", "_id", "deposit")
 	Database.Database.CreateView(
 		context.Background(),
@@ -171,6 +206,14 @@ func InitialDatabase() {
 		ActitityUserPipe.Pipe,
 	)
 	UpdateCollection = Database.Collection("updates").CreateIndex("name", true)
+	Updates = vmdb.NewCollectionUpdate(UpdateCollection)
+	ReceiptFileCollection = Database.Collection(models.ReceiptFileCollection).CreateIndex("deposit_id", false)
+	Database.Database.CreateView(
+		context.Background(),
+		models.TakingDepositView,
+		models.TakingCollection,
+		models.TakingPipelineDeposit().Pipe,
+	)
 }
 
 func FixDatabase() {

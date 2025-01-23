@@ -5,7 +5,6 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 )
 
@@ -31,7 +30,7 @@ type (
 	}
 )
 
-func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
+func NVMConfirmedPermission(token *AccessToken) (err error) {
 	if token.ActiveState != "confirmed" {
 		return vcago.NewBadRequest(NVMCollection, "active required")
 	}
@@ -44,8 +43,8 @@ func NVMConfirmedPermission(token *vcapool.AccessToken) (err error) {
 	return
 }
 
-func NVMPermission(token *vcapool.AccessToken) (err error) {
-	if !token.Roles.Validate("employee;admin") {
+func NVMPermission(token *AccessToken) (err error) {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		return vcago.NewPermissionDenied(NVMCollection)
 	}
 	return
