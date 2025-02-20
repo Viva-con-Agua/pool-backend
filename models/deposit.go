@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
@@ -47,14 +49,15 @@ type (
 		UpdateState string     `json:"update_state" bson:"-"`
 	}
 	DepositUpdate struct {
-		ID          string              `json:"id" bson:"_id"`
-		CrewID      string              `json:"crew_id" bson:"crew_id"`
-		Status      string              `json:"status" bson:"status"`
-		DepositUnit []DepositUnitUpdate `json:"deposit_units" bson:"-"`
-		HasExternal bool                `json:"has_external" bson:"has_external"`
-		External    External            `json:"external" bson:"external"`
-		UpdateState string              `json:"update_state" bson:"-"`
-		Money       vmod.Money          `json:"money" bson:"money"`
+		ID            string              `json:"id" bson:"_id"`
+		CrewID        string              `json:"crew_id" bson:"crew_id"`
+		Status        string              `json:"status" bson:"status"`
+		DepositUnit   []DepositUnitUpdate `json:"deposit_units" bson:"-"`
+		HasExternal   bool                `json:"has_external" bson:"has_external"`
+		External      External            `json:"external" bson:"external"`
+		UpdateState   string              `json:"update_state" bson:"-"`
+		DateOfDeposit int64               `json:"date_of_deposit" bson:"date_of_deposit"`
+		Money         vmod.Money          `json:"money" bson:"money"`
 	}
 	DepositDatabase struct {
 		ID               string        `json:"id" bson:"_id"`
@@ -65,6 +68,7 @@ type (
 		CreatorID        string        `json:"creator_id" bson:"creator_id"`
 		ConfirmerID      string        `json:"confirmer_id" bson:"confirmer_id"`
 		HasExternal      bool          `json:"has_external" bson:"has_external"`
+		DateOfDeposit    int64         `json:"date_of_deposit" bson:"date_of_deposit"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -80,6 +84,7 @@ type (
 		Confirmer        User          `json:"confirmer" bson:"confirmer"`
 		HasExternal      bool          `json:"has_external" bson:"has_external"`
 		Receipts         []ReceiptFile `json:"receipts" bson:"receipts"`
+		DateOfDeposit    int64         `json:"date_of_deposit" bson:"date_of_deposit"`
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -202,7 +207,7 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 				contains = true
 			}
 		}
-		if contains == false {
+		if !contains {
 			delete = append(delete, value_current)
 		}
 	}
@@ -223,12 +228,15 @@ func (i *DepositUpdate) DepositDatabase(current *Deposit) (r *DepositUpdate, cre
 		}
 	}
 	currency := "EUR"
-	if i.DepositUnit != nil && len(i.DepositUnit) != 0 {
+	if len(i.DepositUnit) != 0 {
 		currency = i.DepositUnit[0].Money.Currency
 	}
 	r = i
 	r.Money.Amount = amount
 	r.Money.Currency = currency
+	if current.Status != "wait" && i.Status == "wait" {
+		r.DateOfDeposit = time.Now().Unix()
+	}
 	return
 }
 

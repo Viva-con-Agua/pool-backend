@@ -9,6 +9,7 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type ReceiptFileHandler struct {
@@ -19,6 +20,7 @@ var ReceiptFile = &ReceiptFileHandler{*vcago.NewHandler("receipt")}
 
 func (i *ReceiptFileHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
+	group.Use(middleware.BodyLimit("5MB"))
 	group.POST("", i.Upload, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
 	group.GET("/zip/:id", i.GetZipByID, accessCookie)

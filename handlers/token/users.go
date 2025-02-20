@@ -23,6 +23,7 @@ func (i *UserHandler) Routes(group *echo.Group) {
 	group.GET("/crew", i.GetUsersByCrew, accessCookie)
 	group.GET("/crew/public", i.GetMinimal, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
+	group.GET("/api_key/:id", i.GetByIDApiKey, vcago.KeyAuthMiddleware())
 }
 
 func (i *UserHandler) Get(cc echo.Context) (err error) {
@@ -55,6 +56,19 @@ func (i *UserHandler) GetByID(cc echo.Context) (err error) {
 	}
 	result := new(models.User)
 	if result, err = dao.UsersUserGetByID(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Selected(result)
+}
+
+func (i *UserHandler) GetByIDApiKey(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.UserParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	result := new(models.User)
+	if result, err = dao.UsersUserGetByIDAPIKey(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Selected(result)
