@@ -4,7 +4,6 @@ go 1.21
 
 require (
 	github.com/Viva-con-Agua/vcago v1.5.7
-	github.com/Viva-con-Agua/vcapool v0.3.4
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	go.mongodb.org/mongo-driver v1.17.0
@@ -20,9 +19,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible // indirect
-	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.17.10 // indirect
@@ -33,7 +30,6 @@ require (
 	github.com/nats-io/nats.go v1.37.0 // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
@@ -47,9 +43,6 @@ require (
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
 
 //replace github.com/Viva-con-Agua/vcapool => /home/dls/Projects/pkg/vcapool
