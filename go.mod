@@ -5,13 +5,11 @@ go 1.21
 require (
 	github.com/Viva-con-Agua/vcago v1.5.7
 	github.com/google/uuid v1.6.0
-	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.12.0
 	go.mongodb.org/mongo-driver v1.17.0
 )
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 )
