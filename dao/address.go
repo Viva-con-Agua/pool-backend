@@ -5,11 +5,10 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func AddressInsert(ctx context.Context, i *models.AddressCreate, token *vcapool.AccessToken) (result *models.Address, err error) {
+func AddressInsert(ctx context.Context, i *models.AddressCreate, token *models.AccessToken) (result *models.Address, err error) {
 	result = i.Address(token.ID)
 	if err = AddressesCollection.InsertOne(ctx, result); err != nil {
 		return
@@ -17,7 +16,7 @@ func AddressInsert(ctx context.Context, i *models.AddressCreate, token *vcapool.
 	return
 }
 
-func UsersAddressInsert(ctx context.Context, i *models.UsersAddressCreate, token *vcapool.AccessToken) (result *models.Address, err error) {
+func UsersAddressInsert(ctx context.Context, i *models.UsersAddressCreate, token *models.AccessToken) (result *models.Address, err error) {
 	if err = models.AddressPermission(token); err != nil {
 		return
 	}
@@ -28,7 +27,7 @@ func UsersAddressInsert(ctx context.Context, i *models.UsersAddressCreate, token
 	return
 }
 
-func AddressGet(ctx context.Context, i *models.AddressQuery, token *vcapool.AccessToken) (result *[]models.Address, err error) {
+func AddressGet(ctx context.Context, i *models.AddressQuery, token *models.AccessToken) (result *[]models.Address, err error) {
 	filter := i.PermittedFilter(token)
 	result = new([]models.Address)
 	if err = AddressesCollection.Find(ctx, filter, result); err != nil {
@@ -37,7 +36,7 @@ func AddressGet(ctx context.Context, i *models.AddressQuery, token *vcapool.Acce
 	return
 }
 
-func AddressGetByID(ctx context.Context, i *models.AddressParam, token *vcapool.AccessToken) (result *models.Address, err error) {
+func AddressGetByID(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *models.Address, err error) {
 	filter := i.PermittedFilter(token)
 	if err = AddressesCollection.FindOne(ctx, filter, &result); err != nil {
 		return
@@ -45,7 +44,7 @@ func AddressGetByID(ctx context.Context, i *models.AddressParam, token *vcapool.
 	return
 }
 
-func UsersAddressUpdate(ctx context.Context, i *models.AddressUpdate, token *vcapool.AccessToken) (result *models.Address, err error) {
+func UsersAddressUpdate(ctx context.Context, i *models.AddressUpdate, token *models.AccessToken) (result *models.Address, err error) {
 	if err = models.AddressPermission(token); err != nil {
 
 		return
@@ -56,7 +55,7 @@ func UsersAddressUpdate(ctx context.Context, i *models.AddressUpdate, token *vca
 	return
 }
 
-func AddressUpdate(ctx context.Context, i *models.AddressUpdate, token *vcapool.AccessToken) (result *models.Address, err error) {
+func AddressUpdate(ctx context.Context, i *models.AddressUpdate, token *models.AccessToken) (result *models.Address, err error) {
 	filter := i.PermittedFilter(token)
 	if err = AddressesCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(i), &result); err != nil {
 		return
@@ -64,7 +63,7 @@ func AddressUpdate(ctx context.Context, i *models.AddressUpdate, token *vcapool.
 	return
 }
 
-func AddressDelete(ctx context.Context, i *models.AddressParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func AddressDelete(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *models.NVM, err error) {
 	filter := i.PermittedFilter(token)
 	if err = AddressesCollection.DeleteOne(ctx, filter); err != nil {
 		return
@@ -75,7 +74,7 @@ func AddressDelete(ctx context.Context, i *models.AddressParam, token *vcapool.A
 	return
 }
 
-func UsersAddressDelete(ctx context.Context, i *models.AddressParam, token *vcapool.AccessToken) (result *models.NVM, err error) {
+func UsersAddressDelete(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *models.NVM, err error) {
 	if err = models.AddressPermission(token); err != nil {
 		return
 	}

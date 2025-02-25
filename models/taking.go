@@ -6,7 +6,6 @@ import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -56,6 +55,7 @@ type (
 		Activities   []Activity          `json:"activities" bson:"activities"`
 		Money        vmod.Money          `json:"money" bson:"money"`
 		Creator      UserDatabase        `json:"creator" bson:"creator"`
+		Modified     vmod.Modified       `json:"modified" bson:"modified"`
 	}
 	TakingState struct {
 		Open      vmod.Money `json:"open" bson:"open"`
@@ -73,7 +73,6 @@ type (
 	TakingQuery struct {
 		ID              []string `query:"id"`
 		Name            string   `query:"name"`
-		Search          string   `query:"search"`
 		CrewID          []string `query:"crew_id"`
 		EventName       string   `query:"event_name"`
 		TypeOfEvent     []string `query:"type_of_event"`
@@ -87,18 +86,16 @@ type (
 		StatusNone      bool     `query:"status_none"`
 		StatusWait      bool     `query:"status_wait"`
 		StatusNoIncome  bool     `query:"status_no_income"`
-		SortField       string   `query:"sort"`
-		SortDirection   string   `query:"sort_dir"`
-		Limit           int64    `query:"limit"`
-		Skip            int64    `query:"skip"`
 		FullCount       string   `query:"full_count"`
+		vmdb.Query
 	}
 )
 
 var TakingCollection = "takings"
+var TakingDepositView = "taking_deposit_view"
 
-func TakingPermission(token *vcapool.AccessToken) (err error) {
-	if !(token.Roles.Validate("admin;employee") || token.PoolRoles.Validate("finance")) {
+func TakingPermission(token *AccessToken) (err error) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate("finance")) {
 		return vcago.NewPermissionDenied(DepositCollection)
 	}
 	return
@@ -112,7 +109,7 @@ func TakingPipeline() *vmdb.Pipeline {
 	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
-	//pipe.LookupList(ArtistCollection, "event.artist_ids", "_id", "event.artists")
+	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
 	}}})
@@ -137,19 +134,44 @@ func TakingPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
+func TakingCountPipeline(filter bson.D) *vmdb.Pipeline {
+	pipe := TakingPipeline()
+	pipe.Match(filter)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
+
 func TakingPipelineTicker() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
 	return pipe
 }
 
+func TakingPipelineDeposit() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
+	return pipe
+}
+
 func (i *TakingCreate) TakingDatabase() *TakingDatabase {
+	currency := "EUR"
+	if len(i.NewSource) > 0 {
+		currency = i.NewSource[0].Money.Currency
+	}
 	return &TakingDatabase{
 		ID:           uuid.NewString(),
 		Name:         i.Name,
 		CrewID:       i.CrewID,
 		Type:         "manually",
-		Currency:     i.NewSource[0].Money.Currency,
+		Currency:     currency,
 		DateOfTaking: i.DateOfTaking,
 		Comment:      i.Comment,
 		Modified:     vmod.NewModified(),
@@ -186,10 +208,10 @@ func (i *TakingUpdate) Match() bson.D {
 }
 */
 
-func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *TakingQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualStringList("crew_id", []string{token.CrewID})
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
@@ -229,27 +251,27 @@ func (i *TakingQuery) PermittedFilter(token *vcapool.AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *TakingUpdate) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *TakingUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
 
-func TakingPermittedFilter(i *vmod.IDParam, token *vcapool.AccessToken) bson.D {
+func TakingPermittedFilter(i *vmod.IDParam, token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
 
-func (i *Taking) UpdatePermission(token *vcapool.AccessToken) error {
+func (i *Taking) UpdatePermission(token *AccessToken) error {
 	if i.Event.ID != "" {
-		if !token.Roles.Validate("employee;admin") {
+		if !token.Roles.Validate("admin;employee;pool_employee") {
 			if !token.PoolRoles.Validate("finance") {
 				return vcago.NewPermissionDenied(TakingCollection)
 			}

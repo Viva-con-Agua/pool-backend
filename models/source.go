@@ -3,7 +3,6 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -77,6 +76,7 @@ func (i *SourceCreate) Source() *Source {
 		TakingID:    i.TakingID,
 		PaymentType: i.PaymentType,
 		Money:       i.Money,
+		Norms:       i.Norms,
 		Modified:    vmod.NewModified(),
 	}
 }
@@ -88,6 +88,7 @@ func (i *SourceUpdate) Source() *Source {
 		PaymentType: i.PaymentType,
 		TakingID:    i.TakingID,
 		Money:       i.Money,
+		Norms:       i.Norms,
 	}
 }
 
@@ -113,8 +114,8 @@ func (i *SourceQuery) Filter() bson.D {
 	return filter.Bson()
 }
 
-func SourceDeletePermission(taking *Taking, token *vcapool.AccessToken) bool {
-	if !token.Roles.Validate("admin;employee") {
+func SourceDeletePermission(taking *Taking, token *AccessToken) bool {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		if taking.State.Confirmed.Amount != 0 {
 			return false
 		}

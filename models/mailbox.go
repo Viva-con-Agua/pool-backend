@@ -3,7 +3,6 @@ package models
 import (
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -34,11 +33,11 @@ func NewMailboxDatabase(t string) *MailboxDatabase {
 	}
 }
 
-func MailboxPipeline(token *vcapool.AccessToken) *vmdb.Pipeline {
+func MailboxPipeline(token *AccessToken) *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
-	if !(token.Roles.Validate("employee;admin") || token.PoolRoles.Validate(ASPRole)) {
+	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		inboxMatch := vmdb.NewFilter()
 		inboxMatch.EqualString("type", "inbox")
 		inboxMatch.EqualString("user_id", token.ID)
@@ -65,7 +64,7 @@ func MailboxPipeline(token *vcapool.AccessToken) *vmdb.Pipeline {
 	return pipe
 }
 
-func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) (err error) {
+func (i *MailboxParam) Permission(token *AccessToken, mailbox *Mailbox) (err error) {
 	if token.MailboxID == mailbox.ID {
 		return
 	} else if token.CrewID == mailbox.ID {
@@ -74,10 +73,10 @@ func (i *MailboxParam) Permission(token *vcapool.AccessToken, mailbox *Mailbox) 
 	return vcago.NewPermissionDenied(MailboxCollection)
 }
 
-func (i *MailboxParam) PermittedFilter(token *vcapool.AccessToken) bson.D {
+func (i *MailboxParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.ID)
-	if !token.Roles.Validate("employee;admin") {
+	if !token.Roles.Validate("admin;employee;pool_employee") {
 		status := bson.A{}
 		status = append(status, bson.D{{Key: "user._id", Value: token.ID}})
 		status = append(status, bson.D{{Key: "crew._id", Value: token.CrewID}})

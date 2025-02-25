@@ -4,13 +4,13 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"github.com/Viva-con-Agua/vcapool"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.AccessToken) (result *models.Profile, err error) {
+func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *models.AccessToken) (result *models.Profile, err error) {
 	result = i.Profile(token.ID)
 	if err = ProfileCollection.InsertOne(ctx, result); err != nil {
 		return
@@ -18,7 +18,7 @@ func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *vcapool.
 	return
 }
 
-func ProfileGetByID(ctx context.Context, i *models.UserParam, token *vcapool.AccessToken) (result *models.User, err error) {
+func ProfileGetByID(ctx context.Context, i *models.UserParam, token *models.AccessToken) (result *models.User, err error) {
 	if err = models.UsersDetailsPermission(token); err != nil {
 		return
 	}
@@ -28,8 +28,14 @@ func ProfileGetByID(ctx context.Context, i *models.UserParam, token *vcapool.Acc
 	return
 }
 
-func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
+func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *models.AccessToken) (result *models.Profile, err error) {
 	filter := i.PermittedFilter(token)
+	birthdate := time.Unix(i.Birthdate, 0)
+	if i.Birthdate != 0 {
+		i.BirthdateDatetime = birthdate.Format("2006-01-02")
+	} else {
+		i.BirthdateDatetime = ""
+	}
 	if err = ProfileCollection.UpdateOne(
 		ctx,
 		filter,
@@ -51,7 +57,7 @@ func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.
 	return
 }
 
-func ProfileSync(ctx context.Context, i models.Profile, token *vcapool.AccessToken) (result *models.Profile, err error) {
+func ProfileSync(ctx context.Context, i models.Profile, token *models.AccessToken) (result *models.Profile, err error) {
 	go func() {
 		if err = IDjango.Post(i, "/v1/pool/profile/"); err != nil {
 			log.Print(err)
@@ -60,7 +66,7 @@ func ProfileSync(ctx context.Context, i models.Profile, token *vcapool.AccessTok
 	return
 }
 
-func UsersProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *vcapool.AccessToken) (result *models.Profile, err error) {
+func UsersProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *models.AccessToken) (result *models.Profile, err error) {
 	if err = models.UsersEditPermission(token); err != nil {
 		return
 	}
