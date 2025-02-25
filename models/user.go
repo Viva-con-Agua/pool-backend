@@ -443,7 +443,7 @@ func (i *UserQuery) PermittedUserFilter(token *AccessToken) bson.D {
 	filter.ElemMatchList("system_roles", "name", i.SystemRoles)
 	filter.EqualStringList("active.status", i.ActiveState)
 	filter.EqualStringList("nvm.status", i.NVMState)
-	filter.SearchString([]string{"_id", "first_name", "last_name", "email"}, i.Search)
+	filter.SearchString([]string{"_id", "first_name", "last_name", "full_name", "email"}, i.Search)
 	return filter.Bson()
 }
 

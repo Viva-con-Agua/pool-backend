@@ -70,14 +70,18 @@ func UpdateDatabase() {
 		CreateDefaultOrganisation(ctx)
 		Updates.Insert(ctx, "create_default_organisation")
 	}
-	if !Updates.Check(ctx, "update_deposit_units_1") {
+	if !Updates.Check(ctx, "update_deposit_units_3") {
 		UpdateDepositUnitNorms(ctx)
-		Updates.Insert(ctx, "update_deposit_units_1")
+		Updates.Insert(ctx, "update_deposit_units_3")
 	}
 	if !Updates.Check(ctx, "publish_roles_initial") {
 		log.Print("publish_roles_initial")
 		PublishRoles()
 		Updates.Insert(ctx, "publish_roles_initial")
+	}
+	if !Updates.Check(ctx, "date_of_deposit") {
+		UpdateDateOfDeposit(ctx)
+		Updates.Insert(ctx, "date_of_deposit")
 	}
 }
 
@@ -283,5 +287,21 @@ func UpdateDepositUnitNorms(ctx context.Context) {
 	}
 	if err := SourceCollection.UpdateMany(ctx, filterEco.Bson(), updateEco); err != nil {
 		log.Print(err)
+	}
+}
+
+func UpdateDateOfDeposit(ctx context.Context) {
+	filter := vmdb.NewFilter()
+	filter.EqualStringList("status", []string{"wait", "confirmed"})
+	deposits := []models.Deposit{}
+	if err := DepositCollection.Find(ctx, bson.D{{}}, &deposits); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range deposits {
+		updateFilter := bson.D{{Key: "_id", Value: entry.ID}}
+		update := bson.D{{Key: "date_of_deposit", Value: entry.Modified.Created}}
+		if err := DepositCollection.UpdateOne(ctx, updateFilter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
 	}
 }

@@ -76,6 +76,7 @@ func (i *SourceCreate) Source() *Source {
 		TakingID:    i.TakingID,
 		PaymentType: i.PaymentType,
 		Money:       i.Money,
+		Norms:       i.Norms,
 		Modified:    vmod.NewModified(),
 	}
 }
@@ -87,6 +88,7 @@ func (i *SourceUpdate) Source() *Source {
 		PaymentType: i.PaymentType,
 		TakingID:    i.TakingID,
 		Money:       i.Money,
+		Norms:       i.Norms,
 	}
 }
 
