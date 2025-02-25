@@ -51,8 +51,8 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 
 	count := vmod.Count{}
 	var cErr error
-	if cErr = UserViewCollection.AggregateOne(ctx, models.UserPermittedPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
-		print(cErr)
+	if cErr = UserViewCollection.AggregateOne(context.Background(), models.UserPermittedPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+		log.Print(cErr)
 		list_size = 1
 	} else {
 		list_size = int64(count.Total)
