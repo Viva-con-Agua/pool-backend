@@ -592,10 +592,15 @@ func (i *EventParam) PublicFilter() bson.D {
 func (i *EventQuery) FilterAsp(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	if token.PoolRoles.Validate(ASPEventRole) {
-		filter.EqualString("crew_id", token.CrewID)
+		status := bson.A{}
+		status = append(status, bson.D{{Key: "event_asp_id", Value: token.ID}})
+		status = append(status, bson.D{{Key: "crew_id", Value: token.CrewID}})
+		filter.Append(bson.E{Key: "$or", Value: status})
 	} else {
 		filter.EqualString("event_asp_id", token.ID)
 	}
+	filter.GteInt64("end_at", fmt.Sprint(time.Now().AddDate(0, -6, 0).Unix()))
+	filter.EqualStringList("event_state.state", []string{"published", "finished"})
 	return filter.Bson()
 }
 

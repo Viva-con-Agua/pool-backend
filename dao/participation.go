@@ -28,6 +28,9 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	}
 	if _, err = EventApplicationsUpdate(ctx, &models.EventApplicationsUpdate{ID: i.EventID, Applications: models.EventApplications{
 		Requested: event.Applications.Requested + 1,
+		Confirmed: event.Applications.Confirmed,
+		Rejected:  event.Applications.Rejected,
+		Withdrawn: event.Applications.Withdrawn,
 		Total:     event.Applications.Total + 1,
 	}}); err != nil {
 		return
