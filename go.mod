@@ -3,7 +3,7 @@ module pool-backend
 go 1.21
 
 require (
-	github.com/Viva-con-Agua/vcago v1.5.7
+	github.com/Viva-con-Agua/vcago v1.5.11
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	go.mongodb.org/mongo-driver v1.17.0
