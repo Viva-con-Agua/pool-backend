@@ -18,6 +18,7 @@ func (i *ArtistHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
 	group.GET("", i.Get, accessCookie)
+	group.GET("/api_token", i.Get, vcago.KeyAuthMiddleware())
 	group.GET("/:id", i.GetByID, accessCookie)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
