@@ -84,6 +84,7 @@ func UpdateDatabase() {
 		Updates.Insert(ctx, "date_of_deposit")
 	}
 	if !Updates.Check(ctx, "event_applications_fix") {
+		log.Print("event_applications_fix")
 		UpdateEventApplications(ctx)
 		Updates.Insert(ctx, "event_applications_fix")
 	}
@@ -216,7 +217,7 @@ func UpdateProfileBirthdate(ctx context.Context) {
 
 func UpdateEventApplications(ctx context.Context) {
 	eventList := []models.Event{}
-	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&models.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
+	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&models.AccessToken{ID: "internal"}).Pipe, &eventList); err != nil {
 		log.Print(err)
 	}
 	for _, event := range eventList {

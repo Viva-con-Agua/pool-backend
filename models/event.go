@@ -419,7 +419,7 @@ func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
-	if token.Roles.Validate("admin;employee;pool_employee") {
+	if token.Roles.Validate("admin;employee;pool_employee") || token.ID == "internal" {
 		pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	} else if token.PoolRoles.Validate(ASPEventRole) {
 		pipe.LookupMatch(ParticipationEventView, "_id", "event_id", "participations", bson.D{{Key: "event.crew_id", Value: token.CrewID}})
