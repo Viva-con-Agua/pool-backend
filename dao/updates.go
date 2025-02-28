@@ -83,6 +83,10 @@ func UpdateDatabase() {
 		UpdateDateOfDeposit(ctx)
 		Updates.Insert(ctx, "date_of_deposit")
 	}
+	if !Updates.Check(ctx, "event_applications_fix") {
+		UpdateEventApplications(ctx)
+		Updates.Insert(ctx, "event_applications_fix")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
