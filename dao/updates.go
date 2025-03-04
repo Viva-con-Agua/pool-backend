@@ -221,7 +221,7 @@ func UpdateProfileBirthdate(ctx context.Context) {
 }
 
 func UpdateEventCrewIDs(ctx context.Context) {
-	eventList := []models.Event{}
+	eventList := []models.EventUpdate{}
 	eventFilter := bson.D{{Key: "crew_id", Value: ""}, {Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}}}
 
 	if err := EventCollection.Find(ctx, eventFilter, &eventList); err != nil {
