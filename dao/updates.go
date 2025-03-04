@@ -91,7 +91,7 @@ func UpdateDatabase() {
 	if !Updates.Check(ctx, "event_crew_id_fix") {
 		log.Print("event_crew_id_fix")
 		UpdateEventCrewIDs(ctx)
-		//Updates.Insert(ctx, "event_crew_id_fix")
+		Updates.Insert(ctx, "event_crew_id_fix")
 	}
 }
 
@@ -221,7 +221,7 @@ func UpdateProfileBirthdate(ctx context.Context) {
 }
 
 func UpdateEventCrewIDs(ctx context.Context) {
-	eventList := []models.Event{}
+	eventList := []models.EventUpdate{}
 	eventFilter := bson.D{{Key: "crew_id", Value: ""}, {Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}}}
 
 	if err := EventCollection.Find(ctx, eventFilter, &eventList); err != nil {
@@ -235,14 +235,11 @@ func UpdateEventCrewIDs(ctx context.Context) {
 		if event.EventASPID == event.InternalASPID {
 			continue
 		}
-		//filter := bson.D{{Key: "_id", Value: event.ID}}
+		filter := bson.D{{Key: "_id", Value: event.ID}}
 		event.CrewID = user.CrewID
-		log.Print(event.ID)
-		log.Print("Will update event " + event.Name + " and set crew to " + user.CrewID)
-
-		//if err := EventCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(event), nil); err != nil {
-		//	log.Print(err)
-		//}
+		if err := EventCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(event), nil); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
