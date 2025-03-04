@@ -222,7 +222,7 @@ func UpdateProfileBirthdate(ctx context.Context) {
 
 func UpdateEventCrewIDs(ctx context.Context) {
 	eventList := []models.Event{}
-	eventFilter := bson.D{{Key: "crew_id", Value: ""}, {Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}}, {Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: "$internal_asp_id"}}}}
+	eventFilter := bson.D{{Key: "crew_id", Value: ""}, {Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}}}
 
 	if err := EventCollection.Find(ctx, eventFilter, &eventList); err != nil {
 		log.Print(err)
@@ -231,6 +231,9 @@ func UpdateEventCrewIDs(ctx context.Context) {
 		user := models.UserCrew{}
 		if err := UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: event.EventASPID}}, &user); err != nil {
 			log.Print(err)
+		}
+		if event.EventASPID == event.InternalASPID {
+			continue
 		}
 		//filter := bson.D{{Key: "_id", Value: event.ID}}
 		event.CrewID = user.CrewID
