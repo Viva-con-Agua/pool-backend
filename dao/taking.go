@@ -169,6 +169,18 @@ func TakingGetByIDSystem(ctx context.Context, id string) (result *models.Taking,
 	return
 }
 
+func TakingGetByEventIDSystem(ctx context.Context, eventId string) (result *models.Taking, err error) {
+	filter := bson.D{{Key: "event._id", Value: eventId}}
+	if err = TakingCollection.AggregateOne(
+		ctx,
+		models.TakingPipeline().Match(filter).Pipe,
+		&result,
+	); err != nil {
+		return
+	}
+	return
+}
+
 func TakingDeletetByIDSystem(ctx context.Context, id string) (err error) {
 	filter := bson.D{{Key: "_id", Value: id}}
 	err = TakingCollection.DeleteOne(ctx, filter)

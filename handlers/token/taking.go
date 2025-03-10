@@ -21,6 +21,7 @@ func (i *TakingHandler) Routes(group *echo.Group) {
 	group.PUT("", i.Update, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/:id", i.GetByID, accessCookie)
+	group.GET("/by_event/:id", i.GetByEventIDKey, vcago.KeyAuthMiddleware())
 	group.DELETE("/:id", i.DeleteByID, accessCookie)
 
 }
@@ -89,6 +90,19 @@ func (i TakingHandler) GetByID(cc echo.Context) (err error) {
 	}
 	result := new(models.Taking)
 	if result, err = dao.TakingGetByID(c.Ctx(), body, token); err != nil {
+		return
+	}
+	return c.Selected(result)
+}
+
+func (i TakingHandler) GetByEventIDKey(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(vmod.IDParam)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	result := new(models.Taking)
+	if result, err = dao.TakingGetByEventIDSystem(c.Ctx(), body.ID); err != nil {
 		return
 	}
 	return c.Selected(result)
