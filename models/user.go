@@ -140,6 +140,7 @@ type (
 		LastName    string `bson:"last_name" json:"last_name" `
 		FullName    string `bson:"full_name" json:"full_name"`
 		DisplayName string `bson:"display_name" json:"display_name"`
+		Email       string `bson:"email" json:"email"`
 	}
 	UserBasic struct {
 		ID          string         `json:"id,omitempty" bson:"_id"`
