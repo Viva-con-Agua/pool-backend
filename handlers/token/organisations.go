@@ -17,8 +17,8 @@ var Organisation = &OrganisationHandler{*vcago.NewHandler("organisation")}
 func (i *OrganisationHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
-	group.GET("", i.Get)
-	group.GET("/:id", i.GetByID)
+	group.GET("", i.Get, accessCookie)
+	group.GET("/:id", i.GetByID, accessCookie)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 }
