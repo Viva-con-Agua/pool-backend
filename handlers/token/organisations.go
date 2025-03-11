@@ -17,7 +17,8 @@ var Organisation = &OrganisationHandler{*vcago.NewHandler("organisation")}
 func (i *OrganisationHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
-	group.GET("", i.Get)
+	group.GET("", i.Get, accessCookie)
+	group.GET("/public", i.GetPublic)
 	group.GET("/:id", i.GetByID)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
@@ -44,15 +45,31 @@ func (i *OrganisationHandler) Create(cc echo.Context) (err error) {
 	//}()
 	return c.Created(result)
 }
-
 func (i *OrganisationHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.OrganisationQuery)
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
+	token := new(models.AccessToken)
+	if err = c.AccessToken(token); err != nil {
+		return
+	}
 	result := new([]models.Organisation)
 	if result, err = dao.OrganisationGet(c.Ctx(), body); err != nil {
+		return
+	}
+	return c.Selected(result)
+}
+
+func (i *OrganisationHandler) GetPublic(cc echo.Context) (err error) {
+	c := cc.(vcago.Context)
+	body := new(models.OrganisationQuery)
+	if err = c.BindAndValidate(body); err != nil {
+		return
+	}
+	result := new([]models.OrganisationPublic)
+	if result, err = dao.OrganisationGetPublic(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Selected(result)

@@ -28,6 +28,16 @@ func OrganisationGet(ctx context.Context, i *models.OrganisationQuery) (result *
 	return
 }
 
+func OrganisationGetPublic(ctx context.Context, i *models.OrganisationQuery) (result *[]models.OrganisationPublic, err error) {
+	filter := i.Filter()
+	result = new([]models.OrganisationPublic)
+
+	if err = OrganisationCollection.Aggregate(ctx, vmdb.NewPipeline().Match(filter).Pipe, result); err != nil {
+		return
+	}
+	return
+}
+
 func OrganisationGetByID(ctx context.Context, i *models.OrganisationParam) (result *models.Organisation, err error) {
 	filter := i.Match()
 	if err = OrganisationCollection.FindOne(ctx, filter, &result); err != nil {

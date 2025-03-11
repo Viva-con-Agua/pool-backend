@@ -23,6 +23,12 @@ type (
 		Email        string        `json:"email" bson:"email"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
+	OrganisationPublic struct {
+		ID           string        `json:"id" bson:"_id"`
+		Name         string        `json:"name" bson:"name"`
+		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
+		Modified     vmod.Modified `json:"modified" bson:"modified"`
+	}
 	OrganisationUpdate struct {
 		ID           string `json:"id" bson:"_id"`
 		DefaultAspID string `json:"default_asp_id" bson:"default_asp_id"`
