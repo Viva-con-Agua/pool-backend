@@ -19,7 +19,7 @@ func (i *OrganisationHandler) Routes(group *echo.Group) {
 	group.POST("", i.Create, accessCookie)
 	group.GET("", i.Get, accessCookie)
 	group.GET("/public", i.GetPublic)
-	group.GET("/:id", i.GetByID)
+	group.GET("/:id", i.GetByID, accessCookie)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 }
@@ -49,10 +49,6 @@ func (i *OrganisationHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.OrganisationQuery)
 	if err = c.BindAndValidate(body); err != nil {
-		return
-	}
-	token := new(models.AccessToken)
-	if err = c.AccessToken(token); err != nil {
 		return
 	}
 	result := new([]models.Organisation)
