@@ -2,12 +2,35 @@ package main
 
 import (
 	"pool-backend/dao"
+	_ "pool-backend/docs"
 	"pool-backend/handlers/admin"
 	"pool-backend/handlers/key"
 	"pool-backend/handlers/token"
 
 	"github.com/Viva-con-Agua/vcago"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
+
+// @title Pool API documentation
+// @version 3.0.0
+// @host pool3-api.vivaconagua.org
+// @schemes https
+
+// @BasePath /v1
+
+// @securitydefinitions.oauth2.accessCode OAuth2AccessCode
+// @tokenUrl https://hydra.vivaconagua.org/oauth/token
+// @authorizationurl https://hydra.vivaconagua.org/oauth/authorize
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description Bearer key
+
+// @securityDefinitions.apikey CookieAuth
+// @in cookie
+// @name access_cookie
+// @description
 
 func main() {
 	e := vcago.NewServer()
@@ -70,6 +93,7 @@ func main() {
 		admin.Role.Routes(e.Group("/admin/users/role"))
 		admin.User.Routes(e.Group("/admin/users"))
 	}
+	e.GET("/docu/*", echoSwagger.WrapHandler)
 	//server
 	e.Run()
 }
