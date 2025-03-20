@@ -41,3 +41,10 @@ func (token *AccessToken) AccessPermission() (err error) {
 	}
 	return
 }
+
+func (token *AccessToken) AddressCreate(id string) (err error) {
+	if !token.Roles.Validate("admin") && token.ID != id {
+		return vcago.NewPermissionDenied(AddressesCollection)
+	}
+	return
+}

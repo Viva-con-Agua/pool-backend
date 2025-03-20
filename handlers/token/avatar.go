@@ -26,6 +26,17 @@ func (i *AvatarHandler) Routes(group *echo.Group) {
 	group.DELETE("/img/:id", i.Delete, accessCookie)
 }
 
+// Upload
+// @Security CookieAuth
+// @Summary Uploads a Avatar
+// @Description creates an  Avatar object.
+// @Tags Avatar
+// @Accept json
+// @Produce json
+// @Param form body models.AvatarFile true "Avatar File"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.Response{payload=models.Avatar}
+// @Router /users/avatar [post]
 func (i *AvatarHandler) Upload(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	token := new(models.AccessToken)
@@ -60,6 +71,15 @@ func (i *AvatarHandler) Upload(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a  Avatar by ID
+// @Tags Avatar
+// @Accept json
+// @Produce image/png
+// @Param id path string true "Avatar ID"
+// @Success 200 {file} string "Download Image"
+// @Router /users/avatar/{id} [get]
 func (i *AvatarHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AvatarParam)
@@ -74,6 +94,15 @@ func (i *AvatarHandler) GetByID(cc echo.Context) (err error) {
 	return c.Stream(http.StatusOK, "image/png", bytes.NewReader(buf.Bytes()))
 }
 
+// DeleteByID
+// @Security CookieAuth
+// @Summary Get a  Avatar by ID
+// @Tags Avatar
+// @Accept json
+// @Produce json
+// @Param id path string true "Avatar ID"
+// @Success 200 {object} vmod.DeletedResponse
+// @Router /users/avatar/{id} [delete]
 func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AvatarParam)

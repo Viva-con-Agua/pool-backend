@@ -27,6 +27,17 @@ func (i *AddressHandler) Routes(group *echo.Group) {
 	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
+// Create
+// @Security CookieAuth
+// @Summary Create a Address
+// @Description creates an  Address object.
+// @Tags Address
+// @Accept json
+// @Produce json
+// @Param form body models.AddressCreate true "Address Data"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.Response{payload=models.Address}
+// @Router /users/address [post]
 func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressCreate)
@@ -49,6 +60,8 @@ func (i *AddressHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// UsersCreate
+// TODO: delete
 func (i *AddressHandler) UsersCreate(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.UsersAddressCreate)
@@ -71,6 +84,17 @@ func (i *AddressHandler) UsersCreate(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// Get
+// @Security CookieAuth
+// @Summary Get a List of  Addresss
+// @Tags Address
+// @Accept json
+// @Produce json
+// @Param   q query   models.AddressQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.Address}
+// @Failure 400 {object} vcago.Response{}
+// @Router /users/address [get]
 func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressQuery)
@@ -88,6 +112,16 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a  Address by ID
+// @Tags Address
+// @Accept json
+// @Produce json
+// @Param id path string true "Address ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Address}
+// @Router /users/address/{id} [get]
 func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressParam)
@@ -105,6 +139,16 @@ func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// Update
+// @Security CookieAuth
+// @Summary Get a  Address by ID
+// @Tags Address
+// @Accept json
+// @Produce json
+// @Param form body models.AddressUpdate true "Address Data"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Address}
+// @Router /users/address [put]
 func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressUpdate)
@@ -127,6 +171,8 @@ func (i *AddressHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
+// UsersUpdate
+// TODO: delete
 func (i *AddressHandler) UsersUpdate(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressUpdate)
@@ -149,6 +195,15 @@ func (i *AddressHandler) UsersUpdate(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
+// DeleteByID
+// @Security CookieAuth
+// @Summary Delete a  Address by ID
+// @Tags Address
+// @Accept json
+// @Produce json
+// @Param id path string true "Address ID"
+// @Success 200 {object} vmod.DeletedResponse
+// @Router /users/address/{id} [delete]
 func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressParam)
@@ -174,6 +229,8 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	return c.Deleted(body.ID)
 }
 
+// UsersDelete
+// TODO: delete
 func (i *AddressHandler) UsersDelete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.AddressParam)
