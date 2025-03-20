@@ -7,7 +7,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       since:
         type: integer
       status:
@@ -26,11 +26,11 @@ definitions:
       model_type:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       status:
         type: string
       user:
-        $ref: '#/definitions/models.UserDatabase'
+        $ref: "#/definitions/models.UserDatabase"
       user_id:
         type: string
     type: object
@@ -47,7 +47,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       number:
         type: string
       street:
@@ -74,12 +74,12 @@ definitions:
       zip:
         type: string
     required:
-    - city
-    - country
-    - country_code
-    - number
-    - street
-    - zip
+      - city
+      - country
+      - country_code
+      - number
+      - street
+      - zip
     type: object
   models.AddressUpdate:
     properties:
@@ -107,7 +107,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
     type: object
@@ -116,7 +116,7 @@ definitions:
       name:
         type: string
     required:
-    - name
+      - name
     type: object
   models.ArtistUpdate:
     properties:
@@ -132,7 +132,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       user_id:
         type: string
     type: object
@@ -140,7 +140,7 @@ definitions:
     properties:
       file: {}
       header:
-        $ref: '#/definitions/multipart.FileHeader'
+        $ref: "#/definitions/multipart.FileHeader"
     type: object
   models.City:
     properties:
@@ -153,7 +153,7 @@ definitions:
       place_id:
         type: string
       position:
-        $ref: '#/definitions/vmod.Position'
+        $ref: "#/definitions/vmod.Position"
     type: object
   models.Crew:
     properties:
@@ -165,7 +165,7 @@ definitions:
         type: string
       cities:
         items:
-          $ref: '#/definitions/models.City'
+          $ref: "#/definitions/models.City"
         type: array
       email:
         type: string
@@ -176,11 +176,11 @@ definitions:
       mattermost_username:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
       organisation:
-        $ref: '#/definitions/models.Organisation'
+        $ref: "#/definitions/models.Organisation"
       organisation_id:
         type: string
       status:
@@ -196,7 +196,7 @@ definitions:
         type: string
       cities:
         items:
-          $ref: '#/definitions/models.City'
+          $ref: "#/definitions/models.City"
         type: array
       email:
         type: string
@@ -213,7 +213,7 @@ definitions:
     properties:
       cities:
         items:
-          $ref: '#/definitions/models.City'
+          $ref: "#/definitions/models.City"
         type: array
       id:
         type: string
@@ -222,7 +222,7 @@ definitions:
       name:
         type: string
       organisation:
-        $ref: '#/definitions/models.Organisation'
+        $ref: "#/definitions/models.Organisation"
       organisation_id:
         type: string
     type: object
@@ -236,7 +236,7 @@ definitions:
         type: string
       cities:
         items:
-          $ref: '#/definitions/models.City'
+          $ref: "#/definitions/models.City"
         type: array
       email:
         type: string
@@ -254,34 +254,34 @@ definitions:
   models.Deposit:
     properties:
       confirmer:
-        $ref: '#/definitions/models.User'
+        $ref: "#/definitions/models.User"
       creator:
-        $ref: '#/definitions/models.User'
+        $ref: "#/definitions/models.User"
       crew:
-        $ref: '#/definitions/models.Crew'
+        $ref: "#/definitions/models.Crew"
       crew_id:
         type: string
       date_of_deposit:
         type: integer
       deposit_units:
         items:
-          $ref: '#/definitions/models.DepositUnit'
+          $ref: "#/definitions/models.DepositUnit"
         type: array
       external:
-        $ref: '#/definitions/models.External'
+        $ref: "#/definitions/models.External"
       has_external:
         type: boolean
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       reason_for_payment:
         type: string
       receipts:
         items:
-          $ref: '#/definitions/models.ReceiptFile'
+          $ref: "#/definitions/models.ReceiptFile"
         type: array
       status:
         type: string
@@ -292,14 +292,14 @@ definitions:
         type: string
       deposit_units:
         items:
-          $ref: '#/definitions/models.DepositUnitCreate'
+          $ref: "#/definitions/models.DepositUnitCreate"
         type: array
       external:
-        $ref: '#/definitions/models.External'
+        $ref: "#/definitions/models.External"
       has_external:
         type: boolean
     required:
-    - crew_id
+      - crew_id
     type: object
   models.DepositDatabase:
     properties:
@@ -312,15 +312,15 @@ definitions:
       date_of_deposit:
         type: integer
       external:
-        $ref: '#/definitions/models.External'
+        $ref: "#/definitions/models.External"
       has_external:
         type: boolean
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       reason_for_payment:
         type: string
       status:
@@ -333,39 +333,39 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       status:
         type: string
       taking:
-        $ref: '#/definitions/models.Taking'
+        $ref: "#/definitions/models.Taking"
       taking_id:
         type: string
     type: object
   models.DepositUnitCreate:
     properties:
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       taking_id:
         type: string
     type: object
   models.DepositUnitTaking:
     properties:
       deposit:
-        $ref: '#/definitions/models.DepositDatabase'
+        $ref: "#/definitions/models.DepositDatabase"
       deposit_id:
         type: string
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       status:
         type: string
       taking:
-        $ref: '#/definitions/models.Taking'
+        $ref: "#/definitions/models.Taking"
       taking_id:
         type: string
     type: object
@@ -376,7 +376,7 @@ definitions:
       id:
         type: string
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       status:
         type: string
       taking_id:
@@ -392,16 +392,16 @@ definitions:
         type: integer
       deposit_units:
         items:
-          $ref: '#/definitions/models.DepositUnitUpdate'
+          $ref: "#/definitions/models.DepositUnitUpdate"
         type: array
       external:
-        $ref: '#/definitions/models.External'
+        $ref: "#/definitions/models.External"
       has_external:
         type: boolean
       id:
         type: string
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       status:
         type: string
       update_state:
@@ -412,21 +412,21 @@ definitions:
       additional_information:
         type: string
       application:
-        $ref: '#/definitions/models.EventApplication'
+        $ref: "#/definitions/models.EventApplication"
       applications:
-        $ref: '#/definitions/models.EventApplications'
+        $ref: "#/definitions/models.EventApplications"
       artist_ids:
         items:
           type: string
         type: array
       artists:
         items:
-          $ref: '#/definitions/models.Artist'
+          $ref: "#/definitions/models.Artist"
         type: array
       creator:
-        $ref: '#/definitions/models.User'
+        $ref: "#/definitions/models.User"
       crew:
-        $ref: '#/definitions/models.Crew'
+        $ref: "#/definitions/models.Crew"
       crew_id:
         type: string
       deposit_id:
@@ -436,38 +436,38 @@ definitions:
       end_at:
         type: integer
       event_asp:
-        $ref: '#/definitions/models.User'
+        $ref: "#/definitions/models.User"
       event_asp_id:
         type: string
       event_state:
-        $ref: '#/definitions/models.EventState'
+        $ref: "#/definitions/models.EventState"
       event_tools:
-        $ref: '#/definitions/models.EventTools'
+        $ref: "#/definitions/models.EventTools"
       external_asp:
-        $ref: '#/definitions/models.UserExternal'
+        $ref: "#/definitions/models.UserExternal"
       id:
         type: string
       internal_asp:
-        $ref: '#/definitions/models.User'
+        $ref: "#/definitions/models.User"
       internal_asp_id:
         type: string
       location:
-        $ref: '#/definitions/models.Location'
+        $ref: "#/definitions/models.Location"
       meeting_url:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
       organisation_id:
         type: string
       organizer:
-        $ref: '#/definitions/models.Organizer'
+        $ref: "#/definitions/models.Organizer"
       organizer_id:
         type: string
       participations:
         items:
-          $ref: '#/definitions/models.Participation'
+          $ref: "#/definitions/models.Participation"
         type: array
       start_at:
         type: integer
@@ -520,7 +520,7 @@ definitions:
       additional_information:
         type: string
       application:
-        $ref: '#/definitions/models.EventApplication'
+        $ref: "#/definitions/models.EventApplication"
       artist_ids:
         items:
           type: string
@@ -532,15 +532,15 @@ definitions:
       event_asp_id:
         type: string
       event_state:
-        $ref: '#/definitions/models.EventState'
+        $ref: "#/definitions/models.EventState"
       event_tools:
-        $ref: '#/definitions/models.EventTools'
+        $ref: "#/definitions/models.EventTools"
       external_asp:
-        $ref: '#/definitions/models.UserExternal'
+        $ref: "#/definitions/models.UserExternal"
       internal_asp_id:
         type: string
       location:
-        $ref: '#/definitions/models.Location'
+        $ref: "#/definitions/models.Location"
       meeting_url:
         type: string
       name:
@@ -561,7 +561,7 @@ definitions:
   models.EventDetails:
     properties:
       event_asp:
-        $ref: '#/definitions/models.EventASPPublic'
+        $ref: "#/definitions/models.EventASPPublic"
       meeting_url:
         type: string
     type: object
@@ -570,37 +570,37 @@ definitions:
       additional_information:
         type: string
       application:
-        $ref: '#/definitions/models.EventApplication'
+        $ref: "#/definitions/models.EventApplication"
       artist_ids:
         items:
           type: string
         type: array
       artists:
         items:
-          $ref: '#/definitions/models.Artist'
+          $ref: "#/definitions/models.Artist"
         type: array
       crew:
-        $ref: '#/definitions/models.CrewPublic'
+        $ref: "#/definitions/models.CrewPublic"
       crew_id:
         type: string
       end_at:
         type: integer
       event_state:
-        $ref: '#/definitions/models.EventStatePublic'
+        $ref: "#/definitions/models.EventStatePublic"
       event_tools:
-        $ref: '#/definitions/models.EventTools'
+        $ref: "#/definitions/models.EventTools"
       id:
         type: string
       location:
-        $ref: '#/definitions/models.Location'
+        $ref: "#/definitions/models.Location"
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
       organisation:
-        $ref: '#/definitions/models.Organisation'
+        $ref: "#/definitions/models.Organisation"
       organizer:
-        $ref: '#/definitions/models.Organizer'
+        $ref: "#/definitions/models.Organizer"
       organizer_id:
         type: string
       start_at:
@@ -644,13 +644,13 @@ definitions:
       additional_information:
         type: string
       application:
-        $ref: '#/definitions/models.EventApplication'
+        $ref: "#/definitions/models.EventApplication"
       artist_ids:
         items:
           type: string
         type: array
       crew:
-        $ref: '#/definitions/models.Crew'
+        $ref: "#/definitions/models.Crew"
       crew_id:
         type: string
       end_at:
@@ -658,17 +658,17 @@ definitions:
       event_asp_id:
         type: string
       event_state:
-        $ref: '#/definitions/models.EventState'
+        $ref: "#/definitions/models.EventState"
       event_tools:
-        $ref: '#/definitions/models.EventTools'
+        $ref: "#/definitions/models.EventTools"
       external_asp:
-        $ref: '#/definitions/models.UserExternal'
+        $ref: "#/definitions/models.UserExternal"
       id:
         type: string
       internal_asp_id:
         type: string
       location:
-        $ref: '#/definitions/models.Location'
+        $ref: "#/definitions/models.Location"
       meeting_url:
         type: string
       name:
@@ -708,50 +708,50 @@ definitions:
       additional_information:
         type: string
       application:
-        $ref: '#/definitions/models.EventApplication'
+        $ref: "#/definitions/models.EventApplication"
       applications:
-        $ref: '#/definitions/models.EventApplications'
+        $ref: "#/definitions/models.EventApplications"
       artist_ids:
         items:
           type: string
         type: array
       artists:
         items:
-          $ref: '#/definitions/models.Artist'
+          $ref: "#/definitions/models.Artist"
         type: array
       crew:
-        $ref: '#/definitions/models.Crew'
+        $ref: "#/definitions/models.Crew"
       crew_id:
         type: string
       end_at:
         type: integer
       event_asp:
-        $ref: '#/definitions/models.EventASPPublic'
+        $ref: "#/definitions/models.EventASPPublic"
       event_asp_id:
         type: string
       event_state:
-        $ref: '#/definitions/models.EventState'
+        $ref: "#/definitions/models.EventState"
       event_tools:
-        $ref: '#/definitions/models.EventTools'
+        $ref: "#/definitions/models.EventTools"
       id:
         type: string
       internal_asp_id:
         type: string
       location:
-        $ref: '#/definitions/models.Location'
+        $ref: "#/definitions/models.Location"
       meeting_url:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
       organizer:
-        $ref: '#/definitions/models.Organizer'
+        $ref: "#/definitions/models.Organizer"
       organizer_id:
         type: string
       participations:
         items:
-          $ref: '#/definitions/models.ParticipationMinimal'
+          $ref: "#/definitions/models.ParticipationMinimal"
         type: array
       start_at:
         type: integer
@@ -777,7 +777,7 @@ definitions:
       place_id:
         type: string
       position:
-        $ref: '#/definitions/models.Position'
+        $ref: "#/definitions/models.Position"
       street:
         type: string
       sublocality:
@@ -790,7 +790,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       since:
         type: integer
       status:
@@ -803,7 +803,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       user_id:
         type: string
       value:
@@ -814,7 +814,7 @@ definitions:
       abbreviation:
         type: string
       default_asp:
-        $ref: '#/definitions/models.UserContact'
+        $ref: "#/definitions/models.UserContact"
       default_asp_id:
         type: string
       email:
@@ -822,7 +822,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
     type: object
@@ -831,7 +831,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
     type: object
@@ -840,23 +840,23 @@ definitions:
       comment:
         type: string
       crew:
-        $ref: '#/definitions/models.Crew'
+        $ref: "#/definitions/models.Crew"
       crew_id:
         type: string
       event:
-        $ref: '#/definitions/models.Event'
+        $ref: "#/definitions/models.Event"
       event_id:
         type: string
       id:
         type: string
       modified:
         allOf:
-        - $ref: '#/definitions/vmod.Modified'
+          - $ref: "#/definitions/vmod.Modified"
         description: Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
       status:
         type: string
       user:
-        $ref: '#/definitions/models.User'
+        $ref: "#/definitions/models.User"
       user_id:
         type: string
     type: object
@@ -889,7 +889,7 @@ definitions:
       mattermost_username:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       phone:
         type: string
       user_id:
@@ -913,7 +913,7 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
     type: object
   models.Source:
     properties:
@@ -922,9 +922,9 @@ definitions:
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       norms:
         type: string
       payment_type:
@@ -938,70 +938,70 @@ definitions:
     properties:
       activities:
         items:
-          $ref: '#/definitions/models.Activity'
+          $ref: "#/definitions/models.Activity"
         type: array
       comment:
         type: string
       creator:
-        $ref: '#/definitions/models.UserDatabase'
+        $ref: "#/definitions/models.UserDatabase"
       crew:
-        $ref: '#/definitions/models.Crew'
+        $ref: "#/definitions/models.Crew"
       crew_id:
         type: string
       date_of_taking:
         type: integer
       deposit_units:
         items:
-          $ref: '#/definitions/models.DepositUnitTaking'
+          $ref: "#/definitions/models.DepositUnitTaking"
         type: array
       editor_id:
         type: string
       event:
-        $ref: '#/definitions/models.Event'
+        $ref: "#/definitions/models.Event"
       id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       money:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       name:
         type: string
       sources:
         items:
-          $ref: '#/definitions/models.Source'
+          $ref: "#/definitions/models.Source"
         type: array
       state:
-        $ref: '#/definitions/models.TakingState'
+        $ref: "#/definitions/models.TakingState"
       type:
         type: string
     type: object
   models.TakingState:
     properties:
       confirmed:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       no_income:
         type: boolean
       open:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
       wait:
-        $ref: '#/definitions/vmod.Money'
+        $ref: "#/definitions/vmod.Money"
     type: object
   models.User:
     properties:
       active:
-        $ref: '#/definitions/models.Active'
+        $ref: "#/definitions/models.Active"
       address:
-        $ref: '#/definitions/models.Address'
+        $ref: "#/definitions/models.Address"
       address_id:
         type: string
       avatar:
-        $ref: '#/definitions/models.Avatar'
+        $ref: "#/definitions/models.Avatar"
       confirmed:
         type: boolean
       country:
         type: string
       crew:
-        $ref: '#/definitions/models.UserCrew'
+        $ref: "#/definitions/models.UserCrew"
       display_name:
         type: string
       drops_id:
@@ -1024,28 +1024,28 @@ definitions:
       mailbox_id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       newsletter:
         items:
-          $ref: '#/definitions/models.Newsletter'
+          $ref: "#/definitions/models.Newsletter"
         type: array
       nvm:
-        $ref: '#/definitions/models.NVM'
+        $ref: "#/definitions/models.NVM"
       organisation:
         type: string
       organisation_id:
         type: string
       pool_roles:
         items:
-          $ref: '#/definitions/vmod.Role'
+          $ref: "#/definitions/vmod.Role"
         type: array
       privacy_policy:
         type: boolean
       profile:
-        $ref: '#/definitions/models.Profile'
+        $ref: "#/definitions/models.Profile"
       system_roles:
         items:
-          $ref: '#/definitions/vmod.Role'
+          $ref: "#/definitions/vmod.Role"
         type: array
     type: object
   models.UserContact:
@@ -1061,7 +1061,7 @@ definitions:
       last_name:
         type: string
       profile:
-        $ref: '#/definitions/models.ProfileMinimal'
+        $ref: "#/definitions/models.ProfileMinimal"
     type: object
   models.UserCrew:
     properties:
@@ -1074,7 +1074,7 @@ definitions:
       mailbox_id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       name:
         type: string
       organisation:
@@ -1083,7 +1083,7 @@ definitions:
         type: string
       roles:
         items:
-          $ref: '#/definitions/vmod.Role'
+          $ref: "#/definitions/vmod.Role"
         type: array
       user_id:
         type: string
@@ -1115,19 +1115,19 @@ definitions:
       mailbox_id:
         type: string
       modified:
-        $ref: '#/definitions/vmod.Modified'
+        $ref: "#/definitions/vmod.Modified"
       organisation_id:
         type: string
       privacy_policy:
         type: boolean
       system_roles:
         items:
-          $ref: '#/definitions/vmod.Role'
+          $ref: "#/definitions/vmod.Role"
         type: array
     required:
-    - email
-    - first_name
-    - last_name
+      - email
+      - first_name
+      - last_name
     type: object
   models.UserExternal:
     properties:
@@ -1145,7 +1145,7 @@ definitions:
       filename:
         type: string
       header:
-        $ref: '#/definitions/textproto.MIMEHeader'
+        $ref: "#/definitions/textproto.MIMEHeader"
       size:
         type: integer
     type: object
@@ -1166,7 +1166,7 @@ definitions:
         type: string
       payload:
         example:
-        - cant bind string to int
+          - cant bind string to int
         items:
           type: string
         type: array
@@ -1179,7 +1179,21 @@ definitions:
       list_size:
         type: integer
       message:
-        example: 'duplicate key error: <key>'
+        example: "duplicate key error: <key>"
+        type: string
+      model:
+        type: string
+      payload: {}
+      type:
+        example: error
+        type: string
+    type: object
+  vcago.MongoNoDocumentErrorResponse:
+    properties:
+      list_size:
+        type: integer
+      message:
+        example: document not found
         type: string
       model:
         type: string
@@ -1295,7 +1309,7 @@ definitions:
         type: string
       payload:
         example:
-        - currency is required
+          - currency is required
         items:
           type: string
         type: array
@@ -1323,7 +1337,7 @@ definitions:
       currency:
         type: string
     required:
-    - currency
+      - currency
     type: object
   vmod.Position:
     properties:
@@ -1352,1408 +1366,1424 @@ paths:
   /crews:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: email
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: email
           type: string
-        name: id
-        type: array
-      - in: query
-        name: name
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: name
           type: string
-        name: organisation_id
-        type: array
-      - in: query
-        name: organisation_name
-        type: string
-      - in: query
-        name: status
-        type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: organisation_id
+          type: array
+        - in: query
+          name: organisation_name
+          type: string
+        - in: query
+          name: status
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.Crew'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.Crew"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of  Crews
       tags:
-      - Crew
+        - Crew
     post:
       consumes:
-      - application/json
+        - application/json
       description: creates an  Crew object.
       parameters:
-      - description: Crew Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.CrewCreate'
+        - description: Crew Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.CrewCreate"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Crew'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Crew"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Create a Crew
       tags:
-      - Crew
+        - Crew
     put:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Crew Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.CrewUpdate'
+        - description: Crew Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.CrewUpdate"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Crew'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Crew"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Update a Crew
       tags:
-      - Crew
+        - Crew
   /crews/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Crew ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Crew ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vmod.DeletedResponse'
+            $ref: "#/definitions/vmod.DeletedResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Delete a Crew by ID
       tags:
-      - Crew
+        - Crew
   /crews/public:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: email
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: email
           type: string
-        name: id
-        type: array
-      - in: query
-        name: name
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: name
           type: string
-        name: organisation_id
-        type: array
-      - in: query
-        name: organisation_name
-        type: string
-      - in: query
-        name: status
-        type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: organisation_id
+          type: array
+        - in: query
+          name: organisation_name
+          type: string
+        - in: query
+          name: status
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.CrewPublic'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.CrewPublic"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       summary: Get a List of CrewPublic
       tags:
-      - Crew
+        - Crew
   /events/artist:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - in: query
-        name: id
-        type: string
-      - in: query
-        name: name
-        type: string
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
+        - in: query
+          name: createdFrom
+          type: string
+        - in: query
+          name: createdTo
+          type: string
+        - in: query
+          name: id
+          type: string
+        - in: query
+          name: name
+          type: string
+        - in: query
+          name: updatedFrom
+          type: string
+        - in: query
+          name: updatedTo
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.Artist'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.Artist"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of Artists
       tags:
-      - Artist
+        - Artist
     post:
       consumes:
-      - application/json
+        - application/json
       description: creates an  Artist object.
       parameters:
-      - description: Artist Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.ArtistCreate'
+        - description: Artist Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.ArtistCreate"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Artist'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Artist"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Create a Artist
       tags:
-      - Artist
+        - Artist
     put:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Artist Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.ArtistUpdate'
+        - description: Artist Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.ArtistUpdate"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Artist'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Artist"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a Artist by ID
       tags:
-      - Artist
+        - Artist
   /events/artist/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Artist ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Artist ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vmod.DeletedResponse'
+            $ref: "#/definitions/vmod.DeletedResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a  Artist by ID
       tags:
-      - Artist
+        - Artist
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Artist ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Artist ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Artist'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Artist"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a  Artist by ID
       tags:
-      - Artist
+        - Artist
   /events/event:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdFrom
           type: string
-        name: crewID
-        type: array
-      - in: query
-        name: endAt
-        type: string
-      - in: query
-        name: eventASPID
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdTo
           type: string
-        name: eventState
-        type: array
-      - in: query
-        name: fullCount
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: crewID
+          type: array
+        - in: query
+          name: endAt
           type: string
-        name: id
-        type: array
-      - in: query
-        name: internalASPID
-        type: string
-      - in: query
-        name: limit
-        type: integer
-      - in: query
-        name: missingApplications
-        type: boolean
-      - in: query
-        name: name
-        type: string
-      - in: query
-        name: onlyApply
-        type: boolean
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: eventASPID
           type: string
-        name: organisationId
-        type: array
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: sortDirection
-        type: string
-      - in: query
-        name: sortField
-        type: string
-      - in: query
-        name: startAt
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: eventState
+          type: array
+        - in: query
+          name: fullCount
           type: string
-        name: type
-        type: array
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: internalASPID
+          type: string
+        - in: query
+          name: limit
+          type: integer
+        - in: query
+          name: missingApplications
+          type: boolean
+        - in: query
+          name: name
+          type: string
+        - in: query
+          name: onlyApply
+          type: boolean
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: organisationId
+          type: array
+        - in: query
+          name: search
+          type: string
+        - in: query
+          name: skip
+          type: integer
+        - in: query
+          name: sortDirection
+          type: string
+        - in: query
+          name: sortField
+          type: string
+        - in: query
+          name: startAt
+          type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: type
+          type: array
+        - in: query
+          name: updatedFrom
+          type: string
+        - in: query
+          name: updatedTo
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.Event'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.Event"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of Event
       tags:
-      - Event
+        - Event
     post:
       consumes:
-      - application/json
+        - application/json
       description: creates an Event object.
       parameters:
-      - description: Event Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.EventCreate'
+        - description: Event Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.EventCreate"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Event'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Event"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Create a Event
       tags:
-      - Event
+        - Event
     put:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Event Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.EventUpdate'
+        - description: Event Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.EventUpdate"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Event'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Event"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Update a Event
       tags:
-      - Event
+        - Event
   /events/event/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Event ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vmod.DeletedResponse'
+            $ref: "#/definitions/vmod.DeletedResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Delete a Event by ID
       tags:
-      - Event
+        - Event
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Event ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Event'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Event"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a Event by ID
       tags:
-      - Event
+        - Event
   /events/event/details/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Event ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.EventDetails'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.EventDetails"
+                type: object
       summary: Get a Event by ID
       tags:
-      - Event
+        - Event
   /events/event/email:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdFrom
           type: string
-        name: crewID
-        type: array
-      - in: query
-        name: endAt
-        type: string
-      - in: query
-        name: eventASPID
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdTo
           type: string
-        name: eventState
-        type: array
-      - in: query
-        name: fullCount
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: crewID
+          type: array
+        - in: query
+          name: endAt
           type: string
-        name: id
-        type: array
-      - in: query
-        name: internalASPID
-        type: string
-      - in: query
-        name: limit
-        type: integer
-      - in: query
-        name: missingApplications
-        type: boolean
-      - in: query
-        name: name
-        type: string
-      - in: query
-        name: onlyApply
-        type: boolean
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: eventASPID
           type: string
-        name: organisationId
-        type: array
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: sortDirection
-        type: string
-      - in: query
-        name: sortField
-        type: string
-      - in: query
-        name: startAt
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: eventState
+          type: array
+        - in: query
+          name: fullCount
           type: string
-        name: type
-        type: array
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: internalASPID
+          type: string
+        - in: query
+          name: limit
+          type: integer
+        - in: query
+          name: missingApplications
+          type: boolean
+        - in: query
+          name: name
+          type: string
+        - in: query
+          name: onlyApply
+          type: boolean
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: organisationId
+          type: array
+        - in: query
+          name: search
+          type: string
+        - in: query
+          name: skip
+          type: integer
+        - in: query
+          name: sortDirection
+          type: string
+        - in: query
+          name: sortField
+          type: string
+        - in: query
+          name: startAt
+          type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: type
+          type: array
+        - in: query
+          name: updatedFrom
+          type: string
+        - in: query
+          name: updatedTo
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.EventPublic'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.EventPublic"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of Event
       tags:
-      - Event
+        - Event
   /events/event/public:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdFrom
           type: string
-        name: crewID
-        type: array
-      - in: query
-        name: endAt
-        type: string
-      - in: query
-        name: eventASPID
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdTo
           type: string
-        name: eventState
-        type: array
-      - in: query
-        name: fullCount
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: crewID
+          type: array
+        - in: query
+          name: endAt
           type: string
-        name: id
-        type: array
-      - in: query
-        name: internalASPID
-        type: string
-      - in: query
-        name: limit
-        type: integer
-      - in: query
-        name: missingApplications
-        type: boolean
-      - in: query
-        name: name
-        type: string
-      - in: query
-        name: onlyApply
-        type: boolean
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: eventASPID
           type: string
-        name: organisationId
-        type: array
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: sortDirection
-        type: string
-      - in: query
-        name: sortField
-        type: string
-      - in: query
-        name: startAt
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: eventState
+          type: array
+        - in: query
+          name: fullCount
           type: string
-        name: type
-        type: array
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: internalASPID
+          type: string
+        - in: query
+          name: limit
+          type: integer
+        - in: query
+          name: missingApplications
+          type: boolean
+        - in: query
+          name: name
+          type: string
+        - in: query
+          name: onlyApply
+          type: boolean
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: organisationId
+          type: array
+        - in: query
+          name: search
+          type: string
+        - in: query
+          name: skip
+          type: integer
+        - in: query
+          name: sortDirection
+          type: string
+        - in: query
+          name: sortField
+          type: string
+        - in: query
+          name: startAt
+          type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: type
+          type: array
+        - in: query
+          name: updatedFrom
+          type: string
+        - in: query
+          name: updatedTo
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.EventPublic'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.EventPublic"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       summary: Get a List of Event
       tags:
-      - Event
+        - Event
   /events/event/sync/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Event ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Sync Event by ID
       tags:
-      - Event
+        - Event
   /events/event/user:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdFrom
           type: string
-        name: crewID
-        type: array
-      - in: query
-        name: endAt
-        type: string
-      - in: query
-        name: eventASPID
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdTo
           type: string
-        name: eventState
-        type: array
-      - in: query
-        name: fullCount
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: crewID
+          type: array
+        - in: query
+          name: endAt
           type: string
-        name: id
-        type: array
-      - in: query
-        name: internalASPID
-        type: string
-      - in: query
-        name: limit
-        type: integer
-      - in: query
-        name: missingApplications
-        type: boolean
-      - in: query
-        name: name
-        type: string
-      - in: query
-        name: onlyApply
-        type: boolean
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: eventASPID
           type: string
-        name: organisationId
-        type: array
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: sortDirection
-        type: string
-      - in: query
-        name: sortField
-        type: string
-      - in: query
-        name: startAt
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: eventState
+          type: array
+        - in: query
+          name: fullCount
           type: string
-        name: type
-        type: array
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: internalASPID
+          type: string
+        - in: query
+          name: limit
+          type: integer
+        - in: query
+          name: missingApplications
+          type: boolean
+        - in: query
+          name: name
+          type: string
+        - in: query
+          name: onlyApply
+          type: boolean
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: organisationId
+          type: array
+        - in: query
+          name: search
+          type: string
+        - in: query
+          name: skip
+          type: integer
+        - in: query
+          name: sortDirection
+          type: string
+        - in: query
+          name: sortField
+          type: string
+        - in: query
+          name: startAt
+          type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: type
+          type: array
+        - in: query
+          name: updatedFrom
+          type: string
+        - in: query
+          name: updatedTo
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.ListDetailsEvent'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.ListDetailsEvent"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of Event
       tags:
-      - Event
+        - Event
   /events/event/view/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Event ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.EventPublic'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.EventPublic"
+                type: object
       summary: Get a Event by ID
       tags:
-      - Event
+        - Event
   /finances/deposit:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: confirmer
+          type: array
+        - in: query
+          name: createdFrom
           type: string
-        name: confirmer
-        type: array
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdTo
           type: string
-        name: creator
-        type: array
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: creator
+          type: array
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: crewID
+          type: array
+        - in: query
+          name: hasExternal
           type: string
-        name: crewID
-        type: array
-      - in: query
-        name: hasExternal
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: limit
+          type: integer
+        - in: query
+          name: name
           type: string
-        name: id
-        type: array
-      - in: query
-        name: limit
-        type: integer
-      - in: query
-        name: name
-        type: string
-      - in: query
-        name: reasonForPayment
-        type: string
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: sortDirection
-        type: string
-      - in: query
-        name: sortField
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: reasonForPayment
           type: string
-        name: status
-        type: array
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
+        - in: query
+          name: search
+          type: string
+        - in: query
+          name: skip
+          type: integer
+        - in: query
+          name: sortDirection
+          type: string
+        - in: query
+          name: sortField
+          type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: status
+          type: array
+        - in: query
+          name: updatedFrom
+          type: string
+        - in: query
+          name: updatedTo
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.ResponseListed'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.Deposit'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/vcago.Response'
+              - $ref: "#/definitions/vcago.ResponseListed"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.Deposit"
+                    type: array
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of Deposit
       tags:
-      - Deposit
+        - Deposit
     post:
       consumes:
-      - application/json
+        - application/json
       description: creates an Deposit object.
       parameters:
-      - description: Deposit Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.DepositCreate'
+        - description: Deposit Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.DepositCreate"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Successfully Created Deposit
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.ResponseCreated'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Deposit'
-              type: object
+              - $ref: "#/definitions/vcago.ResponseCreated"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Deposit"
+                type: object
         "400":
           description: Validation Error
           schema:
-            $ref: '#/definitions/vcago.ValidationErrorResponse'
+            $ref: "#/definitions/vcago.ValidationErrorResponse"
         "409":
           description: Duplicated Key
           schema:
-            $ref: '#/definitions/vcago.MongoDuplicatedErrorResponse'
+            $ref: "#/definitions/vcago.MongoDuplicatedErrorResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Create a Deposit
       tags:
-      - Deposit
+        - Deposit
     put:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Deposit Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.DepositUpdate'
+        - description: Deposit Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.DepositUpdate"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.ResponseUpdated'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Deposit'
-              type: object
+              - $ref: "#/definitions/vcago.ResponseUpdated"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Deposit"
+                type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: "#/definitions/vcago.ValidationErrorResponse"
+        "404":
+          description: No Document with given ID
+          schema:
+            $ref: "#/definitions/vcago.MongoNoDocumentErrorResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Update a Deposit
       tags:
-      - Deposit
+        - Deposit
   /finances/deposit/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Deposit ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Deposit ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.ResponseSelected'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Deposit'
-              type: object
+              - $ref: "#/definitions/vcago.ResponseSelected"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Deposit"
+                type: object
+        "404":
+          description: No Document with given ID
+          schema:
+            $ref: "#/definitions/vcago.MongoNoDocumentErrorResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a Deposit by ID
       tags:
-      - Deposit
+        - Deposit
   /finances/deposit/sync/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Deposit ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Deposit ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vcago.ResponseSynced'
+            $ref: "#/definitions/vcago.ResponseSynced"
+        "404":
+          description: No Document with given ID
+          schema:
+            $ref: "#/definitions/vcago.MongoNoDocumentErrorResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Sync Deposit by ID
       tags:
-      - Deposit
+        - Deposit
   /fincances/deposit/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Deposit ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Deposit ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.ResponseDeleted'
-            - properties:
-                payload:
-                  type: string
-              type: object
+              - $ref: "#/definitions/vcago.ResponseDeleted"
+              - properties:
+                  payload:
+                    type: string
+                type: object
+        "404":
+          description: No Document with given ID
+          schema:
+            $ref: "#/definitions/vcago.MongoNoDocumentErrorResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Delete a Deposit by ID
       tags:
-      - Deposit
+        - Deposit
   /users/address:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - in: query
-        name: createdFrom
-        type: string
-      - in: query
-        name: createdTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdFrom
           type: string
-        name: crewID
-        type: array
-      - collectionFormat: csv
-        in: query
-        items:
+        - in: query
+          name: createdTo
           type: string
-        name: id
-        type: array
-      - in: query
-        name: updatedFrom
-        type: string
-      - in: query
-        name: updatedTo
-        type: string
-      - collectionFormat: csv
-        in: query
-        items:
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: crewID
+          type: array
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: id
+          type: array
+        - in: query
+          name: updatedFrom
           type: string
-        name: userID
-        type: array
+        - in: query
+          name: updatedTo
+          type: string
+        - collectionFormat: csv
+          in: query
+          items:
+            type: string
+          name: userID
+          type: array
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  items:
-                    $ref: '#/definitions/models.Address'
-                  type: array
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    items:
+                      $ref: "#/definitions/models.Address"
+                    type: array
+                type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/vcago.Response'
+            $ref: "#/definitions/vcago.Response"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a List of  Addresss
       tags:
-      - Address
+        - Address
     post:
       consumes:
-      - application/json
+        - application/json
       description: creates an  Address object.
       parameters:
-      - description: Address Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.AddressCreate'
+        - description: Address Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.AddressCreate"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Address'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Address"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Create a Address
       tags:
-      - Address
+        - Address
     put:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Address Data
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.AddressUpdate'
+        - description: Address Data
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.AddressUpdate"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Address'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Address"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a  Address by ID
       tags:
-      - Address
+        - Address
   /users/address/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Address ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Address ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vmod.DeletedResponse'
+            $ref: "#/definitions/vmod.DeletedResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Delete a  Address by ID
       tags:
-      - Address
+        - Address
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Crew ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Crew ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Crew'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Crew"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a Crew by ID
       tags:
-      - Crew
+        - Crew
   /users/avatar:
     post:
       consumes:
-      - application/json
+        - application/json
       description: creates an  Avatar object.
       parameters:
-      - description: Avatar File
-        in: body
-        name: form
-        required: true
-        schema:
-          $ref: '#/definitions/models.AvatarFile'
+        - description: Avatar File
+          in: body
+          name: form
+          required: true
+          schema:
+            $ref: "#/definitions/models.AvatarFile"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/vcago.Response'
-            - properties:
-                payload:
-                  $ref: '#/definitions/models.Avatar'
-              type: object
+              - $ref: "#/definitions/vcago.Response"
+              - properties:
+                  payload:
+                    $ref: "#/definitions/models.Avatar"
+                type: object
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Uploads a Avatar
       tags:
-      - Avatar
+        - Avatar
   /users/avatar/{id}:
     delete:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Avatar ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Avatar ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/vmod.DeletedResponse'
+            $ref: "#/definitions/vmod.DeletedResponse"
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a  Avatar by ID
       tags:
-      - Avatar
+        - Avatar
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Avatar ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Avatar ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - image/png
+        - image/png
       responses:
         "200":
           description: Download Image
           schema:
             type: file
       security:
-      - CookieAuth: []
+        - CookieAuth: []
       summary: Get a  Avatar by ID
       tags:
-      - Avatar
+        - Avatar
 schemes:
-- https
+  - https
 securityDefinitions:
   ApiKeyAuth:
     description: Bearer key

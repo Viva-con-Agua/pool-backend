@@ -1739,12 +1739,6 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/vcago.Response"
-                        }
                     }
                 }
             },
@@ -1792,6 +1786,18 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
                         }
                     }
                 }
@@ -1890,6 +1896,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/vcago.ResponseSynced"
                         }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
                     }
                 }
             }
@@ -1938,6 +1950,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
                     }
                 }
             }
@@ -1985,6 +2003,12 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
                         }
                     }
                 }
@@ -4184,6 +4208,26 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "duplicate key error: \u003ckey\u003e"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "payload": {},
+                "type": {
+                    "type": "string",
+                    "example": "error"
+                }
+            }
+        },
+        "vcago.MongoNoDocumentErrorResponse": {
+            "type": "object",
+            "properties": {
+                "list_size": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "document not found"
                 },
                 "model": {
                     "type": "string"

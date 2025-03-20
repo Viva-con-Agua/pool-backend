@@ -70,7 +70,6 @@ func (i *DepositHandler) Create(cc echo.Context) (err error) {
 // @Param   q query   models.DepositQuery   false  "string collection"  collectionFormat(multi)
 // @Model: vcago.Response
 // @Success 200 {object} vcago.ResponseListed{payload=[]models.Deposit}
-// @Failure 400 {object} vcago.Response{}
 // @Router /finances/deposit [get]
 func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
@@ -98,6 +97,7 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 // @Param id path string true "Deposit ID"
 // @Model: vcago.Response
 // @Success 200 {object} vcago.ResponseSelected{payload=models.Deposit}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
 // @Router /finances/deposit/{id} [get]
 func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
@@ -125,6 +125,9 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 // @Param form body models.DepositUpdate true "Deposit Data"
 // @Model: vcago.Response
 // @Success 200 {object} vcago.ResponseUpdated{payload=models.Deposit}
+// @Failure 400 {object} vcago.BindErrorResponse{} "Bind Error"
+// @Failure 400 {object} vcago.ValidationErrorResponse{} "Validation Error"
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
 // @Router /finances/deposit [put]
 func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
@@ -152,6 +155,7 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 // @Param id path string true "Deposit ID"
 // @Model: vcago.Response
 // @Success 200 {object} vcago.ResponseSynced{}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
 // @Router /finances/deposit/sync/{id} [get]
 func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
@@ -163,6 +167,7 @@ func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
+	//TODO: -> DAO
 	if err = body.DepositSyncPermission(token); err != nil {
 		return
 	}
@@ -180,6 +185,7 @@ func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 // @Produce json
 // @Param id path string true "Deposit ID"
 // @Success 200 {object} vcago.ResponseDeleted{payload=string}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
 // @Router /fincances/deposit/{id} [delete]
 func (i *DepositHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)

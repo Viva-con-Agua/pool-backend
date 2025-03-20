@@ -35,8 +35,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
-github.com/Viva-con-Agua/vcago v1.5.13 h1:4E1PSzyD1eqJ2u5g/etzBl4wmlMH57IYau2Qw+PEFZg=
-github.com/Viva-con-Agua/vcago v1.5.13/go.mod h1:uJ7sBZk8IOEJbHgZ97uY+WE6TLMGkhiPvey3CxFOs4A=
+github.com/Viva-con-Agua/vcago v1.5.14 h1:xu2FT0Ik+kskNPz1a9SS6SA9txEY2fbFZs5X8QYedOk=
+github.com/Viva-con-Agua/vcago v1.5.14/go.mod h1:uJ7sBZk8IOEJbHgZ97uY+WE6TLMGkhiPvey3CxFOs4A=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
