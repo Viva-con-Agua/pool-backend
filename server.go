@@ -93,7 +93,7 @@ func main() {
 		admin.Role.Routes(e.Group("/admin/users/role"))
 		admin.User.Routes(e.Group("/admin/users"))
 	}
-	e.GET("/docu/*", echoSwagger.WrapHandler)
+	api.GET("/docu/*", echoSwagger.WrapHandler)
 	//server
 	e.Run()
 }
