@@ -140,7 +140,7 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *models.Acc
 		} else {
 			listSize = (*count)[0].ListSize
 		}*/
-	listSize = 100
+	listSize = 1
 	return
 }
 
