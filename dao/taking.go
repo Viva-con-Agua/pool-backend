@@ -126,19 +126,21 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *models.Acc
 	); err != nil {
 		return
 	}
-	count := new([]Count)
-	if err = TakingCollection.Aggregate(
-		context.Background(),
-		models.TakingCountPipeline(filter).Pipe,
-		count,
-	); err != nil {
-		return
-	}
-	if len(*count) == 0 {
-		listSize = 0
-	} else {
-		listSize = (*count)[0].ListSize
-	}
+	/*
+		count := new([]Count)
+		if err = TakingCollection.Aggregate(
+			context.Background(),
+			models.TakingCountPipeline(filter).Pipe,
+			count,
+		); err != nil {
+			return
+		}
+		if len(*count) == 0 {
+			listSize = 0
+		} else {
+			listSize = (*count)[0].ListSize
+		}*/
+	listSize = 100
 	return
 }
 
