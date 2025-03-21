@@ -101,6 +101,39 @@ func TakingPermission(token *AccessToken) (err error) {
 	return
 }
 
+func TakingPipelineGet() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.Lookup(DepositUnitTakingView, "_id", "taking_id", "deposit_units")
+	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
+	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "confirmed", bson.D{{Key: "deposit.status", Value: "confirmed"}})
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	//pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.confirmed.amount", Value: bson.D{{Key: "$sum", Value: "$confirmed.money.amount"}}},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.amount", Value: bson.D{{Key: "$sum", Value: "$sources.money.amount"}}}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.amount", Value: bson.D{
+		{Key: "$subtract", Value: bson.A{"$money.amount", bson.D{{Key: "$add", Value: bson.A{"$state.wait.amount", "$state.confirmed.amount"}}}}},
+	}}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.wait.currency", Value: "$currency"},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "state.confirmed.currency", Value: "$currency"},
+	}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
+	//pipe.Lookup(ActivityUserView, "_id", "model_id", "activities")
+	//pipe.LookupUnwindMatch(ActivityUserView, "_id", "model_id", "dummy", bson.D{{Key: "status", Value: "created"}})
+	//pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "creator", Value: "$dummy.user"}}}})
+	return pipe
+}
+
 func TakingPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.Lookup(DepositUnitTakingView, "_id", "taking_id", "deposit_units")
