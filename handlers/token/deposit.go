@@ -9,6 +9,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type DepositResponseSuccess struct {
+	vcago.Response
+	Model string `json:"model" example:"deposit"`
+	Type  string `json:"type" example:"success"`
+}
+
 type DepositHandler struct {
 	vcago.Handler
 }
@@ -24,6 +30,20 @@ func (i *DepositHandler) Routes(group *echo.Group) {
 	group.GET("/sync/:id", i.Sync, accessCookie)
 }
 
+// Create
+// @Security CookieAuth
+// @Summary Create a Deposit
+// @Description creates an Deposit object.
+// @Tags Deposit
+// @Accept json
+// @Produce json
+// @Param form body models.DepositCreate true "Deposit Data"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.ResponseCreated{payload=models.Deposit} "Successfully Created Deposit"
+// @Failure 400 {object} vcago.BindErrorResponse{} "Bind Error"
+// @Failure 400 {object} vcago.ValidationErrorResponse{} "Validation Error"
+// @Failure 409 {object} vcago.MongoDuplicatedErrorResponse{} "Duplicated Key"
+// @Router /finances/deposit [post]
 func (i *DepositHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositCreate)
@@ -41,6 +61,16 @@ func (i *DepositHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// Get
+// @Security CookieAuth
+// @Summary Get a List of Deposit
+// @Tags Deposit
+// @Accept json
+// @Produce json
+// @Param   q query   models.DepositQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.ResponseListed{payload=[]models.Deposit}
+// @Router /finances/deposit [get]
 func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositQuery)
@@ -58,6 +88,17 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	return c.Listed(result, int64(len(*result)))
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a Deposit by ID
+// @Tags Deposit
+// @Accept json
+// @Produce json
+// @Param id path string true "Deposit ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.ResponseSelected{payload=models.Deposit}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
+// @Router /finances/deposit/{id} [get]
 func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositParam)
@@ -75,6 +116,19 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// Update
+// @Security CookieAuth
+// @Summary Update a Deposit
+// @Tags Deposit
+// @Accept json
+// @Produce json
+// @Param form body models.DepositUpdate true "Deposit Data"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.ResponseUpdated{payload=models.Deposit}
+// @Failure 400 {object} vcago.BindErrorResponse{} "Bind Error"
+// @Failure 400 {object} vcago.ValidationErrorResponse{} "Validation Error"
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
+// @Router /finances/deposit [put]
 func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositUpdate)
@@ -91,6 +145,18 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 	}
 	return c.Updated(result)
 }
+
+// Sync
+// @Security CookieAuth
+// @Summary Sync Deposit by ID
+// @Tags Deposit
+// @Accept json
+// @Produce json
+// @Param id path string true "Deposit ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.ResponseSynced{}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
+// @Router /finances/deposit/sync/{id} [get]
 func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositParam)
@@ -101,6 +167,7 @@ func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
+	//TODO: -> DAO
 	if err = body.DepositSyncPermission(token); err != nil {
 		return
 	}
@@ -109,6 +176,17 @@ func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 	}
 	return c.SuccessResponse(http.StatusOK, "successfully_synced", "event", nil)
 }
+
+// DeleteByID
+// @Security CookieAuth
+// @Summary Delete a Deposit by ID
+// @Tags Deposit
+// @Accept json
+// @Produce json
+// @Param id path string true "Deposit ID"
+// @Success 200 {object} vcago.ResponseDeleted{payload=string}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
+// @Router /fincances/deposit/{id} [delete]
 func (i *DepositHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositParam)
