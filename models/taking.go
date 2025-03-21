@@ -106,7 +106,7 @@ func TakingPipelineGet() *vmdb.Pipeline {
 	pipe.Lookup(DepositUnitTakingView, "_id", "taking_id", "deposit_units")
 	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
 	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "confirmed", bson.D{{Key: "deposit.status", Value: "confirmed"}})
-	//pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
+	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
 	//pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
