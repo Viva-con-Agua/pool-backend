@@ -28,7 +28,7 @@ func (i *ArtistHandler) Routes(group *echo.Group) {
 // @Security CookieAuth
 // @Summary Create a Artist
 // @Description creates an  Artist object.
-// @Tags Artist
+// @Tags /events/artist
 // @Accept json
 // @Produce json
 // @Param form body models.ArtistCreate true "Artist Data"
@@ -55,7 +55,7 @@ func (i *ArtistHandler) Create(cc echo.Context) (err error) {
 // Get
 // @Security CookieAuth
 // @Summary Get a List of Artists
-// @Tags Artist
+// @Tags /events/artist
 // @Accept json
 // @Produce json
 // @Param   q query   models.ArtistQuery   false  "string collection"  collectionFormat(multi)
@@ -79,7 +79,7 @@ func (i *ArtistHandler) Get(cc echo.Context) (err error) {
 // GetByID
 // @Security CookieAuth
 // @Summary Get a  Artist by ID
-// @Tags Artist
+// @Tags /events/artist
 // @Accept json
 // @Produce json
 // @Param id path string true "Artist ID"
@@ -102,7 +102,7 @@ func (i *ArtistHandler) GetByID(cc echo.Context) (err error) {
 // Update
 // @Security CookieAuth
 // @Summary Get a Artist by ID
-// @Tags Artist
+// @Tags /events/artist
 // @Accept json
 // @Produce json
 // @Param form body models.ArtistUpdate true "Artist Data"
@@ -129,7 +129,7 @@ func (i *ArtistHandler) Update(cc echo.Context) (err error) {
 // DeleteByID
 // @Security CookieAuth
 // @Summary Get a  Artist by ID
-// @Tags Artist
+// @Tags /events/artist
 // @Accept json
 // @Produce json
 // @Param id path string true "Artist ID"

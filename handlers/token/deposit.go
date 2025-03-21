@@ -34,12 +34,12 @@ func (i *DepositHandler) Routes(group *echo.Group) {
 // @Security CookieAuth
 // @Summary Create a Deposit
 // @Description creates an Deposit object.
-// @Tags Deposit
+// @Tags /finances/deposit
 // @Accept json
 // @Produce json
 // @Param form body models.DepositCreate true "Deposit Data"
 // @Model: vcago.Response
-// @Success 201 {object} vcago.ResponseCreated{payload=models.Deposit} "Successfully Created Deposit"
+// @Success 201 {object} vcago.ResponseCreated{payload=models.Deposit} "Deposit succsessfully created"
 // @Failure 400 {object} vcago.BindErrorResponse{} "Bind Error"
 // @Failure 400 {object} vcago.ValidationErrorResponse{} "Validation Error"
 // @Failure 409 {object} vcago.MongoDuplicatedErrorResponse{} "Duplicated Key"
@@ -64,7 +64,7 @@ func (i *DepositHandler) Create(cc echo.Context) (err error) {
 // Get
 // @Security CookieAuth
 // @Summary Get a List of Deposit
-// @Tags Deposit
+// @Tags /finances/deposit
 // @Accept json
 // @Produce json
 // @Param   q query   models.DepositQuery   false  "string collection"  collectionFormat(multi)
@@ -91,7 +91,7 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 // GetByID
 // @Security CookieAuth
 // @Summary Get a Deposit by ID
-// @Tags Deposit
+// @Tags /finances/deposit
 // @Accept json
 // @Produce json
 // @Param id path string true "Deposit ID"
@@ -119,7 +119,7 @@ func (i *DepositHandler) GetByID(cc echo.Context) (err error) {
 // Update
 // @Security CookieAuth
 // @Summary Update a Deposit
-// @Tags Deposit
+// @Tags /finances/deposit
 // @Accept json
 // @Produce json
 // @Param form body models.DepositUpdate true "Deposit Data"
@@ -149,7 +149,7 @@ func (i *DepositHandler) Update(cc echo.Context) (err error) {
 // Sync
 // @Security CookieAuth
 // @Summary Sync Deposit by ID
-// @Tags Deposit
+// @Tags /finances/deposit
 // @Accept json
 // @Produce json
 // @Param id path string true "Deposit ID"
@@ -180,14 +180,14 @@ func (i *DepositHandler) Sync(cc echo.Context) (err error) {
 // DeleteByID
 // @Security CookieAuth
 // @Summary Delete a Deposit by ID
-// @Tags Deposit
+// @Tags /finances/deposit
 // @Accept json
 // @Produce json
 // @Param id path string true "Deposit ID"
 // @Success 200 {object} vcago.ResponseDeleted{payload=string}
 // @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
-// @Router /fincances/deposit/{id} [delete]
-func (i *DepositHandler) Delete(cc echo.Context) (err error) {
+// @Router /finances/deposit/{id} [delete]
+func (i *DepositHandler) DeleteByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.DepositParam)
 	if err = c.BindAndValidate(body); err != nil {

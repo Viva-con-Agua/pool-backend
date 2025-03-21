@@ -19,6 +19,17 @@ func (i *MailboxHandler) Routes(group *echo.Group) {
 	group.GET("/:id", i.GetByID, accessCookie)
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a Mailbox by ID
+// @Tags /mails/mailbox
+// @Accept json
+// @Produce json
+// @Param id path string true "Mailbox ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.ResponseSelected{payload=models.Mailbox}
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
+// @Router /mails/mailbox/{id} [get]
 func (i *MailboxHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.MailboxParam)

@@ -30,7 +30,7 @@ func (i *AvatarHandler) Routes(group *echo.Group) {
 // @Security CookieAuth
 // @Summary Uploads a Avatar
 // @Description creates an  Avatar object.
-// @Tags Avatar
+// @Tags /users/avatar
 // @Accept json
 // @Produce json
 // @Param form body models.AvatarFile true "Avatar File"
@@ -74,7 +74,7 @@ func (i *AvatarHandler) Upload(cc echo.Context) (err error) {
 // GetByID
 // @Security CookieAuth
 // @Summary Get a  Avatar by ID
-// @Tags Avatar
+// @Tags /users/avatar
 // @Accept json
 // @Produce image/png
 // @Param id path string true "Avatar ID"
@@ -97,7 +97,7 @@ func (i *AvatarHandler) GetByID(cc echo.Context) (err error) {
 // DeleteByID
 // @Security CookieAuth
 // @Summary Get a  Avatar by ID
-// @Tags Avatar
+// @Tags /users/avatar
 // @Accept json
 // @Produce json
 // @Param id path string true "Avatar ID"

@@ -31,7 +31,7 @@ func (i *AddressHandler) Routes(group *echo.Group) {
 // @Security CookieAuth
 // @Summary Create a Address
 // @Description creates an  Address object.
-// @Tags Address
+// @Tags /users/address
 // @Accept json
 // @Produce json
 // @Param form body models.AddressCreate true "Address Data"
@@ -87,7 +87,7 @@ func (i *AddressHandler) UsersCreate(cc echo.Context) (err error) {
 // Get
 // @Security CookieAuth
 // @Summary Get a List of  Addresss
-// @Tags Address
+// @Tags /users/address
 // @Accept json
 // @Produce json
 // @Param   q query   models.AddressQuery   false  "string collection"  collectionFormat(multi)
@@ -115,7 +115,7 @@ func (i *AddressHandler) Get(cc echo.Context) (err error) {
 // GetByID
 // @Security CookieAuth
 // @Summary Get a  Address by ID
-// @Tags Address
+// @Tags /users/address
 // @Accept json
 // @Produce json
 // @Param id path string true "Address ID"
@@ -142,7 +142,7 @@ func (i *AddressHandler) GetByID(cc echo.Context) (err error) {
 // Update
 // @Security CookieAuth
 // @Summary Get a  Address by ID
-// @Tags Address
+// @Tags /users/address
 // @Accept json
 // @Produce json
 // @Param form body models.AddressUpdate true "Address Data"
@@ -198,7 +198,7 @@ func (i *AddressHandler) UsersUpdate(cc echo.Context) (err error) {
 // DeleteByID
 // @Security CookieAuth
 // @Summary Delete a  Address by ID
-// @Tags Address
+// @Tags /users/address
 // @Accept json
 // @Produce json
 // @Param id path string true "Address ID"

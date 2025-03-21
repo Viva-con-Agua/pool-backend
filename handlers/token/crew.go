@@ -30,7 +30,7 @@ func (i *CrewHandler) Routes(group *echo.Group) {
 // @Security CookieAuth
 // @Summary Create a Crew
 // @Description creates an  Crew object.
-// @Tags Crew
+// @Tags /crews
 // @Accept json
 // @Produce json
 // @Param form body models.CrewCreate true "Crew Data"
@@ -62,7 +62,7 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 // Get
 // @Security CookieAuth
 // @Summary Get a List of  Crews
-// @Tags Crew
+// @Tags /crews
 // @Accept json
 // @Produce json
 // @Param   q query   models.CrewQuery   false  "string collection"  collectionFormat(multi)
@@ -89,7 +89,7 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 
 // GetPublic
 // @Summary Get a List of CrewPublic
-// @Tags Crew
+// @Tags /crews
 // @Accept json
 // @Produce json
 // @Param   q query   models.CrewQuery   false  "string collection"  collectionFormat(multi)
@@ -130,7 +130,7 @@ func (i *CrewHandler) GetAsMember(cc echo.Context) (err error) {
 // GetByID
 // @Security CookieAuth
 // @Summary Get a Crew by ID
-// @Tags Crew
+// @Tags /crews
 // @Accept json
 // @Produce json
 // @Param id path string true "Crew ID"
@@ -157,7 +157,7 @@ func (i *CrewHandler) GetByID(cc echo.Context) (err error) {
 // Update
 // @Security CookieAuth
 // @Summary Update a Crew
-// @Tags Crew
+// @Tags /crews
 // @Accept json
 // @Produce json
 // @Param form body models.CrewUpdate true "Crew Data"
@@ -189,7 +189,7 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 // DeleteByID
 // @Security CookieAuth
 // @Summary Delete a Crew by ID
-// @Tags Crew
+// @Tags /crews
 // @Accept json
 // @Produce json
 // @Param id path string true "Crew ID"

@@ -36,7 +36,7 @@ func (i *EventHandler) Routes(group *echo.Group) {
 // @Security CookieAuth
 // @Summary Create a Event
 // @Description creates an Event object.
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param form body models.EventCreate true "Event Data"
@@ -69,7 +69,7 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 // Get
 // @Security CookieAuth
 // @Summary Get a List of Event
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
@@ -99,7 +99,7 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 // GetByID
 // @Security CookieAuth
 // @Summary Get a Event by ID
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param id path string true "Event ID"
@@ -125,7 +125,7 @@ func (i *EventHandler) GetByID(cc echo.Context) (err error) {
 
 // GetViewByID
 // @Summary Get a Event by ID
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param id path string true "Event ID"
@@ -147,7 +147,7 @@ func (i *EventHandler) GetViewByID(cc echo.Context) (err error) {
 
 // GetPrivateDetails
 // @Summary Get a Event by ID
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param id path string true "Event ID"
@@ -173,7 +173,7 @@ func (i *EventHandler) GetPrivateDetails(cc echo.Context) (err error) {
 
 // GetPublic
 // @Summary Get a List of Event
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
@@ -198,7 +198,7 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 // GetByEventAsp
 // @Security CookieAuth
 // @Summary Get a List of Event
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
@@ -226,7 +226,7 @@ func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 // GetEmailEvents
 // @Security CookieAuth
 // @Summary Get a List of Event
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
@@ -254,7 +254,7 @@ func (i *EventHandler) GetEmailEvents(cc echo.Context) (err error) {
 // Update
 // @Security CookieAuth
 // @Summary Update a Event
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param form body models.EventUpdate true "Event Data"
@@ -287,7 +287,7 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 // Sync
 // @Security CookieAuth
 // @Summary Sync Event by ID
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param id path string true "Event ID"
@@ -316,7 +316,7 @@ func (i *EventHandler) Sync(cc echo.Context) (err error) {
 // DeleteByID
 // @Security CookieAuth
 // @Summary Delete a Event by ID
-// @Tags Event
+// @Tags /events/event
 // @Accept json
 // @Produce json
 // @Param id path string true "Event ID"

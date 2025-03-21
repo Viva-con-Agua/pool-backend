@@ -29,7 +29,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Crew"
+                    "/crews"
                 ],
                 "summary": "Get a List of  Crews",
                 "parameters": [
@@ -115,7 +115,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Crew"
+                    "/crews"
                 ],
                 "summary": "Update a Crew",
                 "parameters": [
@@ -164,7 +164,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Crew"
+                    "/crews"
                 ],
                 "summary": "Create a Crew",
                 "parameters": [
@@ -209,7 +209,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Crew"
+                    "/crews"
                 ],
                 "summary": "Get a List of CrewPublic",
                 "parameters": [
@@ -297,7 +297,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Crew"
+                    "/crews"
                 ],
                 "summary": "Delete a Crew by ID",
                 "parameters": [
@@ -333,7 +333,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artist"
+                    "/events/artist"
                 ],
                 "summary": "Get a List of Artists",
                 "parameters": [
@@ -411,7 +411,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artist"
+                    "/events/artist"
                 ],
                 "summary": "Get a Artist by ID",
                 "parameters": [
@@ -460,7 +460,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artist"
+                    "/events/artist"
                 ],
                 "summary": "Create a Artist",
                 "parameters": [
@@ -510,7 +510,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artist"
+                    "/events/artist"
                 ],
                 "summary": "Get a  Artist by ID",
                 "parameters": [
@@ -556,7 +556,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artist"
+                    "/events/artist"
                 ],
                 "summary": "Get a  Artist by ID",
                 "parameters": [
@@ -592,7 +592,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a List of Event",
                 "parameters": [
@@ -770,7 +770,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Update a Event",
                 "parameters": [
@@ -819,7 +819,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Create a Event",
                 "parameters": [
@@ -864,7 +864,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a Event by ID",
                 "parameters": [
@@ -912,7 +912,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a List of Event",
                 "parameters": [
@@ -1087,7 +1087,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a List of Event",
                 "parameters": [
@@ -1267,7 +1267,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Sync Event by ID",
                 "parameters": [
@@ -1303,7 +1303,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a List of Event",
                 "parameters": [
@@ -1478,7 +1478,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a Event by ID",
                 "parameters": [
@@ -1526,7 +1526,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Get a Event by ID",
                 "parameters": [
@@ -1572,7 +1572,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Event"
+                    "/events/event"
                 ],
                 "summary": "Delete a Event by ID",
                 "parameters": [
@@ -1594,6 +1594,349 @@ const docTemplate = `{
                 }
             }
         },
+        "/events/participation": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/events/participation"
+                ],
+                "summary": "Get a List ofParticipation",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "comment",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "crewId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "crewName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "eventID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "organisationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "userId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseListed"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Participation"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/events/participation"
+                ],
+                "summary": "Update a Participation",
+                "parameters": [
+                    {
+                        "description": "Participation Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ParticipationUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseUpdated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Participation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "creates an Participation object.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/events/participation"
+                ],
+                "summary": "Create a Participation",
+                "parameters": [
+                    {
+                        "description": "Participation Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ParticipationCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Participation successfully created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseCreated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Participation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Duplicated Key",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoDuplicatedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/participation/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/events/participation"
+                ],
+                "summary": "Get a Participation by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Participation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseSelected"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Participation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/events/participation"
+                ],
+                "summary": "Delete a Participation by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Participation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseDeleted"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/finances/deposit": {
             "get": {
                 "security": [
@@ -1608,7 +1951,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Deposit"
+                    "/finances/deposit"
                 ],
                 "summary": "Get a List of Deposit",
                 "parameters": [
@@ -1755,7 +2098,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Deposit"
+                    "/finances/deposit"
                 ],
                 "summary": "Update a Deposit",
                 "parameters": [
@@ -1816,7 +2159,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Deposit"
+                    "/finances/deposit"
                 ],
                 "summary": "Create a Deposit",
                 "parameters": [
@@ -1832,7 +2175,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Successfully Created Deposit",
+                        "description": "Deposit succsessfully created",
                         "schema": {
                             "allOf": [
                                 {
@@ -1878,7 +2221,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Deposit"
+                    "/finances/deposit"
                 ],
                 "summary": "Sync Deposit by ID",
                 "parameters": [
@@ -1920,7 +2263,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Deposit"
+                    "/finances/deposit"
                 ],
                 "summary": "Get a Deposit by ID",
                 "parameters": [
@@ -1958,9 +2301,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/fincances/deposit/{id}": {
+            },
             "delete": {
                 "security": [
                     {
@@ -1974,7 +2315,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Deposit"
+                    "/finances/deposit"
                 ],
                 "summary": "Delete a Deposit by ID",
                 "parameters": [
@@ -2014,6 +2355,739 @@ const docTemplate = `{
                 }
             }
         },
+        "/finances/taking": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/finances/taking"
+                ],
+                "summary": "Get a List ofTaking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "artistName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "crewID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "eventEndFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "eventEndTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "eventName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "eventState",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "fullCount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "skip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sortField",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "statusConfirmed",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "statusNoIncome",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "statusNone",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "statusOpen",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "statusWait",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "typeOfEvent",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseListed"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Taking"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/finances/taking"
+                ],
+                "summary": "Update aTaking",
+                "parameters": [
+                    {
+                        "description": "Taking Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TakingUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseUpdated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Taking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "creates an Taking object.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/finances/taking"
+                ],
+                "summary": "Create aTaking",
+                "parameters": [
+                    {
+                        "description": "Taking Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TakingCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Taking succsessfully created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseCreated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Taking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Duplicated Key",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoDuplicatedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/finances/taking/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/finances/taking"
+                ],
+                "summary": "Get a Taking by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Taking ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseSelected"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Taking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/finances/taking"
+                ],
+                "summary": "Delete a Taking by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Taking ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseDeleted"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mails/mailbox/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/mails/mailbox"
+                ],
+                "summary": "Get a Mailbox by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mailbox ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseSelected"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Mailbox"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mails/message": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/mails/message"
+                ],
+                "summary": "Update a Message",
+                "parameters": [
+                    {
+                        "description": "Message Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DepositUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message successfully updated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseUpdated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "creates an Message object.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/mails/message"
+                ],
+                "summary": "Create a Message",
+                "parameters": [
+                    {
+                        "description": "Message Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Message successfully created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseCreated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Duplicated Key",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoDuplicatedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mails/message/send_cycular/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/mails/message"
+                ],
+                "summary": "Get a Message by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message successfully sended",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseSelected"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mails/message/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/mails/message"
+                ],
+                "summary": "Get a Message by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message successfully selected",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseSelected"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/mails/message"
+                ],
+                "summary": "Delete a Message by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message successfully deleted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseDeleted"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/address": {
             "get": {
                 "security": [
@@ -2028,7 +3102,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Address"
+                    "/users/address"
                 ],
                 "summary": "Get a List of  Addresss",
                 "parameters": [
@@ -2123,7 +3197,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Address"
+                    "/users/address"
                 ],
                 "summary": "Get a  Address by ID",
                 "parameters": [
@@ -2172,7 +3246,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Address"
+                    "/users/address"
                 ],
                 "summary": "Create a Address",
                 "parameters": [
@@ -2222,7 +3296,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Crew"
+                    "/crews"
                 ],
                 "summary": "Get a Crew by ID",
                 "parameters": [
@@ -2268,7 +3342,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Address"
+                    "/users/address"
                 ],
                 "summary": "Delete a  Address by ID",
                 "parameters": [
@@ -2305,7 +3379,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Avatar"
+                    "/users/avatar"
                 ],
                 "summary": "Uploads a Avatar",
                 "parameters": [
@@ -2355,7 +3429,7 @@ const docTemplate = `{
                     "image/png"
                 ],
                 "tags": [
-                    "Avatar"
+                    "/users/avatar"
                 ],
                 "summary": "Get a  Avatar by ID",
                 "parameters": [
@@ -2389,7 +3463,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Avatar"
+                    "/users/avatar"
                 ],
                 "summary": "Get a  Avatar by ID",
                 "parameters": [
@@ -2406,6 +3480,123 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/vmod.DeletedResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/newsletter": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "creates an Newsletter object.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/users/newsletter"
+                ],
+                "summary": "Create a Newsletter",
+                "parameters": [
+                    {
+                        "description": "Newsletter Data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Newsletter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Newsletter successfully created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseCreated"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "$ref": "#/definitions/models.Newsletter"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.ValidationErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Duplicated Key",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoDuplicatedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/newsletter/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/users/newsletter"
+                ],
+                "summary": "Delete a Newsletter by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Newsletter ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Newsletter successfully deleted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/vcago.ResponseDeleted"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "No Document with given ID",
+                        "schema": {
+                            "$ref": "#/definitions/vcago.MongoNoDocumentErrorResponse"
                         }
                     }
                 }
@@ -3606,6 +4797,146 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Mailbox": {
+            "type": "object",
+            "properties": {
+                "draft": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MessageSub"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MessageSub"
+                    }
+                },
+                "outbox": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Message"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Message": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mailbox_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "modified": {
+                    "$ref": "#/definitions/vmod.Modified"
+                },
+                "read": {
+                    "type": "boolean"
+                },
+                "recipient_group": {
+                    "$ref": "#/definitions/models.RecipientGroup"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TOData"
+                    }
+                },
+                "to_id": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MessageCreate": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "mailbox_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "read": {
+                    "type": "boolean"
+                },
+                "recipient_group": {
+                    "$ref": "#/definitions/models.RecipientGroup"
+                },
+                "subject": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MessageSub": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mailbox_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "modified": {
+                    "$ref": "#/definitions/vmod.Modified"
+                },
+                "read": {
+                    "type": "boolean"
+                },
+                "recipient_group": {
+                    "$ref": "#/definitions/models.RecipientGroup"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.NVM": {
             "type": "object",
             "properties": {
@@ -3723,10 +5054,35 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ParticipationCreate": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ParticipationMinimal": {
             "type": "object",
             "properties": {
                 "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ParticipationUpdate": {
+            "type": "object",
+            "properties": {
+                "comment": {
                     "type": "string"
                 },
                 "id": {
@@ -3808,6 +5164,47 @@ const docTemplate = `{
                 }
             }
         },
+        "models.RecipientGroup": {
+            "type": "object",
+            "properties": {
+                "active_state": {
+                    "description": "only used for type crew",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "crew_id": {
+                    "description": "only used for type crew",
+                    "type": "string"
+                },
+                "event_id": {
+                    "description": "only used for type event",
+                    "type": "string"
+                },
+                "ignore_newsletter": {
+                    "type": "boolean"
+                },
+                "nvm_state": {
+                    "description": "only used for type crew",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "state": {
+                    "description": "only used for type event",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "can be crew or event",
+                    "type": "string"
+                }
+            }
+        },
         "models.Source": {
             "type": "object",
             "properties": {
@@ -3833,6 +5230,72 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SourceCreate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "money": {
+                    "$ref": "#/definitions/vmod.Money"
+                },
+                "norms": {
+                    "type": "string"
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "taking_id": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SourceUpdate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "money": {
+                    "$ref": "#/definitions/vmod.Money"
+                },
+                "norms": {
+                    "type": "string"
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "taking_id": {
+                    "type": "string"
+                },
+                "update_state": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TOData": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "mailbox_id": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -3899,6 +5362,29 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TakingCreate": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "crew_id": {
+                    "type": "string"
+                },
+                "date_of_taking": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "new_sources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SourceCreate"
+                    }
+                }
+            }
+        },
         "models.TakingState": {
             "type": "object",
             "properties": {
@@ -3913,6 +5399,43 @@ const docTemplate = `{
                 },
                 "wait": {
                     "$ref": "#/definitions/vmod.Money"
+                }
+            }
+        },
+        "models.TakingStateUpdate": {
+            "type": "object",
+            "properties": {
+                "no_income": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.TakingUpdate": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "crew_id": {
+                    "type": "string"
+                },
+                "date_of_taking": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SourceUpdate"
+                    }
+                },
+                "state": {
+                    "$ref": "#/definitions/models.TakingStateUpdate"
                 }
             }
         },

@@ -21,6 +21,20 @@ func (i *NewsletterHandler) Routes(group *echo.Group) {
 
 }
 
+// Create
+// @Security CookieAuth
+// @Summary Create a Newsletter
+// @Description creates an Newsletter object.
+// @Tags /users/newsletter
+// @Accept json
+// @Produce json
+// @Param form body models.Newsletter true "Newsletter Data"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.ResponseCreated{payload=models.Newsletter} "Newsletter successfully created"
+// @Failure 400 {object} vcago.BindErrorResponse{} "Bind Error"
+// @Failure 400 {object} vcago.ValidationErrorResponse{} "Validation Error"
+// @Failure 409 {object} vcago.MongoDuplicatedErrorResponse{} "Duplicated Key"
+// @Router /users/newsletter [post]
 func (i *NewsletterHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.NewsletterCreate)
@@ -43,6 +57,16 @@ func (i *NewsletterHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// DeleteByID
+// @Security CookieAuth
+// @Summary Delete a Newsletter by ID
+// @Tags /users/newsletter
+// @Accept json
+// @Produce json
+// @Param id path string true "Newsletter ID"
+// @Success 200 {object} vcago.ResponseDeleted{payload=string} "Newsletter successfully deleted"
+// @Failure 404 {object} vcago.MongoNoDocumentErrorResponse{} "No Document with given ID"
+// @Router /users/newsletter/{id} [delete]
 func (i *NewsletterHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.NewsletterParam)
