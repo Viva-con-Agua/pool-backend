@@ -131,7 +131,7 @@ func InitialDatabase() {
 	EventCollection = Database.Collection(models.EventCollection).CreateIndex("taking_id", false).CreateIndex("artist_ids", false)
 	SourceCollection = Database.Collection(models.SourceCollection).CreateIndex("taking_id", false)
 	TakingCollection = Database.Collection(models.TakingCollection).CreateIndex("crew_id", false)
-	DepositCollection = Database.Collection(models.DepositCollection)
+	DepositCollection = Database.Collection(models.DepositCollection).CreateIndex("crew_id", false)
 	DepositUnitCollection = Database.Collection(models.DepositUnitCollection).CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true).CreateIndex("taking_id", false).CreateIndex("deposit_id", false)
 
 	FSChunkCollection = Database.Collection(models.FSChunkCollection)

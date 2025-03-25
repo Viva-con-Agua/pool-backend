@@ -268,7 +268,7 @@ func DepositGet(ctx context.Context, i *models.DepositQuery, token *models.Acces
 	result = new([]models.Deposit)
 	if err = DepositCollection.Aggregate(
 		ctx,
-		models.DepositPipeline().SortFields(sort).Match(filter).Sort(sort).Pipe,
+		models.DepositPipelineList().SortFields(sort).Match(filter).Sort(sort).Pipe,
 		result,
 	); err != nil {
 		return
