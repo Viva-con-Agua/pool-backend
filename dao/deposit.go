@@ -259,16 +259,16 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *models.Acce
 	return
 }
 
-func DepositGet(ctx context.Context, i *models.DepositQuery, token *models.AccessToken) (result *[]models.Deposit, err error) {
+func DepositGet(ctx context.Context, query *models.DepositQuery, token *models.AccessToken) (result *[]models.Deposit, err error) {
 	if err = models.DepositPermission(token); err != nil {
 		return
 	}
-	filter := i.PermittedFilter(token)
-	sort := i.Sort()
+	filter := query.PermittedFilter(token)
+	sort := query.Sort()
 	result = new([]models.Deposit)
 	if err = DepositCollection.Aggregate(
 		ctx,
-		models.DepositPipelineList().SortFields(sort).Match(filter).Sort(sort).Pipe,
+		models.DepositPipelineList().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe,
 		result,
 	); err != nil {
 		return
