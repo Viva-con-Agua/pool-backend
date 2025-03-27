@@ -265,7 +265,7 @@ func DepositGet(ctx context.Context, query *models.DepositQuery, token *models.A
 	}
 	filter := query.PermittedFilter(token)
 	sort := query.Sort()
-	result = new([]models.Deposit)
+	result = &[]models.Deposit{}
 	if err = DepositCollection.Aggregate(
 		ctx,
 		models.DepositPipelineList().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe,
