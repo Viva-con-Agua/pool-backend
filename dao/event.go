@@ -164,7 +164,6 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 }
 
 func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.AccessToken) (result *models.Event, err error) {
-
 	event := new(models.EventValidate)
 	filter := i.PermittedFilter(token)
 	if err = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Pipe, event); err != nil {
