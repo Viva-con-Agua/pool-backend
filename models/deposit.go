@@ -283,8 +283,8 @@ func (i *DepositQuery) PermittedFilter(token *AccessToken) bson.D {
 	}
 	filter.EqualStringList("status", i.Status)
 	filter.EqualBool("has_external", i.HasExternal)
-	filter.LikeString("deposit_units.taking.name", i.Name)
-	filter.LikeString("reason_for_payment", i.ReasonForPayment)
+	filter.SearchString([]string{"deposit_units.taking.name"}, i.Name)
+	filter.SearchString([]string{"reason_for_payment"}, i.ReasonForPayment)
 	return filter.Bson()
 }
 
