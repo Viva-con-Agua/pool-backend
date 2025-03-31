@@ -11,8 +11,11 @@ import (
 )
 
 var (
-	TakingCreatedActivity = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully created", Status: "created"}
-	TakingUpdatedActivity = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
+	TakingCreatedActivity    = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully created", Status: "created"}
+	TakingUpdatedActivity    = &models.ActivityDatabase{ModelType: "taking", Comment: "Successfully updated", Status: "updated"}
+	DepositCreatedActivity   = &models.ActivityDatabase{ModelType: "deposit", Comment: "Successfully created", Status: "created"}
+	DepositWaitedActivity    = &models.ActivityDatabase{ModelType: "deposit", Comment: "Successfully deposited", Status: "waited"}
+	DepositConfirmedActivity = &models.ActivityDatabase{ModelType: "deposit", Comment: "Successfully confirmed.", Status: "confirmed"}
 )
 
 func TakingInsert(ctx context.Context, i *models.TakingCreate, token *models.AccessToken) (result *models.Taking, err error) {

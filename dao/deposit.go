@@ -56,6 +56,13 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 	if err = DepositCollection.AggregateOne(ctx, models.DepositPipeline().Match(bson.D{{Key: "_id", Value: deposit.ID}}).Pipe, &result); err != nil {
 		return
 	}
+
+	for _, unit := range depositUnits {
+		activity := DepositCreatedActivity.New(token.ID, unit.TakingID)
+		activity.Comment += ";" + deposit.ID
+		if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+		}
+	}
 	return
 }
 
@@ -112,10 +119,28 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *models.A
 	}
 
 	ctx = context.Background()
+
+	if i.Status == "wait" {
+		go func() {
+			ctxAsync := context.Background()
+			for _, unit := range i.DepositUnit {
+				activity := DepositWaitedActivity.New(token.ID, unit.TakingID)
+				activity.Comment += ";" + i.ID
+				if err = ActivityCollection.InsertOne(ctxAsync, activity); err != nil {
+				}
+			}
+		}()
+	}
+
 	if i.Status == "confirmed" {
 		go func() {
 			ctxAsync := context.Background()
 			for _, unit := range i.DepositUnit {
+				activity := DepositConfirmedActivity.New(token.ID, unit.TakingID)
+				activity.Comment += ";" + i.ID
+				if err = ActivityCollection.InsertOne(ctxAsync, activity); err != nil {
+				}
+
 				event := new(models.EventUpdate)
 				if err = EventCollection.FindOne(
 					ctxAsync,
