@@ -18,11 +18,23 @@ func (i *ArtistHandler) Routes(group *echo.Group) {
 	group.Use(i.Context)
 	group.POST("", i.Create, accessCookie)
 	group.GET("", i.Get, accessCookie)
+	group.GET("/api_token", i.Get, vcago.KeyAuthMiddleware())
 	group.GET("/:id", i.GetByID, accessCookie)
 	group.PUT("", i.Update, accessCookie)
 	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
+// Create
+// @Security CookieAuth
+// @Summary Create a Artist
+// @Description creates an  Artist object.
+// @Tags Artist
+// @Accept json
+// @Produce json
+// @Param form body models.ArtistCreate true "Artist Data"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.Response{payload=models.Artist}
+// @Router /events/artist [post]
 func (i *ArtistHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ArtistCreate)
@@ -40,6 +52,17 @@ func (i *ArtistHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// Get
+// @Security CookieAuth
+// @Summary Get a List of Artists
+// @Tags Artist
+// @Accept json
+// @Produce json
+// @Param   q query   models.ArtistQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.Artist}
+// @Failure 400 {object} vcago.Response{}
+// @Router /events/artist [get]
 func (i *ArtistHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ArtistQuery)
@@ -53,6 +76,16 @@ func (i *ArtistHandler) Get(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a  Artist by ID
+// @Tags Artist
+// @Accept json
+// @Produce json
+// @Param id path string true "Artist ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Artist}
+// @Router /events/artist/{id} [get]
 func (i *ArtistHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ArtistParam)
@@ -66,6 +99,16 @@ func (i *ArtistHandler) GetByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// Update
+// @Security CookieAuth
+// @Summary Get a Artist by ID
+// @Tags Artist
+// @Accept json
+// @Produce json
+// @Param form body models.ArtistUpdate true "Artist Data"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Artist}
+// @Router /events/artist [put]
 func (i *ArtistHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ArtistUpdate)
@@ -83,6 +126,15 @@ func (i *ArtistHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
+// DeleteByID
+// @Security CookieAuth
+// @Summary Get a  Artist by ID
+// @Tags Artist
+// @Accept json
+// @Produce json
+// @Param id path string true "Artist ID"
+// @Success 200 {object} vmod.DeletedResponse
+// @Router /events/artist/{id} [delete]
 func (i *ArtistHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.ArtistParam)

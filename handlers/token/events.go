@@ -32,6 +32,17 @@ func (i *EventHandler) Routes(group *echo.Group) {
 
 }
 
+// Create
+// @Security CookieAuth
+// @Summary Create a Event
+// @Description creates an Event object.
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param form body models.EventCreate true "Event Data"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.Response{payload=models.Event}
+// @Router /events/event [post]
 func (i *EventHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventCreate)
@@ -55,6 +66,17 @@ func (i *EventHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// Get
+// @Security CookieAuth
+// @Summary Get a List of Event
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.Event}
+// @Failure 400 {object} vcago.Response{}
+// @Router /events/event [get]
 func (i *EventHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventQuery)
@@ -74,6 +96,16 @@ func (i *EventHandler) Get(cc echo.Context) (err error) {
 	return c.Listed(result, listSize)
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a Event by ID
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Event}
+// @Router /events/event/{id} [get]
 func (i *EventHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)
@@ -91,6 +123,15 @@ func (i *EventHandler) GetByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetViewByID
+// @Summary Get a Event by ID
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.EventPublic}
+// @Router /events/event/view/{id} [get]
 func (i *EventHandler) GetViewByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)
@@ -104,6 +145,15 @@ func (i *EventHandler) GetViewByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetPrivateDetails
+// @Summary Get a Event by ID
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.EventDetails}
+// @Router /events/event/details/{id} [get]
 func (i *EventHandler) GetPrivateDetails(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)
@@ -121,6 +171,16 @@ func (i *EventHandler) GetPrivateDetails(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetPublic
+// @Summary Get a List of Event
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.EventPublic}
+// @Failure 400 {object} vcago.Response{}
+// @Router /events/event/public [get]
 func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventQuery)
@@ -135,6 +195,17 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 	return c.Listed(result, listSize)
 }
 
+// GetByEventAsp
+// @Security CookieAuth
+// @Summary Get a List of Event
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.ListDetailsEvent}
+// @Failure 400 {object} vcago.Response{}
+// @Router /events/event/user [get]
 func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventQuery)
@@ -152,6 +223,17 @@ func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetEmailEvents
+// @Security CookieAuth
+// @Summary Get a List of Event
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.EventPublic}
+// @Failure 400 {object} vcago.Response{}
+// @Router /events/event/email [get]
 func (i *EventHandler) GetEmailEvents(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventQuery)
@@ -169,6 +251,16 @@ func (i *EventHandler) GetEmailEvents(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// Update
+// @Security CookieAuth
+// @Summary Update a Event
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param form body models.EventUpdate true "Event Data"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Event}
+// @Router /events/event [put]
 func (i *EventHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventUpdate)
@@ -192,6 +284,16 @@ func (i *EventHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
+// Sync
+// @Security CookieAuth
+// @Summary Sync Event by ID
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{}
+// @Router /events/event/sync/{id} [get]
 func (i *EventHandler) Sync(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)
@@ -211,6 +313,15 @@ func (i *EventHandler) Sync(cc echo.Context) (err error) {
 	return c.SuccessResponse(http.StatusOK, "successfully_synced", "event", nil)
 }
 
+// DeleteByID
+// @Security CookieAuth
+// @Summary Delete a Event by ID
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Success 200 {object} vmod.DeletedResponse
+// @Router /events/event/{id} [delete]
 func (i *EventHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.EventParam)

@@ -26,6 +26,17 @@ func (i *CrewHandler) Routes(group *echo.Group) {
 	group.DELETE("/:id", i.Delete, accessCookie)
 }
 
+// Create
+// @Security CookieAuth
+// @Summary Create a Crew
+// @Description creates an  Crew object.
+// @Tags Crew
+// @Accept json
+// @Produce json
+// @Param form body models.CrewCreate true "Crew Data"
+// @Model: vcago.Response
+// @Success 201 {object} vcago.Response{payload=models.Crew}
+// @Router /crews [post]
 func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.CrewCreate)
@@ -48,6 +59,17 @@ func (i *CrewHandler) Create(cc echo.Context) (err error) {
 	return c.Created(result)
 }
 
+// Get
+// @Security CookieAuth
+// @Summary Get a List of  Crews
+// @Tags Crew
+// @Accept json
+// @Produce json
+// @Param   q query   models.CrewQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.Crew}
+// @Failure 400 {object} vcago.Response{}
+// @Router /crews [get]
 func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.CrewQuery)
@@ -65,6 +87,16 @@ func (i *CrewHandler) Get(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetPublic
+// @Summary Get a List of CrewPublic
+// @Tags Crew
+// @Accept json
+// @Produce json
+// @Param   q query   models.CrewQuery   false  "string collection"  collectionFormat(multi)
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=[]models.CrewPublic}
+// @Failure 400 {object} vcago.Response{}
+// @Router /crews/public [get]
 func (i *CrewHandler) GetPublic(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.CrewQuery)
@@ -95,6 +127,16 @@ func (i *CrewHandler) GetAsMember(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// GetByID
+// @Security CookieAuth
+// @Summary Get a Crew by ID
+// @Tags Crew
+// @Accept json
+// @Produce json
+// @Param id path string true "Crew ID"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Crew}
+// @Router /users/address/{id} [get]
 func (i *CrewHandler) GetByID(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.CrewParam)
@@ -112,6 +154,16 @@ func (i *CrewHandler) GetByID(cc echo.Context) (err error) {
 	return c.Selected(result)
 }
 
+// Update
+// @Security CookieAuth
+// @Summary Update a Crew
+// @Tags Crew
+// @Accept json
+// @Produce json
+// @Param form body models.CrewUpdate true "Crew Data"
+// @Model: vcago.Response
+// @Success 200 {object} vcago.Response{payload=models.Crew}
+// @Router /crews [put]
 func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.CrewUpdate)
@@ -134,6 +186,15 @@ func (i *CrewHandler) Update(cc echo.Context) (err error) {
 	return c.Updated(result)
 }
 
+// DeleteByID
+// @Security CookieAuth
+// @Summary Delete a Crew by ID
+// @Tags Crew
+// @Accept json
+// @Produce json
+// @Param id path string true "Crew ID"
+// @Success 200 {object} vmod.DeletedResponse
+// @Router /crews/{id} [delete]
 func (i *CrewHandler) Delete(cc echo.Context) (err error) {
 	c := cc.(vcago.Context)
 	body := new(models.CrewParam)

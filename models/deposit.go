@@ -146,6 +146,38 @@ func DepositPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
+func DepositPipelineList() *vmdb.Pipeline {
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
+	pipe.LookupUnwind(TakingDepositView, "deposit_units.taking_id", "_id", "deposit_units.taking")
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
+				{Key: "$push", Value: "$deposit_units"},
+			}},
+		}},
+	})
+	pipe.LookupUnwind(DepositCollection, "_id", "_id", "deposits")
+	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
+	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	return pipe
+}
+func DepositPipelineCount(filter bson.D) *vmdb.Pipeline {
+	pipe := DepositPipelineList()
+	pipe.Match(filter)
+	pipe.Limit(300, 300)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
+
 func Match(id string) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", id)

@@ -33,3 +33,6 @@ exec:
 
 commit:
 	pre-commit run --show-diff-on-failure --color=always --all-files && git commit
+
+docu:
+	swag init -g server.go --parseDependency

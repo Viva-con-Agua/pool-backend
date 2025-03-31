@@ -308,6 +308,19 @@ func UserMatchEmail(email string) bson.D {
 	return filter.Bson()
 }
 
+func UserCountPipeline(filter bson.D) *vmdb.Pipeline {
+	pipe := UserPipeline(false)
+	pipe.Match(filter)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
 func (i *User) AuthToken() (r *vcago.AuthToken, err error) {
 	accessToken := &AccessToken{
 		ID:             i.ID,

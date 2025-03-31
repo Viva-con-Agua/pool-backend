@@ -1,6 +1,9 @@
 package models
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/google/uuid"
@@ -37,27 +40,34 @@ func MailboxPipeline(token *AccessToken) *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
+	lastSixMonth := fmt.Sprint(time.Now().AddDate(0, -6, 0).Unix())
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		inboxMatch := vmdb.NewFilter()
 		inboxMatch.EqualString("type", "inbox")
+		inboxMatch.GteInt64("modified.updated", lastSixMonth)
 		inboxMatch.EqualString("user_id", token.ID)
 		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
 		outboxMatch := vmdb.NewFilter()
 		outboxMatch.EqualString("type", "outbox")
+		outboxMatch.GteInt64("modified.updated", lastSixMonth)
 		outboxMatch.EqualString("user_id", token.ID)
 		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
 		draftMatch := vmdb.NewFilter()
 		draftMatch.EqualString("type", "draft")
+		draftMatch.GteInt64("modified.updated", lastSixMonth)
 		draftMatch.EqualString("user_id", token.ID)
 		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
 	} else {
 		inboxMatch := vmdb.NewFilter()
+		inboxMatch.GteInt64("modified.updated", lastSixMonth)
 		inboxMatch.EqualString("type", "inbox")
 		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
 		outboxMatch := vmdb.NewFilter()
+		outboxMatch.GteInt64("modified.updated", lastSixMonth)
 		outboxMatch.EqualString("type", "outbox")
 		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
 		draftMatch := vmdb.NewFilter()
+		draftMatch.GteInt64("modified.updated", lastSixMonth)
 		draftMatch.EqualString("type", "draft")
 		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
 	}

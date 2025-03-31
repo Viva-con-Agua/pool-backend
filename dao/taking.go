@@ -118,7 +118,7 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *models.Acc
 	result = []models.Taking{}
 	filter := query.PermittedFilter(token)
 	sort := query.Sort()
-	pipeline := models.TakingPipeline().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
+	pipeline := models.TakingPipelineList().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
 		pipeline,
@@ -129,7 +129,7 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *models.Acc
 	count := new([]Count)
 	if err = TakingCollection.Aggregate(
 		context.Background(),
-		models.TakingCountPipeline(filter).Pipe,
+		models.TakingPipelineCount(filter).Pipe,
 		count,
 	); err != nil {
 		return

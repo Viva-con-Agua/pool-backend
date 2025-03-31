@@ -128,15 +128,15 @@ func InitialDatabase() {
 			{Key: "event_id", Value: 1},
 		}, true)
 	OrganizerCollection = Database.Collection(models.OrganizerCollection).CreateIndex("name", true)
-	EventCollection = Database.Collection(models.EventCollection)
-	SourceCollection = Database.Collection(models.SourceCollection)
+	EventCollection = Database.Collection(models.EventCollection).CreateIndex("taking_id", false).CreateIndex("artist_ids", false)
+	SourceCollection = Database.Collection(models.SourceCollection).CreateIndex("taking_id", false)
 	TakingCollection = Database.Collection(models.TakingCollection).CreateIndex("crew_id", false)
-	DepositCollection = Database.Collection(models.DepositCollection)
+	DepositCollection = Database.Collection(models.DepositCollection).CreateIndex("crew_id", false)
 	DepositUnitCollection = Database.Collection(models.DepositUnitCollection).CreateMultiIndex(bson.D{{Key: "taking_id", Value: 1}, {Key: "deposit_id", Value: 1}}, true).CreateIndex("taking_id", false).CreateIndex("deposit_id", false)
 
 	FSChunkCollection = Database.Collection(models.FSChunkCollection)
 	FSFilesCollection = Database.Collection(models.FSFilesCollection)
-	ActivityCollection = Database.Collection(models.ActivityCollection)
+	ActivityCollection = Database.Collection(models.ActivityCollection).CreateIndex("model_id", false)
 
 	NewsletterCollection = Database.Collection(models.NewsletterCollection).CreateIndex("user_id", false).CreateMultiIndex(
 		bson.D{{Key: "user_id", Value: 1}, {Key: "value", Value: 1}},

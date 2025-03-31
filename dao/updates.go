@@ -70,9 +70,9 @@ func UpdateDatabase() {
 		CreateDefaultOrganisation(ctx)
 		Updates.Insert(ctx, "create_default_organisation")
 	}
-	if !Updates.Check(ctx, "update_deposit_units_3") {
+	if !Updates.Check(ctx, "update_deposit_units_4") {
 		UpdateDepositUnitNorms(ctx)
-		Updates.Insert(ctx, "update_deposit_units_3")
+		Updates.Insert(ctx, "update_deposit_units_4")
 	}
 	if !Updates.Check(ctx, "publish_roles_initial") {
 		log.Print("publish_roles_initial")
@@ -82,6 +82,16 @@ func UpdateDatabase() {
 	if !Updates.Check(ctx, "date_of_deposit") {
 		UpdateDateOfDeposit(ctx)
 		Updates.Insert(ctx, "date_of_deposit")
+	}
+	if !Updates.Check(ctx, "event_applications_fix") {
+		log.Print("event_applications_fix")
+		UpdateEventApplications(ctx)
+		Updates.Insert(ctx, "event_applications_fix")
+	}
+	if !Updates.Check(ctx, "event_crew_id_fix") {
+		log.Print("event_crew_id_fix")
+		UpdateEventCrewIDs(ctx)
+		Updates.Insert(ctx, "event_crew_id_fix")
 	}
 }
 
@@ -210,9 +220,32 @@ func UpdateProfileBirthdate(ctx context.Context) {
 	}
 }
 
+func UpdateEventCrewIDs(ctx context.Context) {
+	eventList := []models.EventUpdate{}
+	eventFilter := bson.D{{Key: "crew_id", Value: ""}, {Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}}}
+
+	if err := EventCollection.Find(ctx, eventFilter, &eventList); err != nil {
+		log.Print(err)
+	}
+	for _, event := range eventList {
+		user := models.UserCrew{}
+		if err := UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: event.EventASPID}}, &user); err != nil {
+			log.Print(err)
+		}
+		if event.EventASPID == event.InternalASPID {
+			continue
+		}
+		filter := bson.D{{Key: "_id", Value: event.ID}}
+		event.CrewID = user.CrewID
+		if err := EventCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(event), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
 func UpdateEventApplications(ctx context.Context) {
 	eventList := []models.Event{}
-	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&models.AccessToken{ID: ""}).Pipe, &eventList); err != nil {
+	if err := EventCollection.Aggregate(ctx, models.EventPipeline(&models.AccessToken{ID: "internal"}).Pipe, &eventList); err != nil {
 		log.Print(err)
 	}
 	for _, event := range eventList {
