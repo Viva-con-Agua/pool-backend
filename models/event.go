@@ -370,6 +370,7 @@ func (i *EventCreate) EventDatabase(token *AccessToken) *EventDatabase {
 		Applications:          EventApplications{Confirmed: 0, Rejected: 0, Requested: 0, Withdrawn: 0, Total: 0},
 		EventTools:            i.EventTools,
 		EventState:            i.EventState,
+		OrganisationID: 	   i.OrganisationID,
 		CreatorID:             token.ID,
 		Modified:              vmod.NewModified(),
 	}
