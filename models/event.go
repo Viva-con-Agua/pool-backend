@@ -113,6 +113,7 @@ type (
 		Artists               []Artist         `json:"artists" bson:"artists"`
 		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
 		Organizer             Organizer        `json:"organizer" bson:"organizer"`
+		OrganisationID        string           `json:"organisation_id" bson:"organisation_id"`
 		Organisation          Organisation     `json:"organisation" bson:"organisation"`
 		StartAt               int64            `json:"start_at" bson:"start_at"`
 		EndAt                 int64            `json:"end_at" bson:"end_at"`
@@ -135,6 +136,7 @@ type (
 		Artists               []Artist               `json:"artists" bson:"artists"`
 		OrganizerID           string                 `json:"organizer_id" bson:"organizer_id"`
 		Organizer             Organizer              `json:"organizer" bson:"organizer"`
+		OrganisationID        string           		 `json:"organisation_id" bson:"organisation_id"`
 		Organisation          Organisation           `json:"organisation" bson:"organisation"`
 		StartAt               int64                  `json:"start_at" bson:"start_at"`
 		EndAt                 int64                  `json:"end_at" bson:"end_at"`
