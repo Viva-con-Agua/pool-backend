@@ -1,6 +1,7 @@
 package models
 
 import (
+	"os"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -122,7 +123,7 @@ var ASPRole = "other;asp;finance;operation;education;network;socialmedia;awarene
 var ASPEventRole = "network;operation;education"
 
 func RolesPermission(role string, user *User, token *AccessToken) (err error) {
-	if user.NVM.Status != "confirmed" {
+	if os.Getenv("VCA_ORG_DE") == user.Crew.OrganisationID && user.NVM.Status != "confirmed" {
 		return vcago.NewBadRequest(PoolRoleCollection, "nvm required", nil)
 	}
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(role)) {

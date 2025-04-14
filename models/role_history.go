@@ -1,6 +1,7 @@
 package models
 
 import (
+	"os"
 	"strconv"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -80,7 +81,7 @@ func RolesHistoryPermittedPipeline() (pipe *vmdb.Pipeline) {
 }
 
 func RolesHistoryPermission(user *User, token *AccessToken) (err error) {
-	if user.NVM.Status != "confirmed" {
+	if os.Getenv("VCA_ORG_DE") == user.OrganisationID && user.NVM.Status != "confirmed" {
 		return vcago.NewBadRequest(PoolRoleHistoryCollection, "nvm required", nil)
 	}
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
