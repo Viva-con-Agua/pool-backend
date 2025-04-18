@@ -557,7 +557,7 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.LikeString("name", i.Name)
-	filter.EqualStringList("event_state.state", []string{"published", "finished", "closed"})
+	filter.EqualStringList("event_state.state", i.publicStateFilter())
 	filter.EqualStringList("type_of_event", i.Type)
 	filter.EqualStringList("organisation_id", i.OrganisationId)
 	filter.EqualStringList("crew_id", i.CrewID)
@@ -574,6 +574,28 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter.SearchString([]string{"_id", "name", "crew.name", "artists.name", "location.name"}, i.Search)
 
 	return filter.Bson()
+}
+
+// Filter for the event states
+//
+// This function returns a string array with the allowed event states.
+// A basic assumption is, that at max, only events in the states published, finished and closed should be returned.
+// But to allow the user to reduce this, e.g. to only published events, this method was added. It reduces the user
+// input to items matching the above three and then returns this subset if there's at least one valid item.
+// Else the whole set is returned.
+func (i *EventQuery) publicStateFilter() []string {
+	var states = []string{"published", "finished", "closed"}
+	var userFilterStates []string
+	for _, value := range i.EventState {
+		if value == "published" || value == "finished" || value == "closed" {
+			userFilterStates = append(userFilterStates, value)
+		}
+	}
+	if len(userFilterStates) > 0 {
+		return userFilterStates
+	}
+
+	return states
 }
 
 func (i EventQuery) Sort() bson.D {
