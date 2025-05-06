@@ -121,10 +121,7 @@ func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models
 	return
 }
 
-func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_size int64, err error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.EventPublic, list_size int64, err error) {
 	filter := i.PublicFilter()
 	sort := i.Sort()
 	pipeline := models.EventPipelinePublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
@@ -132,10 +129,11 @@ func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_si
 	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-
 	count := vmod.Count{}
 	var cErr error
-	if cErr = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
+	cTx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if cErr = EventCollection.AggregateOne(cTx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
 	} else {

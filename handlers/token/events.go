@@ -189,7 +189,7 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 	}
 	result := new([]models.EventPublic)
 	var listSize int64
-	if result, listSize, err = dao.EventGetPublic(body); err != nil {
+	if result, listSize, err = dao.EventGetPublic(c.Ctx(), body); err != nil {
 		return
 	}
 	return c.Listed(result, listSize)
