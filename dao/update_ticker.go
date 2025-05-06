@@ -74,7 +74,7 @@ func EventStateClosedTicker() {
 		if err := EventCollection.UpdateOne(context.Background(), updateFilter, vmdb.UpdateSet(update), e); err != nil {
 			log.Print(err)
 		}
-		if err := IDjango.Post(i, "/v1/pool/taking/create/"); err != nil {
+		if err := IDjango.Post(takings[i], "/v1/pool/taking/create/"); err != nil {
 			log.Print(err)
 		}
 		if err := IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
