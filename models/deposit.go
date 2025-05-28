@@ -163,6 +163,20 @@ func DepositPipelineList() *vmdb.Pipeline {
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	return pipe
 }
+func DepositPipelineCount(filter bson.D) *vmdb.Pipeline {
+	pipe := DepositPipelineList()
+	pipe.Match(filter)
+	pipe.Limit(300, 300)
+	pipe.Append(bson.D{
+		{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil}, {Key: "list_size", Value: bson.D{
+				{Key: "$sum", Value: 1},
+			}},
+		}},
+	})
+	pipe.Append(bson.D{{Key: "$project", Value: bson.D{{Key: "_id", Value: 0}}}})
+	return pipe
+}
 
 func Match(id string) bson.D {
 	filter := vmdb.NewFilter()
@@ -269,8 +283,8 @@ func (i *DepositQuery) PermittedFilter(token *AccessToken) bson.D {
 	}
 	filter.EqualStringList("status", i.Status)
 	filter.EqualBool("has_external", i.HasExternal)
-	filter.LikeString("deposit_units.taking.name", i.Name)
-	filter.LikeString("reason_for_payment", i.ReasonForPayment)
+	filter.SearchString([]string{"deposit_units.taking.name"}, i.Name)
+	filter.SearchString([]string{"reason_for_payment"}, i.ReasonForPayment)
 	return filter.Bson()
 }
 

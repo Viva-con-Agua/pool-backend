@@ -77,15 +77,16 @@ func (i *DepositHandler) Get(cc echo.Context) (err error) {
 	if err = c.BindAndValidate(body); err != nil {
 		return
 	}
-	result := new([]models.Deposit)
 	token := new(models.AccessToken)
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if result, err = dao.DepositGet(c.Ctx(), body, token); err != nil {
+	result := new([]models.Deposit)
+	var listSize int64
+	if result, listSize, err = dao.DepositGet(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Listed(result, int64(len(*result)))
+	return c.Listed(result, listSize)
 }
 
 // GetByID

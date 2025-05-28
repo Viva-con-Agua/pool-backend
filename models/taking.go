@@ -101,7 +101,7 @@ func TakingPermission(token *AccessToken) (err error) {
 	return
 }
 
-func TakingPipelineGet() *vmdb.Pipeline {
+func TakingPipelineList() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.Lookup(DepositUnitTakingView, "_id", "taking_id", "deposit_units")
 	pipe.LookupMatch(DepositUnitTakingView, "_id", "taking_id", "wait", bson.D{{Key: "deposit.status", Value: bson.D{{Key: "$in", Value: bson.A{"wait", "open"}}}}})
@@ -128,9 +128,6 @@ func TakingPipelineGet() *vmdb.Pipeline {
 	}}})
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
-	//pipe.Lookup(ActivityUserView, "_id", "model_id", "activities")
-	//pipe.LookupUnwindMatch(ActivityUserView, "_id", "model_id", "dummy", bson.D{{Key: "status", Value: "created"}})
-	//pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "creator", Value: "$dummy.user"}}}})
 	return pipe
 }
 
@@ -167,8 +164,8 @@ func TakingPipeline() *vmdb.Pipeline {
 	return pipe
 }
 
-func TakingCountPipeline(filter bson.D) *vmdb.Pipeline {
-	pipe := TakingPipeline()
+func TakingPipelineCount(filter bson.D) *vmdb.Pipeline {
+	pipe := TakingPipelineList()
 	pipe.Match(filter)
 	pipe.Append(bson.D{
 		{Key: "$group", Value: bson.D{
