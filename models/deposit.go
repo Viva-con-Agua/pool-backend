@@ -302,3 +302,7 @@ func (i *DepositQuery) Sort() bson.D {
 	sort.Add(i.SortField, i.SortDirection)
 	return sort.Bson()
 }
+
+func (i *DepositQuery) SortOption() bool {
+	return i.SortField == "money.amount"
+}

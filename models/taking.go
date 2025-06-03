@@ -318,3 +318,7 @@ func (i *TakingQuery) Sort() bson.D {
 	sort.Add(i.SortField, i.SortDirection)
 	return sort.Bson()
 }
+
+func (i *TakingQuery) SortOption() bool {
+	return i.SortField == "state.open.amount" || i.SortField == "state.wait.amount" || i.SortField == "state.confirmed.amount"
+}
