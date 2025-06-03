@@ -70,9 +70,9 @@ func UpdateDatabase() {
 		CreateDefaultOrganisation(ctx)
 		Updates.Insert(ctx, "create_default_organisation")
 	}
-	if !Updates.Check(ctx, "update_deposit_units_4") {
+	if !Updates.Check(ctx, "update_deposit_units_5") {
 		UpdateDepositUnitNorms(ctx)
-		Updates.Insert(ctx, "update_deposit_units_4")
+		Updates.Insert(ctx, "update_deposit_units_5")
 	}
 	if !Updates.Check(ctx, "publish_roles_initial") {
 		log.Print("publish_roles_initial")
