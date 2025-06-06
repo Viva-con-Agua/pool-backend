@@ -79,6 +79,7 @@ func EventStateClosedTicker() {
 			log.Print(err)
 		} else {
 			takings[i].EditorID = org.DefaultAspID
+			e.EditorID = org.DefaultAspID
 		}
 		if err := IDjango.Post(takings[i], "/v1/pool/taking/create/"); err != nil {
 			log.Print(err)
