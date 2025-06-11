@@ -315,6 +315,18 @@ func (i *Taking) UpdatePermission(token *AccessToken) error {
 
 func (i *TakingQuery) Sort() bson.D {
 	sort := vmdb.NewSort()
+	// to have all entries with no_income before the 0 values.
+	if i.SortOption() {
+		if i.SortDirection == "desc" {
+			sort.Add("state.no_income", "asc")
+		} else {
+			sort.Add("state.no_income", "desc")
+		}
+	}
 	sort.Add(i.SortField, i.SortDirection)
 	return sort.Bson()
+}
+
+func (i *TakingQuery) SortOption() bool {
+	return i.SortField == "state.open.amount" || i.SortField == "state.wait.amount" || i.SortField == "state.confirmed.amount"
 }
