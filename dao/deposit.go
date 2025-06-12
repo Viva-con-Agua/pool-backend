@@ -139,6 +139,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *models.A
 					); err != nil {
 						return
 					}
+					e.EditorID = token.ID
 
 					// Update CRM event
 					if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
@@ -220,6 +221,7 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *models.Acce
 				); err != nil {
 					return
 				}
+				e.EditorID = token.ID
 
 				// Update CRM event
 				if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
