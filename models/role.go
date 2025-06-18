@@ -1,6 +1,7 @@
 package models
 
 import (
+	"slices"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -121,9 +122,12 @@ func NewRoleRequestHistory(i *RoleRequest, user *User) (r *RoleHistoryDatabase) 
 var ASPRole = "other;asp;finance;operation;education;network;socialmedia;awareness"
 var ASPEventRole = "network;operation;education"
 
-func RolesPermission(role string, user *User, token *AccessToken) (err error) {
-	if user.NVM.Status != "confirmed" {
+func RolesPermission(role string, user *User, token *AccessToken, options []string) (err error) {
+	if user.NVM.Status != "confirmed" && slices.Contains(options, "nvm") {
 		return vcago.NewBadRequest(PoolRoleCollection, "nvm required", nil)
+	}
+	if user.Active.Status != "confirmed" {
+		return vcago.NewBadRequest(PoolRoleCollection, "active required", nil)
 	}
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(role)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)

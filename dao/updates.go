@@ -93,6 +93,11 @@ func UpdateDatabase() {
 		UpdateEventCrewIDs(ctx)
 		Updates.Insert(ctx, "event_crew_id_fix")
 	}
+	if !Updates.Check(ctx, "organisation_options") {
+		log.Print("organisation_options")
+		UpdateOrganisationOptions(ctx)
+		Updates.Insert(ctx, "organisation_options")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -336,5 +341,12 @@ func UpdateDateOfDeposit(ctx context.Context) {
 		if err := DepositCollection.UpdateOne(ctx, updateFilter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
+	}
+}
+
+func UpdateOrganisationOptions(ctx context.Context) {
+	update := bson.D{{Key: "options", Value: []string{models.OptionActiv, models.OptionNVM, models.OptionVolunteerCert}}}
+	if err := OrganisationCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
 	}
 }
