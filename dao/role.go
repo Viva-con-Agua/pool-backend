@@ -24,7 +24,7 @@ func RoleInsert(ctx context.Context, i *models.RoleRequest, token *models.Access
 	}
 	orgaFilter := bson.D{{Key: "_id", Value: user.Crew.OrganisationID}}
 	organisation := new(models.Organisation)
-	if err = OrganizerCollection.FindOne(ctx, orgaFilter, organisation); err != nil {
+	if err = OrganisationCollection.FindOne(ctx, orgaFilter, organisation); err != nil {
 		return
 	}
 	if err = models.RolesPermission(i.Role, user, token, organisation.Options); err != nil {
@@ -67,7 +67,7 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *model
 		}
 		orgaFilter := bson.D{{Key: "_id", Value: user.Crew.OrganisationID}}
 		organisation := new(models.Organisation)
-		if err = OrganizerCollection.FindOne(ctx, orgaFilter, organisation); err != nil {
+		if err = OrganisationCollection.FindOne(ctx, orgaFilter, organisation); err != nil {
 			return
 		}
 		if err = models.RolesPermission(role.Role, user, token, organisation.Options); err != nil {
@@ -178,7 +178,7 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 		}
 		orgaFilter := bson.D{{Key: "_id", Value: user.Crew.OrganisationID}}
 		organisation := new(models.Organisation)
-		if err = OrganizerCollection.FindOne(ctx, orgaFilter, organisation); err != nil {
+		if err = OrganisationCollection.FindOne(ctx, orgaFilter, organisation); err != nil {
 			return
 		}
 		if err = models.RolesPermission(role.Role, user, token, organisation.Options); err != nil {
