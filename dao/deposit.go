@@ -56,6 +56,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 	if err = DepositCollection.AggregateOne(ctx, models.DepositPipeline().Match(bson.D{{Key: "_id", Value: deposit.ID}}).Pipe, &result); err != nil {
 		return
 	}
+	DepositCreateNotification(ctx, result)
 	return
 }
 
@@ -304,4 +305,10 @@ func DepositGetByID(ctx context.Context, i *models.DepositParam, token *models.A
 		return
 	}
 	return
+}
+
+func DepositCreateNotification(ctx context.Context, deposit *models.Deposit) {
+	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "deposit_create", "pool", "de")
+	mail.AddContent(deposit.Content())
+	vcago.Nats.Publish("system.mail.job", mail)
 }

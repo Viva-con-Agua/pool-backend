@@ -306,3 +306,11 @@ func (i *DepositQuery) Sort() bson.D {
 func (i *DepositQuery) SortOption() bool {
 	return i.SortField == "money.amount"
 }
+
+func (i *Deposit) Content() *vmod.Content {
+	content := &vmod.Content{
+		Fields: make(map[string]interface{}),
+	}
+	content.Fields["Deposit"] = i
+	return content
+}
