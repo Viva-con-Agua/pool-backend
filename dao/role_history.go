@@ -16,9 +16,7 @@ func RoleHistoryInsert(ctx context.Context, i *models.RoleHistoryCreate, token *
 	if err = models.RolesHistoryAdminPermission(token); err != nil {
 		return
 	}
-	if result = i.NewRoleHistory(); err != nil {
-		return
-	}
+	result = i.NewRoleHistory()
 	if err = PoolRoleHistoryCollection.InsertOne(ctx, result); err != nil {
 		return
 	}

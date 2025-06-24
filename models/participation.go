@@ -170,19 +170,61 @@ func (i *Participation) ToContent() *vmod.Content {
 	return content
 }
 
-func (i *Participation) UpdateEventApplicationsUpdate(value int, applications *EventApplications) *EventApplicationsUpdate {
-	switch i.Status {
-	case "confirmed":
-		applications.Confirmed = i.Event.Applications.Confirmed + value
-	case "rejected":
-		applications.Rejected = i.Event.Applications.Rejected + value
-	case "requested":
-		applications.Requested = i.Event.Applications.Requested + value
-	case "withdrawn":
-		applications.Withdrawn = i.Event.Applications.Withdrawn + value
+// GetEventApplicationsInsert returns the update struct for an event application count
+// in case of an participation creates based on the type of an Event.
+func GetEventApplicationsInsert(typeOfEvent string) (result bson.D) {
+	if typeOfEvent == "crew_meeting" {
+		//if the type of event is crew_meeting, then the value of confirmed and total is increased by one.
+		result = bson.D{{Key: "applications.total", Value: 1}, {Key: "applications.confirmed", Value: 1}}
+	} else {
+		//else the participation is a request for an asp so the requested count is increased by one.
+		result = bson.D{{Key: "applications.total", Value: 1}, {Key: "applications.requested", Value: 1}}
 	}
-	applications.Total = i.Event.Applications.Total + value
-	return &EventApplicationsUpdate{ID: i.EventID, Applications: *applications}
+	return
+}
+
+// GetEventApplicationsUpdate returns the update bson.D struct for an event application count
+// in case of an participation update. Please check if the state of current and update is equal, otherwise mongo will return
+// an error because it does not allow multiple mutations of one key in one request.
+func GetEventApplicationsUpdate(current *Participation, update *Participation) (result bson.D) {
+	result = bson.D{}
+	switch current.Status {
+	case "confirmed":
+		result = append(result, bson.E{Key: "applications.confirmed", Value: -1})
+	case "rejected":
+		result = append(result, bson.E{Key: "applications.rejected", Value: -1})
+	case "requested":
+		result = append(result, bson.E{Key: "applications.requested", Value: -1})
+	case "withdrawn":
+		result = append(result, bson.E{Key: "applications.withdrawn", Value: -1})
+	}
+	switch update.Status {
+	case "confirmed":
+		result = append(result, bson.E{Key: "applications.confirmed", Value: 1})
+	case "rejected":
+		result = append(result, bson.E{Key: "applications.rejected", Value: 1})
+	case "requested":
+		result = append(result, bson.E{Key: "applications.requested", Value: 1})
+	case "withdrawn":
+		result = append(result, bson.E{Key: "applications.withdrawn", Value: 1})
+	}
+	return
+}
+
+// GetEventApplicationsUpdate returns the update bson.D struct for an event application count in case of an participation delete.
+func GetEventApplicationsDelete(current *Participation) (result bson.D) {
+	result = bson.D{}
+	switch current.Status {
+	case "confirmed":
+		result = append(result, bson.E{Key: "applications.confirmed", Value: -1})
+	case "rejected":
+		result = append(result, bson.E{Key: "applications.rejected", Value: -1})
+	case "requested":
+		result = append(result, bson.E{Key: "applications.requested", Value: -1})
+	case "withdrawn":
+		result = append(result, bson.E{Key: "applications.withdrawn", Value: -1})
+	}
+	return
 }
 
 func (i *ParticipationCreate) ParticipationDatabase(token *AccessToken, event *Event) *ParticipationDatabase {
