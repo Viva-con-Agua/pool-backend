@@ -23,21 +23,20 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
 	}
+	//get event by id
 	if event, err = EventGetInternalByID(ctx, &models.EventParam{ID: i.EventID}); err != nil {
 		return
 	}
-	eventApplications := models.EventApplications{
-		Requested: event.Applications.Requested + 1,
-		Confirmed: event.Applications.Confirmed,
-		Rejected:  event.Applications.Rejected,
-		Withdrawn: event.Applications.Withdrawn,
-		Total:     event.Applications.Total + 1,
-	}
+	eventFilter := bson.D{{Key: "_id", Value: event.ID}}
+	var updateEvent bson.D
 	if event.TypeOfEvent == "crew_meeting" {
-		eventApplications.Requested = 0
-		eventApplications.Confirmed += 1
+		//if the type of event is crew_meeting, then the value of confirmed and total is increased by one.
+		updateEvent = bson.D{{Key: "applications.total", Value: 1}, {Key: "applications.confirmed", Value: 1}}
+	} else {
+		//else the participation is a request for an asp and so the requested count is increased by one.
+		updateEvent = bson.D{{Key: "applications.total", Value: 1}, {Key: "applications.requested", Value: 1}}
 	}
-	if _, err = EventApplicationsUpdate(ctx, &models.EventApplicationsUpdate{ID: i.EventID, Applications: eventApplications}); err != nil {
+	if err = EventCollection.UpdateOne(ctx, eventFilter, vmdb.UpdateInc(updateEvent), nil); err != nil {
 		return
 	}
 	filter := database.Match()
