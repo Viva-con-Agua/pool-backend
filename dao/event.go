@@ -231,20 +231,6 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 	return
 }
 
-func EventApplicationsUpdate(ctx context.Context, i *models.EventApplicationsUpdate) (result *models.Event, err error) {
-
-	filter := bson.D{{Key: "_id", Value: i.ID}}
-	if err = EventCollection.UpdateOne(
-		ctx,
-		filter,
-		vmdb.UpdateSet(i),
-		&result,
-	); err != nil {
-		return
-	}
-	return
-}
-
 func EventDelete(ctx context.Context, i *models.EventParam, token *models.AccessToken) (err error) {
 	if err = models.EventDeletePermission(token); err != nil {
 		return

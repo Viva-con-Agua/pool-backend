@@ -70,11 +70,12 @@ func SubscribeNotificationPublish(m *vcago.NotificationResponse) {
 	message := new(models.Message)
 	user := new(models.User)
 	if user, err = UsersGetByID(context.Background(), &models.UserParam{ID: m.User.ID}); err != nil {
+		log.Print(err)
 		return
 	}
 	result := message.NotificationMessage(m, user)
 	if err := MessageCollection.InsertOne(context.Background(), result); err != nil {
+		log.Print(err)
 		return
 	}
-	return
 }
