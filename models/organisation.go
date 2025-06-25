@@ -9,10 +9,11 @@ import (
 
 type (
 	OrganisationCreate struct {
-		Name         string `json:"name" bson:"name" validate:"required"`
-		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
-		DefaultAspID string `json:"default_asp_id" bson:"default_asp_id"`
-		Email        string `json:"email" bson:"email"`
+		Name         string   `json:"name" bson:"name" validate:"required"`
+		Abbreviation string   `json:"abbreviation" bson:"abbreviation"`
+		DefaultAspID string   `json:"default_asp_id" bson:"default_asp_id"`
+		Email        string   `json:"email" bson:"email"`
+		Options      []string `json:"options" bson:"options"`
 	}
 	Organisation struct {
 		ID           string        `json:"id" bson:"_id"`
@@ -21,14 +22,16 @@ type (
 		DefaultAspID string        `json:"default_asp_id" bson:"default_asp_id"`
 		DefaultAsp   UserContact   `json:"default_asp" bson:"default_asp"`
 		Email        string        `json:"email" bson:"email"`
+		Options      []string      `json:"options" bson:"options"`
 		Modified     vmod.Modified `json:"modified" bson:"modified"`
 	}
 	OrganisationUpdate struct {
-		ID           string `json:"id" bson:"_id"`
-		DefaultAspID string `json:"default_asp_id" bson:"default_asp_id"`
-		Abbreviation string `json:"abbreviation" bson:"abbreviation"`
-		Email        string `json:"email" bson:"email"`
-		Name         string `json:"name" bson:"name"`
+		ID           string   `json:"id" bson:"_id"`
+		DefaultAspID string   `json:"default_asp_id" bson:"default_asp_id"`
+		Abbreviation string   `json:"abbreviation" bson:"abbreviation"`
+		Email        string   `json:"email" bson:"email"`
+		Name         string   `json:"name" bson:"name"`
+		Options      []string `json:"options" bson:"options"`
 	}
 	OrganisationParam struct {
 		ID string `param:"id"`
@@ -54,6 +57,12 @@ func OrganisationPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ProfileCollection, "default_asp_id", "user_id", "default_asp.profile")
 	return
 }
+
+const (
+	OptionNVM           = "nvm"
+	OptionActiv         = "active"
+	OptionVolunteerCert = "volunteer_cert"
+)
 
 func (i *OrganisationCreate) Organisation() *Organisation {
 	return &Organisation{
