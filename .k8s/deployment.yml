@@ -5,6 +5,8 @@ metadata:
   labels: &labels
     app.kubernetes.io/name: pool-backend
     app.kubernetes.io/component: component-explorer
+  annotations: 
+    secrets.infisical.com/auto-reload: "true"
 spec:
   selector:
     matchLabels: *labels
