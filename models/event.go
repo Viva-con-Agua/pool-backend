@@ -233,10 +233,6 @@ type (
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
 		EventState            EventState       `json:"event_state" bson:"event_state"`
 	}
-	EventApplicationsUpdate struct {
-		ID           string            `json:"id" bson:"_id"`
-		Applications EventApplications `json:"applications" bson:"applications"`
-	}
 	EventParam struct {
 		ID string `param:"id"`
 	}

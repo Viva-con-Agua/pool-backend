@@ -10,7 +10,6 @@ import (
 )
 
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
-
 	event := new(models.Event)
 	if err = EventCollection.FindOne(
 		ctx,
@@ -23,21 +22,13 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
 	}
+	//get event by id
 	if event, err = EventGetInternalByID(ctx, &models.EventParam{ID: i.EventID}); err != nil {
 		return
 	}
-	eventApplications := models.EventApplications{
-		Requested: event.Applications.Requested + 1,
-		Confirmed: event.Applications.Confirmed,
-		Rejected:  event.Applications.Rejected,
-		Withdrawn: event.Applications.Withdrawn,
-		Total:     event.Applications.Total + 1,
-	}
-	if event.TypeOfEvent == "crew_meeting" {
-		eventApplications.Requested = 0
-		eventApplications.Confirmed += 1
-	}
-	if _, err = EventApplicationsUpdate(ctx, &models.EventApplicationsUpdate{ID: i.EventID, Applications: eventApplications}); err != nil {
+	filterEvent := bson.D{{Key: "_id", Value: event.ID}}
+	updateEvent := models.GetEventApplicationsInsert(event.TypeOfEvent)
+	if err = EventCollection.UpdateOne(ctx, filterEvent, vmdb.UpdateInc(updateEvent), nil); err != nil {
 		return
 	}
 	filter := database.Match()
@@ -142,11 +133,13 @@ func ParticipationUpdate(ctx context.Context, i *models.ParticipationUpdate, tok
 	); err != nil {
 		return
 	}
-	applications := new(models.EventApplications)
-	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
-	applicationsUpdate = result.UpdateEventApplicationsUpdate(1, &applicationsUpdate.Applications)
-	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
-		return
+	// if the Status of participation and result are equal, no application count update is needed.
+	if participation.Status != result.Status {
+		filterEvent := bson.D{{Key: "_id", Value: participation.EventID}}
+		updateEvent := models.GetEventApplicationsUpdate(participation, result)
+		if err = EventCollection.UpdateOne(ctx, filterEvent, vmdb.UpdateInc(updateEvent), nil); err != nil {
+			return
+		}
 	}
 	if participation.Status != result.Status {
 		if result.Status == "confirmed" || result.Status == "rejected" {
@@ -167,12 +160,12 @@ func ParticipationDelete(ctx context.Context, i *models.ParticipationParam, toke
 	if participation, err = ParticipationGetByID(ctx, i, token); err != nil {
 		return
 	}
-	applications := new(models.EventApplications)
-	applicationsUpdate := participation.UpdateEventApplicationsUpdate(-1, applications)
-	if _, err = EventApplicationsUpdate(ctx, applicationsUpdate); err != nil {
+	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {
 		return
 	}
-	if err = ParticipationCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: i.ID}}); err != nil {
+	filterEvent := bson.D{{Key: "_id", Value: participation.EventID}}
+	updateEvent := models.GetEventApplicationsDelete(participation)
+	if err = EventCollection.UpdateOne(ctx, filterEvent, vmdb.UpdateInc(updateEvent), nil); err != nil {
 		return
 	}
 	return
