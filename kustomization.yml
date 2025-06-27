@@ -13,3 +13,6 @@ resources:
 
 configMapGenerator:
   - name: pool-backend
+  
+secretGenerator:
+  - name: pool-backend
