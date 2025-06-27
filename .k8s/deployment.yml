@@ -21,8 +21,6 @@ spec:
                 name: pool-backend
             - secretRef:
                 name: pool-backend
-            - secretRef:
-                name: pool-backend-idjango
           volumeMounts:
             - name: assets-storage
               mountPath: /public/files
