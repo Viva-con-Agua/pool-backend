@@ -83,10 +83,10 @@ func UpdateDatabase() {
 		UpdateDateOfDeposit(ctx)
 		Updates.Insert(ctx, "date_of_deposit")
 	}
-	if !Updates.Check(ctx, "event_applications_fix_1") {
+	if !Updates.Check(ctx, "event_applications_fix_2") {
 		log.Print("event_applications_fix")
 		UpdateEventApplications(ctx)
-		Updates.Insert(ctx, "event_applications_fix_1")
+		Updates.Insert(ctx, "event_applications_fix_2")
 	}
 	if !Updates.Check(ctx, "event_crew_id_fix") {
 		log.Print("event_crew_id_fix")
