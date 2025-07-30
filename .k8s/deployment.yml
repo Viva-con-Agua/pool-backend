@@ -5,6 +5,8 @@ metadata:
   labels: &labels
     app.kubernetes.io/name: pool-backend
     app.kubernetes.io/component: component-explorer
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
 spec:
   selector:
     matchLabels: *labels
@@ -21,6 +23,8 @@ spec:
                 name: pool-backend
             - secretRef:
                 name: pool-backend
+            - secretRef:
+                name: pool-backend-idjango
           volumeMounts:
             - name: assets-storage
               mountPath: /public/files
