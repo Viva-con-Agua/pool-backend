@@ -645,7 +645,6 @@ func (i *EventQuery) FilterEmailEvents(token *AccessToken) bson.D {
 	} else if !token.Roles.Validate("admin;employee;pool_employee") {
 		filter.EqualString("crew_id", token.CrewID)
 	}
-
 	return filter.Bson()
 }
 

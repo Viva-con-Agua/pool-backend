@@ -145,7 +145,7 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.EventPublic, err error) {
 	filter := i.FilterEmailEvents(token)
 	result = new([]models.EventPublic)
-	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Pipe, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Limit(100, 100).Pipe, result); err != nil {
 		return
 	}
 	return
