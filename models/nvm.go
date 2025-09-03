@@ -5,22 +5,21 @@ import (
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmod"
-	"github.com/google/uuid"
 )
 
 var NVMCollection = "nvm"
 
 type (
 	NVM struct {
-		ID       string        `bson:"_id" json:"id"`
 		Status   string        `bson:"status" json:"status"`
 		Since    int64         `bson:"since" json:"since"`
 		UserID   string        `bson:"user_id" json:"user_id"`
 		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	NVMUpdate struct {
-		Status string `bson:"status" json:"status"`
-		Since  int64  `bson:"since" json:"since"`
+		Status   string              `bson:"status" json:"status"`
+		Since    int64               `bson:"since" json:"since"`
+		Modified vmod.ModifiedUpdate `bson:"modified" json:"modified"`
 	}
 	NVMParam struct {
 		UserID string `json:"user_id"`
@@ -52,7 +51,6 @@ func NVMPermission(token *AccessToken) (err error) {
 
 func NewNVM(userID string) *NVM {
 	return &NVM{
-		ID:       uuid.NewString(),
 		Status:   "not_requested",
 		Since:    time.Now().Unix(),
 		UserID:   userID,
@@ -62,28 +60,32 @@ func NewNVM(userID string) *NVM {
 
 func NewNVMRejected() *NVMUpdate {
 	return &NVMUpdate{
-		Status: "rejected",
-		Since:  time.Now().Unix(),
+		Status:   "rejected",
+		Since:    time.Now().Unix(),
+		Modified: vmod.NewModifiedUpdate(),
 	}
 }
 
 func NVMConfirm() *NVMUpdate {
 	return &NVMUpdate{
-		Status: "confirmed",
-		Since:  time.Now().Unix(),
+		Status:   "confirmed",
+		Since:    time.Now().Unix(),
+		Modified: vmod.NewModifiedUpdate(),
 	}
 }
 
 func NVMReject() *NVMUpdate {
 	return &NVMUpdate{
-		Status: "rejected",
-		Since:  time.Now().Unix(),
+		Status:   "rejected",
+		Since:    time.Now().Unix(),
+		Modified: vmod.NewModifiedUpdate(),
 	}
 }
 
 func NVMWithdraw() *NVMUpdate {
 	return &NVMUpdate{
-		Status: "withdrawn",
-		Since:  time.Now().Unix(),
+		Status:   "withdrawn",
+		Since:    time.Now().Unix(),
+		Modified: vmod.NewModifiedUpdate(),
 	}
 }

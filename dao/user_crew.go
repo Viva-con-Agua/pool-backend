@@ -24,9 +24,10 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	if err = ActiveCollection.InsertOne(ctx, models.NewActive(i.UserID, crew.ID)); err != nil {
 		return
 	}
-	if err = NVMCollection.InsertOne(ctx, models.NewNVM(i.UserID)); err != nil {
-		return
-	}
+	/*
+		if err = NVMCollection.InsertOne(ctx, models.NewNVM(i.UserID)); err != nil {
+			return
+		}*/
 	return
 }
 
@@ -42,9 +43,10 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *models
 	if err = ActiveCollection.InsertOne(ctx, models.NewActive(token.ID, crew.ID)); err != nil {
 		return
 	}
-	if err = NVMCollection.InsertOne(ctx, models.NewNVM(token.ID)); err != nil {
-		return
-	}
+	/*
+		if err = NVMCollection.InsertOne(ctx, models.NewNVM(token.ID)); err != nil {
+			return
+		}*/
 	return
 }
 
@@ -69,16 +71,9 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
-	//reject nvm state
-	if err = NVMCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = nvmWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
-
 	return
 }
 
@@ -104,13 +99,8 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *model
 	); err != nil && vmdb.ErrNoDocuments(err) {
 		return
 	}
-	//reject nvm state
-	if err = NVMCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+
+	if _, err = nvmWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
 
@@ -127,11 +117,7 @@ func UserCrewDelete(ctx context.Context, id string) (err error) {
 	); err != nil {
 		return
 	}
-	//reject nvm state
-	if err = NVMCollection.TryDeleteOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: id}},
-	); err != nil {
+	if _, err = nvmWithdraw(ctx, id); err != nil {
 		return
 	}
 	if err = PoolRoleCollection.TryDeleteMany(
@@ -169,10 +155,6 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	}
 	active := imp.ToActive(user.ID)
 	if err = ActiveCollection.InsertOne(ctx, active); err != nil {
-		return
-	}
-	nvm := imp.ToNVM(user.ID)
-	if err = NVMCollection.InsertOne(ctx, nvm); err != nil {
 		return
 	}
 	roles := imp.ToRoles(user.ID)

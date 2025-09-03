@@ -19,11 +19,7 @@ func ActiveWithdraw(ctx context.Context, token *models.AccessToken) (result *mod
 		return
 	}
 	//withdrawn nvm
-	if err = NVMCollection.TryUpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-	); err != nil {
+	if _, err = nvmWithdraw(ctx, token.ID); err != nil {
 		return
 	}
 	//Delete Pool Roles
@@ -51,11 +47,7 @@ func ActiveReject(ctx context.Context, i *models.ActiveParam, token *models.Acce
 		return
 	}
 	//reject nvm state
-	if err = NVMCollection.TryUpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.NVMReject()),
-	); err != nil {
+	if _, err = nvmReject(ctx, token.ID); err != nil {
 		return
 	}
 	//Delete Pool Roles

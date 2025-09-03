@@ -24,7 +24,7 @@ var (
 	// ActiveCollection represents the database collection of the Active model.
 	ActiveCollection *vmdb.Collection
 
-	// NVMCollection represents the database collection of the NVM model.
+	// NVMCollection represents the database collection of the NVM model. !!! deprecated !!!
 	NVMCollection *vmdb.Collection
 
 	// AdressesCollection represents the database colltection of the Address model.

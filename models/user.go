@@ -31,6 +31,7 @@ type (
 		OrganisationID string        `bson:"organisation_id" json:"organisation_id"`
 		MailboxID      string        `bson:"mailbox_id" json:"mailbox_id"`
 		LastLoginDate  int64         `bson:"last_login_date" json:"last_login_date"`
+		NVM            NVM           `json:"nvm" bson:"nvm,omitempty"`
 		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {

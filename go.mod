@@ -66,4 +66,4 @@ require (
 
 //replace github.com/Viva-con-Agua/vcapool => /home/dls/Projects/pkg/vcapool
 
-//replace github.com/Viva-con-Agua/vcago => /home/dls/Projects/Viva-con-Agua/vcago
+replace github.com/Viva-con-Agua/vcago => /home/dls/Projects/Viva-con-Agua/vcago
