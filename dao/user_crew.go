@@ -21,13 +21,12 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
-	if err = ActiveCollection.InsertOne(ctx, models.NewActive(i.UserID, crew.ID)); err != nil {
+	if _, err = activeNew(ctx, i.UserID, crew.ID); err != nil {
 		return
 	}
-	/*
-		if err = NVMCollection.InsertOne(ctx, models.NewNVM(i.UserID)); err != nil {
-			return
-		}*/
+	if _, err = nvmNew(ctx, i.UserID); err != nil {
+		return
+	}
 	return
 }
 
@@ -40,13 +39,12 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *models
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
-	if err = ActiveCollection.InsertOne(ctx, models.NewActive(token.ID, crew.ID)); err != nil {
+	if _, err = activeNew(ctx, token.ID, crew.ID); err != nil {
 		return
 	}
-	/*
-		if err = NVMCollection.InsertOne(ctx, models.NewNVM(token.ID)); err != nil {
-			return
-		}*/
+	if _, err = nvmNew(ctx, token.ID); err != nil {
+		return
+	}
 	return
 }
 
@@ -63,12 +61,7 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models
 		return
 	}
 	//reset active and nvm
-	if err = ActiveCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = activeWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
 	if _, err = nvmWithdraw(ctx, i.UserID); err != nil {
@@ -90,16 +83,10 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *model
 	if err = UserCrewCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &result); err != nil {
 		return
 	}
-	//reset active and nvm
-	if err = ActiveCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = activeWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
-
+	//reset active and nvm
 	if _, err = nvmWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
@@ -111,13 +98,11 @@ func UserCrewDelete(ctx context.Context, id string) (err error) {
 	if err = UserCrewCollection.DeleteOne(ctx, bson.D{{Key: "user_id", Value: id}}); err != nil {
 		return
 	}
-	if err = ActiveCollection.TryDeleteOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: id}},
-	); err != nil {
+	if _, err = activeClean(ctx, id); err != nil {
 		return
 	}
-	if _, err = nvmWithdraw(ctx, id); err != nil {
+	//delete
+	if _, err = nvmClean(ctx, id); err != nil {
 		return
 	}
 	if err = PoolRoleCollection.TryDeleteMany(
@@ -153,10 +138,11 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
-	active := imp.ToActive(user.ID)
-	if err = ActiveCollection.InsertOne(ctx, active); err != nil {
-		return
-	}
+	/*
+		active := imp.ToActive(user.ID)
+		if err = ActiveCollection.InsertOne(ctx, active); err != nil {
+			return
+		}*/
 	roles := imp.ToRoles(user.ID)
 	for _, role := range roles {
 		if err = PoolRoleCollection.InsertOne(ctx, &role); err != nil {

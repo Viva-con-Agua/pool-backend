@@ -32,6 +32,7 @@ type (
 		MailboxID      string        `bson:"mailbox_id" json:"mailbox_id"`
 		LastLoginDate  int64         `bson:"last_login_date" json:"last_login_date"`
 		NVM            NVM           `json:"nvm" bson:"nvm,omitempty"`
+		Active         Active        `json:"active" bson:"active,omitempty"`
 		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {
@@ -217,6 +218,8 @@ func NewUserDatabase(user *vmod.User) *UserDatabase {
 		PrivacyPolicy: user.PrivacyPolicy,
 		Confirmed:     user.Confirmd,
 		LastUpdate:    user.LastUpdate,
+		NVM:           *NVMClean(),
+		Active:        *ActiveClean(),
 		Modified:      vmod.NewModified(),
 	}
 }
@@ -247,7 +250,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	}
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
@@ -260,7 +263,7 @@ func SortedUserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	return
@@ -277,7 +280,7 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	}
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	if token.Roles.Validate("admin;employee;pool_employee") {

@@ -103,6 +103,11 @@ func UpdateDatabase() {
 		UpdateNVMtoUser(ctx)
 		Updates.Insert(ctx, "update_nvm_to_user")
 	}
+	if !Updates.Check(ctx, "update_active_to_user") {
+		log.Print("update_active_to_user")
+		UpdateActivetoUser(ctx)
+		Updates.Insert(ctx, "update_active_to_user")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -364,7 +369,21 @@ func UpdateNVMtoUser(ctx context.Context) {
 	for _, entry := range nvm {
 		filter := bson.D{{Key: "_id", Value: entry.UserID}}
 		update := bson.D{{Key: "nvm", Value: entry}}
-		if err := UpdateCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateActivetoUser(ctx context.Context) {
+	active := []models.Active{}
+	if err := ActiveCollection.Find(ctx, bson.D{}, &active); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range active {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "active", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
 	}

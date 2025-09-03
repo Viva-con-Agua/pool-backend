@@ -58,12 +58,8 @@ func NewNVM(userID string) *NVM {
 	}
 }
 
-func NewNVMRejected() *NVMUpdate {
-	return &NVMUpdate{
-		Status:  "rejected",
-		Since:   time.Now().Unix(),
-		Updated: time.Now().Unix(),
-	}
+func NVMClean() *NVM {
+	return &NVM{}
 }
 
 func NVMConfirm() *NVMUpdate {

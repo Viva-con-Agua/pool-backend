@@ -96,3 +96,33 @@ func nvmWithdraw(ctx context.Context, id string) (result *models.NVM, err error)
 	}
 	return
 }
+
+func nvmClean(ctx context.Context, id string) (result *models.NVM, err error) {
+	user := new(models.User)
+	update := bson.D{{Key: "nvm", Value: models.NVMClean()}}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: id}},
+		vmdb.UpdateSet(update),
+		&user,
+	); err != nil {
+		return
+	}
+	result = &user.NVM
+	return
+}
+
+func nvmNew(ctx context.Context, id string) (result *models.NVM, err error) {
+	user := new(models.User)
+	update := bson.D{{Key: "nvm", Value: models.NewNVM(id)}}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: id}},
+		vmdb.UpdateSet(update),
+		&user,
+	); err != nil {
+		return
+	}
+	result = &user.NVM
+	return
+}

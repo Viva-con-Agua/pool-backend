@@ -20,8 +20,9 @@ type (
 		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	ActiveUpdate struct {
-		Status string `bson:"status" json:"status"`
-		Since  int64  `bson:"since" json:"since"`
+		Status  string `bson:"active.status" json:"status"`
+		Since   int64  `bson:"active.since" json:"since"`
+		Updated int64  `bson:"active.modified.updated"`
 	}
 	ActiveParam struct {
 		UserID string `json:"user_id"`
@@ -41,31 +42,39 @@ func NewActive(userID string, crewID string) *Active {
 	}
 }
 
+func ActiveClean() *Active {
+	return &Active{}
+}
+
 func ActiveConfirm() *ActiveUpdate {
 	return &ActiveUpdate{
-		Status: "confirmed",
-		Since:  time.Now().Unix(),
+		Status:  "confirmed",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
 func ActiveReject() *ActiveUpdate {
 	return &ActiveUpdate{
-		Status: "rejected",
-		Since:  time.Now().Unix(),
+		Status:  "rejected",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
 func ActiveWithdraw() *ActiveUpdate {
 	return &ActiveUpdate{
-		Status: "withdrawn",
-		Since:  time.Now().Unix(),
+		Status:  "withdrawn",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
 func ActiveRequest() *ActiveUpdate {
 	return &ActiveUpdate{
-		Status: "requested",
-		Since:  time.Now().Unix(),
+		Status:  "requested",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
@@ -85,9 +94,9 @@ func ActivePermission(token *AccessToken) (err error) {
 
 func (i *ActiveParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("user_id", i.UserID)
+	filter.EqualString("_id", i.UserID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
-		filter.EqualString("crew_id", token.CrewID)
+		filter.EqualString("active.crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
