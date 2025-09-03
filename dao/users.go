@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -38,7 +39,7 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
@@ -47,18 +48,15 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	count := new([]Count)
-	if err = UserCollection.Aggregate(
-		context.Background(),
-		models.UserCountPipeline(filter).Pipe,
-		count,
-	); err != nil {
-		return
-	}
-	if len(*count) == 0 {
-		listSize = 0
+	count := vmod.Count{}
+	var cErr error
+	ctxCount, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	if cErr = UserCollection.AggregateOne(ctxCount, models.SortedUserPermittedPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+		log.Print(cErr)
+		listSize = 1
 	} else {
-		listSize = (*count)[0].ListSize
+		listSize = int64(count.Total)
 	}
 	return
 }
