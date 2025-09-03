@@ -98,6 +98,11 @@ func UpdateDatabase() {
 		UpdateOrganisationOptions(ctx)
 		Updates.Insert(ctx, "organisation_options")
 	}
+	if !Updates.Check(ctx, "update_nvm_to_user") {
+		log.Print("update_nvm_to_user")
+		UpdateNVMtoUser(ctx)
+		Updates.Insert(ctx, "update_nvm_to_user")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -348,5 +353,19 @@ func UpdateOrganisationOptions(ctx context.Context) {
 	update := bson.D{{Key: "options", Value: []string{models.OptionActiv, models.OptionNVM, models.OptionVolunteerCert}}}
 	if err := OrganisationCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
 		log.Print(err)
+	}
+}
+
+func UpdateNVMtoUser(ctx context.Context) {
+	nvm := []models.NVM{}
+	if err := NVMCollection.Find(ctx, bson.D{}, &nvm); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range nvm {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "nvm", Value: entry}}
+		if err := UpdateCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
 	}
 }

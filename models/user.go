@@ -248,7 +248,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
@@ -261,7 +261,7 @@ func SortedUserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	return
 }
@@ -278,7 +278,7 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	if token.Roles.Validate("admin;employee;pool_employee") {
 		pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
@@ -292,7 +292,7 @@ func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 	return
 }

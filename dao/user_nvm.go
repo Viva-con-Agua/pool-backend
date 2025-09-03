@@ -16,7 +16,7 @@ func NVMConfirm(ctx context.Context, token *models.AccessToken) (result *models.
 	if err = UserCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "_id", Value: token.ID}},
-		vmdb.UpdateSet(bson.D{{Key: "nvm", Value: models.NVMConfirm()}}),
+		vmdb.UpdateSet(models.NVMConfirm()),
 		&user,
 	); err != nil {
 		return
@@ -33,7 +33,7 @@ func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *models.Acc
 	if err = UserCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "_id", Value: i.ID}},
-		vmdb.UpdateSet(bson.D{{Key: "nvm", Value: models.NVMConfirm()}}),
+		vmdb.UpdateSet(models.NVMConfirm()),
 		&user,
 	); err != nil {
 		return
@@ -55,7 +55,7 @@ func nvmReject(ctx context.Context, id string) (result *models.NVM, err error) {
 	if err = UserCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "_id", Value: id}},
-		vmdb.UpdateSet(bson.D{{Key: "nvm", Value: models.NVMReject()}}),
+		vmdb.UpdateSet(models.NVMReject()),
 		&user,
 	); err != nil {
 		return
@@ -82,7 +82,7 @@ func nvmWithdraw(ctx context.Context, id string) (result *models.NVM, err error)
 	if err = UserCollection.UpdateOne(
 		ctx,
 		bson.D{{Key: "_id", Value: id}},
-		vmdb.UpdateSet(bson.D{{Key: "nvm", Value: models.NVMWithdraw()}}),
+		vmdb.UpdateSet(models.NVMWithdraw()),
 		&user,
 	); err != nil {
 		return

@@ -17,9 +17,9 @@ type (
 		Modified vmod.Modified `bson:"modified" json:"modified"`
 	}
 	NVMUpdate struct {
-		Status   string              `bson:"status" json:"status"`
-		Since    int64               `bson:"since" json:"since"`
-		Modified vmod.ModifiedUpdate `bson:"modified" json:"modified"`
+		Status  string `bson:"nvm.status" json:"status"`
+		Since   int64  `bson:"nvm.since" json:"since"`
+		Updated int64  `bson:"nvm.modified.updated"`
 	}
 	NVMParam struct {
 		UserID string `json:"user_id"`
@@ -60,32 +60,32 @@ func NewNVM(userID string) *NVM {
 
 func NewNVMRejected() *NVMUpdate {
 	return &NVMUpdate{
-		Status:   "rejected",
-		Since:    time.Now().Unix(),
-		Modified: vmod.NewModifiedUpdate(),
+		Status:  "rejected",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
 func NVMConfirm() *NVMUpdate {
 	return &NVMUpdate{
-		Status:   "confirmed",
-		Since:    time.Now().Unix(),
-		Modified: vmod.NewModifiedUpdate(),
+		Status:  "confirmed",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
 func NVMReject() *NVMUpdate {
 	return &NVMUpdate{
-		Status:   "rejected",
-		Since:    time.Now().Unix(),
-		Modified: vmod.NewModifiedUpdate(),
+		Status:  "rejected",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
 
 func NVMWithdraw() *NVMUpdate {
 	return &NVMUpdate{
-		Status:   "withdrawn",
-		Since:    time.Now().Unix(),
-		Modified: vmod.NewModifiedUpdate(),
+		Status:  "withdrawn",
+		Since:   time.Now().Unix(),
+		Updated: time.Now().Unix(),
 	}
 }
