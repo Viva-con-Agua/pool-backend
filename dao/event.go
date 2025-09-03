@@ -131,8 +131,7 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	}
 	count := vmod.Count{}
 	var cErr error
-	cTx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	cTx := context.Background()
 	if cErr = EventCollection.AggregateOne(cTx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
