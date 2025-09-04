@@ -142,9 +142,10 @@ func UserDelete(ctx context.Context, id string) (err error) {
 		if err = NVMCollection.TryDeleteMany(ctx, delete); err != nil {
 			return
 		}*/
-	if err = AvatarCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
+	/*
+		if err = AvatarCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}*/
 	if err = MailboxCollection.TryDeleteOne(ctx, bson.D{{Key: "_id", Value: user.MailboxID}}); err != nil {
 		return
 	}

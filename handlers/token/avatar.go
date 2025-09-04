@@ -8,7 +8,9 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmdb"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 )
 
@@ -44,7 +46,9 @@ func (i *AvatarHandler) Upload(cc echo.Context) (err error) {
 		return
 	}
 	result := models.NewAvatar(token)
-	if err = dao.AvatarCollection.InsertOne(c.Ctx(), result); err != nil {
+	filter := bson.D{{Key: "_id", Value: token.ID}}
+	update := bson.D{{Key: "avatar", Value: result}}
+	if err = dao.UserCollection.UpdateOne(c.Ctx(), filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
 	file := new(models.AvatarFile)
@@ -113,7 +117,8 @@ func (i *AvatarHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	if err = dao.AvatarCollection.DeleteOne(c.Ctx(), body.PermittedFilter(token)); err != nil {
+	update := bson.D{{Key: "avatar", Value: models.NewAvatarClean()}}
+	if err = dao.UserCollection.UpdateOne(c.Ctx(), body.PermittedFilter(token), vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
 	if err = dao.FSChunkCollection.DeleteOne(c.Ctx(), body.MatchChunk()); err != nil {

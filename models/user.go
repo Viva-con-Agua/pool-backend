@@ -254,7 +254,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 	//pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
 }
@@ -286,7 +286,7 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	if token.Roles.Validate("admin;employee;pool_employee") {
 		pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	}
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
 }
@@ -296,7 +296,7 @@ func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 	return
 }
 
