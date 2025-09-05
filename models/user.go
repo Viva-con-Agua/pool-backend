@@ -248,7 +248,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	//pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
@@ -261,7 +261,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 
 func SortedUserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	//pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
@@ -278,7 +278,7 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	//pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
 	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
