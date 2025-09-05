@@ -19,7 +19,7 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 	}
 	result = models.NewUserCrew(i.UserID, crew)
 	filter := bson.D{{Key: "_id", Value: i.UserID}}
-	update := bson.D{{Key: "profile", Value: result}}
+	update := bson.D{{Key: "crew", Value: result}}
 	if err = UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
@@ -39,7 +39,7 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *models
 	}
 	result = models.NewUserCrew(token.ID, crew)
 	filter := bson.D{{Key: "_id", Value: token.ID}}
-	update := bson.D{{Key: "profile", Value: result}}
+	update := bson.D{{Key: "crew", Value: result}}
 	if err = UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
@@ -61,9 +61,11 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models
 		return
 	}
 	i.OrganisationID = crew.OrganisationID
-	if err = UserCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &result); err != nil {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &user); err != nil {
 		return
 	}
+	result = &user.Crew
 	//reset active and nvm
 	if _, err = activeWithdraw(ctx, i.UserID); err != nil {
 		return
@@ -84,9 +86,11 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *model
 		return
 	}
 	i.OrganisationID = crew.OrganisationID
-	if err = UserCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &result); err != nil {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &user); err != nil {
 		return
 	}
+	result = &user.Crew
 	if _, err = activeWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
@@ -99,7 +103,7 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *model
 }
 
 func UserCrewDelete(ctx context.Context, id string) (err error) {
-	update := bson.D{{Key: "profile", Value: models.UserCrewClean()}}
+	update := bson.D{{Key: "crew", Value: models.UserCrewClean()}}
 	if err = UserCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: id}}, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
