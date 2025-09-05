@@ -249,7 +249,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
@@ -262,7 +262,7 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 func SortedUserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
@@ -279,7 +279,7 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
 	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
@@ -293,7 +293,7 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 
 func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")

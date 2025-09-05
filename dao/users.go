@@ -128,9 +128,10 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
+	/*
+		if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}*/
 	/*
 		if err = ActiveCollection.TryDeleteOne(ctx, delete); err != nil {
 			return

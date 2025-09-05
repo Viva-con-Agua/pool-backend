@@ -22,7 +22,8 @@ func NewsletterCreate(ctx context.Context, i *models.NewsletterCreate, token *mo
 	} else {
 		if i.Value == "regional" {
 			crew := new(models.UserCrew)
-			if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: i.UserID}}, crew); err != nil {
+			filter := bson.D{{Key: "_id", Value: i.UserID}, {Key: "crew._id", Value: bson.D{{Key: "$ne", Value: ""}}}}
+			if err = UserCollection.FindOne(ctx, filter, crew); err != nil {
 				return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 			}
 		}
@@ -56,8 +57,9 @@ func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *
 		return
 	}
 	if i.Value == "regional" {
-		crew := new(models.UserCrew)
-		if err = UserCrewCollection.FindOne(ctx, bson.D{{Key: "user_id", Value: user.ID}}, crew); err != nil {
+		user := new(models.User)
+		filter := bson.D{{Key: "_id", Value: user.ID}, {Key: "crew._id", Value: bson.D{{Key: "$ne", Value: ""}}}}
+		if err = UserCollection.FindOne(ctx, filter, user); err != nil {
 			return nil, vcago.NewBadRequest(models.NewsletterCollection, "not part of an crew", nil)
 		}
 	}
