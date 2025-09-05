@@ -118,6 +118,11 @@ func UpdateDatabase() {
 		UpdateUserCrewtoUser(ctx)
 		Updates.Insert(ctx, "update_usercrew_to_user")
 	}
+	if !Updates.Check(ctx, "update_profile_to_user") {
+		log.Print("update_profile_to_user")
+		UpdateUserCrewtoUser(ctx)
+		Updates.Insert(ctx, "update_profile_to_user")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -421,6 +426,20 @@ func UpdateUserCrewtoUser(ctx context.Context) {
 	for _, entry := range userCrew {
 		filter := bson.D{{Key: "_id", Value: entry.UserID}}
 		update := bson.D{{Key: "crew", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateProfiletoUser(ctx context.Context) {
+	profile := []models.Profile{}
+	if err := UserCrewCollection.Find(ctx, bson.D{}, &profile); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range profile {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "profile", Value: entry}}
 		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
