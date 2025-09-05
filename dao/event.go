@@ -52,8 +52,7 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 }
 
 func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models.ListEvent, list_size int64, err error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
@@ -64,8 +63,10 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 	}
 
 	count := vmod.Count{}
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel2()
 	var cErr error
-	if cErr = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
 		list_size = 1
 	} else {
 		list_size = int64(count.Total)
@@ -131,7 +132,8 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	}
 	count := vmod.Count{}
 	var cErr error
-	cTx := context.Background()
+	cTx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
 	if cErr = EventCollection.AggregateOne(cTx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
