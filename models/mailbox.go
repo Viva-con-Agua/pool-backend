@@ -40,7 +40,7 @@ func MailboxPipeline(token *AccessToken) *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
-	lastSixMonth := fmt.Sprint(time.Now().AddDate(0, -6, 0).Unix())
+	lastSixMonth := fmt.Sprint(time.Now().AddDate(0, -3, 0).Unix())
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPRole)) {
 		inboxMatch := vmdb.NewFilter()
 		inboxMatch.EqualString("type", "inbox")

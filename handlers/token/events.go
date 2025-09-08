@@ -217,10 +217,11 @@ func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 		return
 	}
 	result := new([]models.ListDetailsEvent)
-	if result, err = dao.EventGetAps(c.Ctx(), body, token); err != nil {
+	var listSize int64
+	if result, listSize, err = dao.EventGetAps(c.Ctx(), body, token); err != nil {
 		return
 	}
-	return c.Selected(result)
+	return c.Listed(result, listSize)
 }
 
 // GetEmailEvents
