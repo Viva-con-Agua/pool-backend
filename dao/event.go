@@ -150,13 +150,24 @@ func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *m
 	return
 }
 
-func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.ListDetailsEvent, err error) {
+func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.ListDetailsEvent, list_size int64, err error) {
 	filter := i.FilterAsp(token)
 	result = new([]models.ListDetailsEvent)
-	if err = EventCollection.Aggregate(ctx, models.EventPipeline(token).Match(filter).Pipe, result); err != nil {
+
+	sort := i.Sort()
+	pipeline := models.EventPipelinePublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-
+	count := vmod.Count{}
+	var cErr error
+	cTx := context.Background()
+	if cErr = EventCollection.AggregateOne(cTx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
+		print(cErr)
+		list_size = 1
+	} else {
+		list_size = int64(count.Total)
+	}
 	return
 }
 
