@@ -101,9 +101,9 @@ func CrewUpdate(ctx context.Context, i *models.CrewUpdate, token *models.AccessT
 		}
 	}
 	if crew.Email != i.Email || crew.Name != i.Name || crew.OrganisationID != i.OrganisationID {
-		filter := bson.D{{Key: "crew_id", Value: i.ID}}
-		update := bson.D{{Key: "email", Value: i.Email}, {Key: "name", Value: i.Name}, {Key: "organisation_id", Value: i.OrganisationID}}
-		if err = UserCrewCollection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
+		filter := bson.D{{Key: "crew.crew_id", Value: i.ID}}
+		update := bson.D{{Key: "crew.email", Value: i.Email}, {Key: "crew.name", Value: i.Name}, {Key: "crew.organisation_id", Value: i.OrganisationID}}
+		if err = UserCollection.UpdateMany(ctx, filter, vmdb.UpdateSet(update)); err != nil {
 			return
 		}
 	}

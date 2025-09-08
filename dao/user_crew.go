@@ -18,13 +18,15 @@ func UsersUserCrewInsert(ctx context.Context, i *models.UsersCrewCreate, token *
 		return
 	}
 	result = models.NewUserCrew(i.UserID, crew)
-	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
+	filter := bson.D{{Key: "_id", Value: i.UserID}}
+	update := bson.D{{Key: "crew", Value: result}}
+	if err = UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
-	if err = ActiveCollection.InsertOne(ctx, models.NewActive(i.UserID, crew.ID)); err != nil {
+	if _, err = activeNew(ctx, i.UserID, crew.ID); err != nil {
 		return
 	}
-	if err = NVMCollection.InsertOne(ctx, models.NewNVM(i.UserID)); err != nil {
+	if _, err = nvmNew(ctx, i.UserID); err != nil {
 		return
 	}
 	return
@@ -36,13 +38,15 @@ func UserCrewInsert(ctx context.Context, i *models.UserCrewCreate, token *models
 		return
 	}
 	result = models.NewUserCrew(token.ID, crew)
-	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
+	filter := bson.D{{Key: "_id", Value: token.ID}}
+	update := bson.D{{Key: "crew", Value: result}}
+	if err = UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
-	if err = ActiveCollection.InsertOne(ctx, models.NewActive(token.ID, crew.ID)); err != nil {
+	if _, err = activeNew(ctx, token.ID, crew.ID); err != nil {
 		return
 	}
-	if err = NVMCollection.InsertOne(ctx, models.NewNVM(token.ID)); err != nil {
+	if _, err = nvmNew(ctx, token.ID); err != nil {
 		return
 	}
 	return
@@ -57,28 +61,18 @@ func UserCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *models
 		return
 	}
 	i.OrganisationID = crew.OrganisationID
-	if err = UserCrewCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &result); err != nil {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(ctx, i.PermittedFilter(token), vmdb.UpdateSet(i), &user); err != nil {
 		return
 	}
+	result = &user.Crew
 	//reset active and nvm
-	if err = ActiveCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = activeWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
-	//reject nvm state
-	if err = NVMCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = nvmWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
-
 	return
 }
 
@@ -92,25 +86,16 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *model
 		return
 	}
 	i.OrganisationID = crew.OrganisationID
-	if err = UserCrewCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &result); err != nil {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i), &user); err != nil {
+		return
+	}
+	result = &user.Crew
+	if _, err = activeWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
 	//reset active and nvm
-	if err = ActiveCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.ActiveWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
-		return
-	}
-	//reject nvm state
-	if err = NVMCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = nvmWithdraw(ctx, i.UserID); err != nil {
 		return
 	}
 
@@ -118,20 +103,15 @@ func UsersCrewUpdate(ctx context.Context, i *models.UserCrewUpdate, token *model
 }
 
 func UserCrewDelete(ctx context.Context, id string) (err error) {
-	if err = UserCrewCollection.DeleteOne(ctx, bson.D{{Key: "user_id", Value: id}}); err != nil {
+	update := bson.D{{Key: "crew", Value: models.UserCrewClean()}}
+	if err = UserCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: id}}, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
-	if err = ActiveCollection.TryDeleteOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: id}},
-	); err != nil {
+	if _, err = activeClean(ctx, id); err != nil {
 		return
 	}
-	//reject nvm state
-	if err = NVMCollection.TryDeleteOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: id}},
-	); err != nil {
+	//delete
+	if _, err = nvmClean(ctx, id); err != nil {
 		return
 	}
 	if err = PoolRoleCollection.TryDeleteMany(
@@ -163,18 +143,16 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	if crew.Status != "active" {
 		return nil, vcago.NewBadRequest(models.CrewCollection, "crew_is_dissolved", nil)
 	}
-	result = models.NewUserCrew(user.ID, crew)
-	if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
-		return
-	}
-	active := imp.ToActive(user.ID)
-	if err = ActiveCollection.InsertOne(ctx, active); err != nil {
-		return
-	}
-	nvm := imp.ToNVM(user.ID)
-	if err = NVMCollection.InsertOne(ctx, nvm); err != nil {
-		return
-	}
+	/*
+		result = models.NewUserCrew(user.ID, crew)
+		if err = UserCrewCollection.InsertOne(ctx, result); err != nil {
+			return
+		}*/
+	/*
+		active := imp.ToActive(user.ID)
+		if err = ActiveCollection.InsertOne(ctx, active); err != nil {
+			return
+		}*/
 	roles := imp.ToRoles(user.ID)
 	for _, role := range roles {
 		if err = PoolRoleCollection.InsertOne(ctx, &role); err != nil {

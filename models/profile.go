@@ -19,12 +19,12 @@ type (
 		BirthdateDatetime string `bson:"birthdate_datetime" json:"birthdate_datetime"`
 	}
 	ProfileUpdate struct {
-		ID                string `bson:"_id" json:"id"`
-		Gender            string `bson:"gender" json:"gender"`
-		Phone             string `bson:"phone" json:"phone"`
-		Mattermost        string `bson:"mattermost_username" json:"mattermost_username"`
-		Birthdate         int64  `bson:"birthdate" json:"birthdate"`
-		BirthdateDatetime string `bson:"birthdate_datetime" json:"birthdate_datetime"`
+		ID                string `bson:"profile._id" json:"id"`
+		Gender            string `bson:"profile.gender" json:"gender"`
+		Phone             string `bson:"profile.phone" json:"phone"`
+		Mattermost        string `bson:"profile.mattermost_username" json:"mattermost_username"`
+		Birthdate         int64  `bson:"profile.birthdate" json:"birthdate"`
+		BirthdateDatetime string `bson:"profile.birthdate_datetime" json:"birthdate_datetime"`
 	}
 	Profile struct {
 		ID                string        `bson:"_id" json:"id"`
@@ -96,19 +96,19 @@ func (i *ProfileImport) Profile(userID string) *Profile {
 
 func (i *ProfileUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	filter.EqualString("user_id", token.ID)
+	filter.EqualString("profile._id", i.ID)
+	filter.EqualString("_id", token.ID)
 	return filter.Bson()
 }
 
 func (i *ProfileUpdate) Match() bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
+	filter.EqualString("profile._id", i.ID)
 	return filter.Bson()
 }
 
 func (i *ProfileParam) Match() bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
+	filter.EqualString("profile._id", i.ID)
 	return filter.Bson()
 }
