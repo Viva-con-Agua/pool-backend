@@ -127,14 +127,17 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	sort := i.Sort()
 	pipeline := models.EventPipelinePublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.EventPublic)
-	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+	cTx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	if err = EventCollection.Aggregate(cTx, pipeline, result); err != nil {
 		return
 	}
 	count := vmod.Count{}
 	var cErr error
-	cTx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-	if cErr = EventCollection.AggregateOne(cTx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel2()
+	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
 	} else {
