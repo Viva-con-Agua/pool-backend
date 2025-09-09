@@ -150,25 +150,28 @@ type (
 		Modified              vmod.Modified          `json:"modified" bson:"modified"`
 	}
 	AspListEvent struct {
-		ID                    string           `json:"id" bson:"_id"`
-		Name                  string           `json:"name" bson:"name"`
-		TypeOfEvent           string           `json:"type_of_event" bson:"type_of_event"`
-		AdditionalInformation string           `json:"additional_information" bson:"additional_information"`
-		Website               string           `json:"website" bson:"website"`
-		TourID                string           `json:"tour_id" bson:"tour_id"`
-		Location              Location         `json:"location" bson:"location"`
-		MeetingURL            string           `json:"meeting_url" bson:"meeting_url"`
-		ArtistIDs             []string         `json:"artist_ids" bson:"artist_ids"`
-		OrganizerID           string           `json:"organizer_id" bson:"organizer_id"`
-		StartAt               int64            `json:"start_at" bson:"start_at"`
-		EndAt                 int64            `json:"end_at" bson:"end_at"`
-		CrewID                string           `json:"crew_id" bson:"crew_id"`
-		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
-		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
-		Application           EventApplication `json:"application" bson:"application"`
-		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
-		EventState            EventState       `json:"event_state" bson:"event_state"`
-		Modified              vmod.Modified    `json:"modified" bson:"modified"`
+		ID                    string                 `json:"id" bson:"_id"`
+		Name                  string                 `json:"name" bson:"name"`
+		TypeOfEvent           string                 `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string                 `json:"additional_information" bson:"additional_information"`
+		Website               string                 `json:"website" bson:"website"`
+		TourID                string                 `json:"tour_id" bson:"tour_id"`
+		Location              Location               `json:"location" bson:"location"`
+		MeetingURL            string                 `json:"meeting_url" bson:"meeting_url"`
+		ArtistIDs             []string               `json:"artist_ids" bson:"artist_ids"`
+		OrganizerID           string                 `json:"organizer_id" bson:"organizer_id"`
+		StartAt               int64                  `json:"start_at" bson:"start_at"`
+		EndAt                 int64                  `json:"end_at" bson:"end_at"`
+		CrewID                string                 `json:"crew_id" bson:"crew_id"`
+		Crew                  Crew                   `json:"crew" bson:"crew"`
+		EventASPID            string                 `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID         string                 `json:"internal_asp_id" bson:"internal_asp_id"`
+		Application           EventApplication       `json:"application" bson:"application"`
+		Applications          EventApplications      `json:"applications" bson:"applications"`
+		Participation         []ParticipationMinimal `json:"participations" bson:"participations"`
+		EventTools            EventTools             `json:"event_tools" bson:"event_tools"`
+		EventState            EventState             `json:"event_state" bson:"event_state"`
+		Modified              vmod.Modified          `json:"modified" bson:"modified"`
 	}
 	Event struct {
 		ID                    string            `json:"id" bson:"_id"`

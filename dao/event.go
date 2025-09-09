@@ -170,7 +170,7 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, vmdb.NewPipeline().Match(filter).Count().Pipe, &count); cErr != nil {
-		print(cErr)
+		log.Print(cErr)
 		list_size = 1
 	} else {
 		list_size = int64(count.Total)
