@@ -54,7 +54,7 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	defer cancel()
 	if cErr = UserCollection.AggregateOne(ctxCount, models.SortedUserPermittedPipeline(token).Match(filter).Limit(500, 500).Count().Pipe, &count); cErr != nil {
 		log.Print(cErr)
-		listSize = 1
+		listSize = 0
 	} else {
 		listSize = int64(count.Total)
 	}
