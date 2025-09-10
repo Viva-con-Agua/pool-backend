@@ -594,7 +594,7 @@ func (i *EventQuery) FilterAsp(token *AccessToken) bson.D {
 		filter.EqualString("event_asp_id", token.ID)
 	}
 	filter.GteInt64("end_at", fmt.Sprint(time.Now().AddDate(0, -6, 0).Unix()))
-	filter.EqualStringList("event_state.state", []string{"draft", "published", "finished"})
+	filter.EqualStringList("event_state.state", []string{"created", "draft", "published", "finished"})
 	return filter.Bson()
 }
 
