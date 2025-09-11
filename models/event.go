@@ -448,6 +448,12 @@ func EventPipelinePublic() (pipe *vmdb.Pipeline) {
 	return
 }
 
+func EventCrewPublic() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	return
+}
+
 func EventRolePipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwindMatch(PoolRoleCollection, "user_id", "user_id", "user", bson.D{{Key: "name", Value: "operation"}})

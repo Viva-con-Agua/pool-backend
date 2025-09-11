@@ -159,7 +159,7 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 	filter := i.FilterAsp(token)
 	result = new([]models.AspListEvent)
 	sort := i.Sort()
-	pipeline := vmdb.NewPipeline().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+	pipeline := models.EventCrewPublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	cTx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	if err = EventCollection.Aggregate(cTx, pipeline, result); err != nil {
@@ -169,7 +169,7 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 	var cErr error
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel2()
-	if cErr = EventCollection.AggregateOne(ctx2, vmdb.NewPipeline().Match(filter).Count().Pipe, &count); cErr != nil {
+	if cErr = EventCollection.AggregateOne(ctx2, models.EventCrewPublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		log.Print(cErr)
 		list_size = 1
 	} else {
