@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: pool-backend-db-storage
 spec:
-  storageClassName: local-path
+  storageClassName: csi-rbd-sc
   accessModes:
     - ReadWriteOnce
   resources:
