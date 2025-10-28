@@ -23,8 +23,8 @@ type RoleBulkRequest struct {
 }
 
 type RoleBulkExport struct {
-	CrewID string       `bson:"crew_id" json:"crew_id"`
-	Users  []ExportRole `json:"users"`
+	Crew  Crew         `bson:"crew" json:"crew"`
+	Users []ExportRole `json:"users"`
 }
 type ExportRole struct {
 	UserID string `json:"uuid"`

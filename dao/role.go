@@ -140,7 +140,11 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *model
 			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, deleteRole.Name)
 		}
 	}
-	result.CrewID = i.CrewID
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.CrewID}}, &crew); err != nil {
+		return
+	}
+	result.Crew = *crew
 	return
 }
 
@@ -221,7 +225,11 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Name)
 		}
 	}
-	result.CrewID = crew_id
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: crew_id}}, &crew); err != nil {
+		return
+	}
+	result.Crew = *crew
 	return
 }
 func getIndex(role *vmod.Role, data []vmod.Role) (index int) {

@@ -57,7 +57,11 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 		}
 
 	}
-	result.CrewID = i.CrewID
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.CrewID}}, &result); err != nil {
+		return
+	}
+	result.Crew = *crew
 	return
 }
 
