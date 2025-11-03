@@ -44,19 +44,30 @@ func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *models.A
 	if i.Birthdate == 0 {
 		var nvm *models.NVM
 		if nvm, err = NVMWithdraw(ctx, token); err == nil {
-			go func() {
-				if err = IDjango.Post(nvm, "/v1/pool/profile/nvm/"); err != nil {
-					log.Print(err)
-				}
-			}()
+			NvmSync(nvm)
 		}
 	}
 	return
 }
 
-func ProfileSync(ctx context.Context, i models.Profile, token *models.AccessToken) (result *models.Profile, err error) {
+func ProfileSync(i *models.Profile) (result *models.Profile, err error) {
 	go func() {
-		if err = IDjango.Post(i, "/v1/pool/profile/"); err != nil {
+		user := new(models.User)
+		userFilter := bson.D{{Key: "_id", Value: i.UserID}}
+		if err = UserCollection.FindOne(context.Background(), userFilter, user); err != nil {
+			log.Print(err)
+			return
+		}
+		if err = IDjango.Post(user, "/v1/pool/profile/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return
+}
+
+func NvmSync(i *models.NVM) (result *models.NVM, err error) {
+	go func() {
+		if err = IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
 			log.Print(err)
 		}
 	}()
