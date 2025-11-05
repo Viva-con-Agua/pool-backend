@@ -73,8 +73,8 @@ var PoolRoleHistoryCollection = "pool_roles_history"
 
 func RolesHistoryPermittedPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "crew")
-	pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "profile")
+	//pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "crew")
+	//pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "profile")
 	pipe.LookupUnwind(UserCollection, "user_id", "_id", "user")
 	return
 }
