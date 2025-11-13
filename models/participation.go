@@ -141,17 +141,17 @@ func (i *ParticipationUpdate) ParticipationUpdatePermission(token *AccessToken, 
 func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "user_id", "_id", "user")
-	pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
-	pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "user.crew")
-	pipe.LookupUnwind(ActiveCollection, "user_id", "user_id", "user.active")
+	//pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
+	//pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "user.crew")
+	//pipe.LookupUnwind(ActiveCollection, "user_id", "user_id", "user.active")
 	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
 	pipe.LookupUnwind(UserCollection, "event.internal_asp_id", "_id", "event.internal_asp")
-	pipe.LookupUnwind(ProfileCollection, "event.internal_asp_id", "user_id", "event.internal_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.internal_asp_id", "user_id", "event.internal_asp.profile")
 	pipe.LookupUnwind(UserCollection, "event.creator_id", "_id", "event.creator")
-	pipe.LookupUnwind(ProfileCollection, "event.creator_id", "user_id", "event.creator.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.creator_id", "user_id", "event.creator.profile")
 	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind(OrganizerCollection, "event.organizer_id", "_id", "event.organizer")
 	pipe.LookupUnwind(OrganisationCollection, "event.organisation_id", "_id", "event.organisation")
@@ -163,7 +163,7 @@ func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
 	return
 }
 

@@ -413,11 +413,11 @@ func (i *EventImport) EventDatabase() *EventDatabase {
 func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
 	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
-	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
+	//pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	if token.Roles.Validate("admin;employee;pool_employee") || token.ID == "internal" {
@@ -435,11 +435,11 @@ func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 func EventImportPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
 	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
-	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
+	//pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	return
