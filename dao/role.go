@@ -286,7 +286,7 @@ func RoleDelete(ctx context.Context, i *models.RoleRequest, token *models.Access
 		i.Filter(),
 		&history,
 	); err != nil {
-		return
+		return result, nil
 	}
 	history.EndDate = time.Now().Unix()
 	if err = PoolRoleHistoryCollection.UpdateOne(ctx, history.Filter(), vmdb.UpdateSet(history), history); err != nil {

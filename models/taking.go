@@ -12,50 +12,55 @@ import (
 
 type (
 	TakingCreate struct {
-		Name         string         `json:"name" bson:"name"`
-		CrewID       string         `json:"crew_id" bson:"crew_id"`
-		NewSource    []SourceCreate `json:"new_sources"`
-		DateOfTaking int64          `json:"date_of_taking" bson:"date_of_taking"`
-		Comment      string         `json:"comment"`
+		Name           string         `json:"name" bson:"name"`
+		CrewID         string         `json:"crew_id" bson:"crew_id"`
+		OrganisationID string         `json:"organisation_id" bson:"organisation_id"`
+		NewSource      []SourceCreate `json:"new_sources"`
+		DateOfTaking   int64          `json:"date_of_taking" bson:"date_of_taking"`
+		Comment        string         `json:"comment"`
 	}
 	TakingUpdate struct {
-		ID           string            `json:"id" bson:"_id"`
-		Name         string            `json:"name" bson:"name"`
-		CrewID       string            `json:"crew_id" bson:"crew_id"`
-		Sources      []SourceUpdate    `json:"sources" bson:"-"`
-		State        TakingStateUpdate `json:"state" bson:"state"`
-		DateOfTaking int64             `json:"date_of_taking" bson:"date_of_taking"`
-		Comment      string            `json:"comment"`
+		ID             string            `json:"id" bson:"_id"`
+		Name           string            `json:"name" bson:"name"`
+		CrewID         string            `json:"crew_id" bson:"crew_id"`
+		OrganisationID string            `json:"organisation_id" bson:"organisation_id"`
+		Sources        []SourceUpdate    `json:"sources" bson:"-"`
+		State          TakingStateUpdate `json:"state" bson:"state"`
+		DateOfTaking   int64             `json:"date_of_taking" bson:"date_of_taking"`
+		Comment        string            `json:"comment"`
 	}
 
 	TakingDatabase struct {
-		ID           string        `json:"id" bson:"_id"`
-		Name         string        `json:"name" bson:"name"`
-		CrewID       string        `json:"crew_id" bson:"crew_id"`
-		Type         string        `json:"type" bson:"type"`
-		Comment      string        `json:"comment" bson:"comment"`
-		State        TakingState   `json:"state" bson:"state"`
-		Currency     string        `json:"-" bson:"currency"`
-		DateOfTaking int64         `json:"date_of_taking" bson:"date_of_taking"`
-		Modified     vmod.Modified `json:"modified" bson:"modified"`
+		ID             string        `json:"id" bson:"_id"`
+		Name           string        `json:"name" bson:"name"`
+		OrganisationID string        `json:"organisation_id" bson:"organisation_id"`
+		CrewID         string        `json:"crew_id" bson:"crew_id"`
+		Type           string        `json:"type" bson:"type"`
+		Comment        string        `json:"comment" bson:"comment"`
+		State          TakingState   `json:"state" bson:"state"`
+		Currency       string        `json:"-" bson:"currency"`
+		DateOfTaking   int64         `json:"date_of_taking" bson:"date_of_taking"`
+		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Taking struct {
-		ID           string              `json:"id" bson:"_id"`
-		Name         string              `json:"name" bson:"name"`
-		Type         string              `json:"type" bson:"type"`
-		CrewID       string              `json:"crew_id" bson:"crew_id"`
-		Crew         Crew                `json:"crew" bson:"crew"`
-		Event        Event               `json:"event" bson:"event"`
-		Source       []Source            `json:"sources" bson:"sources"`
-		State        TakingState         `json:"state" bson:"state"`
-		DateOfTaking int64               `json:"date_of_taking" bson:"date_of_taking"`
-		Comment      string              `json:"comment" bson:"comment"`
-		EditorID     string              `json:"editor_id" bson:"-"`
-		DepositUnits []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
-		Activities   []Activity          `json:"activities" bson:"activities"`
-		Money        vmod.Money          `json:"money" bson:"money"`
-		Creator      UserDatabase        `json:"creator" bson:"creator"`
-		Modified     vmod.Modified       `json:"modified" bson:"modified"`
+		ID             string              `json:"id" bson:"_id"`
+		Name           string              `json:"name" bson:"name"`
+		Type           string              `json:"type" bson:"type"`
+		CrewID         string              `json:"crew_id" bson:"crew_id"`
+		OrganisationID string              `json:"organisation_id" bson:"organisation_id"`
+		Organisation   Organisation        `json:"organisation" bson:"organisation"`
+		Crew           Crew                `json:"crew" bson:"crew"`
+		Event          Event               `json:"event" bson:"event"`
+		Source         []Source            `json:"sources" bson:"sources"`
+		State          TakingState         `json:"state" bson:"state"`
+		DateOfTaking   int64               `json:"date_of_taking" bson:"date_of_taking"`
+		Comment        string              `json:"comment" bson:"comment"`
+		EditorID       string              `json:"editor_id" bson:"-"`
+		DepositUnits   []DepositUnitTaking `json:"deposit_units" bson:"deposit_units"`
+		Activities     []Activity          `json:"activities" bson:"activities"`
+		Money          vmod.Money          `json:"money" bson:"money"`
+		Creator        UserDatabase        `json:"creator" bson:"creator"`
+		Modified       vmod.Modified       `json:"modified" bson:"modified"`
 	}
 	TakingState struct {
 		Open      vmod.Money `json:"open" bson:"open"`
@@ -74,6 +79,7 @@ type (
 		ID              []string `query:"id"`
 		Name            string   `query:"name"`
 		CrewID          []string `query:"crew_id"`
+		OrganisationID  []string `query:"organisation_id"`
 		EventName       string   `query:"event_name"`
 		TypeOfEvent     []string `query:"type_of_event"`
 		ArtistName      string   `query:"artist_name"`
@@ -109,6 +115,7 @@ func TakingPipelineList() *vmdb.Pipeline {
 	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	//pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
@@ -156,6 +163,8 @@ func TakingPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.confirmed.currency", Value: "$currency"},
 	}}})
+	pipe.LookupUnwind(OrganisationCollection, "_id", "organisation_id", "organisation")
+
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "money.currency", Value: "$currency"}}}})
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "state.open.currency", Value: "$currency"}}}})
 	pipe.Lookup(ActivityUserView, "_id", "model_id", "activities")
@@ -197,14 +206,15 @@ func (i *TakingCreate) TakingDatabase() *TakingDatabase {
 		currency = i.NewSource[0].Money.Currency
 	}
 	return &TakingDatabase{
-		ID:           uuid.NewString(),
-		Name:         i.Name,
-		CrewID:       i.CrewID,
-		Type:         "manually",
-		Currency:     currency,
-		DateOfTaking: i.DateOfTaking,
-		Comment:      i.Comment,
-		Modified:     vmod.NewModified(),
+		ID:             uuid.NewString(),
+		Name:           i.Name,
+		CrewID:         i.CrewID,
+		OrganisationID: i.OrganisationID,
+		Type:           "manually",
+		Currency:       currency,
+		DateOfTaking:   i.DateOfTaking,
+		Comment:        i.Comment,
+		Modified:       vmod.NewModified(),
 	}
 }
 
@@ -245,6 +255,7 @@ func (i *TakingQuery) PermittedFilter(token *AccessToken) bson.D {
 		filter.EqualStringList("crew_id", []string{token.CrewID})
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
+		filter.EqualStringList("organisation_id", i.OrganisationID)
 	}
 	filter.LikeString("name", i.Name)
 	filter.SearchString([]string{"name", "event.name"}, i.Search)
