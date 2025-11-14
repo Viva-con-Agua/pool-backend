@@ -123,6 +123,16 @@ func UpdateDatabase() {
 		UpdateUserCrewtoUser(ctx)
 		Updates.Insert(ctx, "update_profile_to_user")
 	}
+	if !Updates.Check(ctx, "update_profile_to_user") {
+		log.Print("update_profile_to_user")
+		UpdateUserCrewtoUser(ctx)
+		Updates.Insert(ctx, "update_profile_to_user")
+	}
+	if !Updates.Check(ctx, "update_taking_organisation_ids") {
+		log.Print("update_taking_organisation_ids")
+		UpdateTakingOrganisationID(ctx)
+		Updates.Insert(ctx, "update_taking_organisation_ids")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -441,6 +451,34 @@ func UpdateProfiletoUser(ctx context.Context) {
 		filter := bson.D{{Key: "_id", Value: entry.UserID}}
 		update := bson.D{{Key: "profile", Value: entry}}
 		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateTakingOrganisationID(ctx context.Context) {
+	takingFilter := bson.D{{Key: "$or", Value: bson.A{
+		bson.D{{Key: "crew_id", Value: ""}},
+		bson.D{{Key: "organisation_id", Value: ""}},
+		bson.D{{Key: "organisation_id", Value: bson.D{{Key: "$exists", Value: false}}}},
+	}}}
+
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(models.EventCollection, "_id", "taking_id", "event")
+	pipe.Match(takingFilter)
+
+	takings := []models.Taking{}
+	if err := TakingCollection.Aggregate(
+		ctx,
+		pipe.Pipe,
+		&takings,
+	); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range takings {
+		filter := bson.D{{Key: "_id", Value: entry.ID}}
+		update := bson.D{{Key: "organisation_id", Value: entry.Event.OrganisationID}}
+		if err := TakingCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
 	}

@@ -12,10 +12,11 @@ import (
 
 type (
 	DepositCreate struct {
-		DepositUnit []DepositUnitCreate `json:"deposit_units"`
-		CrewID      string              `json:"crew_id" validate:"required"`
-		HasExternal bool                `json:"has_external"`
-		External    External            `json:"external"`
+		DepositUnit    []DepositUnitCreate `json:"deposit_units"`
+		CrewID         string              `json:"crew_id"`
+		OrganisationID string              `json:"organisation_id"`
+		HasExternal    bool                `json:"has_external"`
+		External       External            `json:"external"`
 	}
 	DepositUnitCreate struct {
 		TakingID string     `json:"taking_id" bson:"taking_id"`
@@ -49,15 +50,16 @@ type (
 		UpdateState string     `json:"update_state" bson:"-"`
 	}
 	DepositUpdate struct {
-		ID            string              `json:"id" bson:"_id"`
-		CrewID        string              `json:"crew_id" bson:"crew_id"`
-		Status        string              `json:"status" bson:"status"`
-		DepositUnit   []DepositUnitUpdate `json:"deposit_units" bson:"-"`
-		HasExternal   bool                `json:"has_external" bson:"has_external"`
-		External      External            `json:"external" bson:"external"`
-		UpdateState   string              `json:"update_state" bson:"-"`
-		DateOfDeposit int64               `json:"date_of_deposit" bson:"date_of_deposit"`
-		Money         vmod.Money          `json:"money" bson:"money"`
+		ID             string              `json:"id" bson:"_id"`
+		CrewID         string              `json:"crew_id" bson:"crew_id"`
+		Status         string              `json:"status" bson:"status"`
+		OrganisationID string              `json:"organisation_id" bson:"organisation_id"`
+		DepositUnit    []DepositUnitUpdate `json:"deposit_units" bson:"-"`
+		HasExternal    bool                `json:"has_external" bson:"has_external"`
+		External       External            `json:"external" bson:"external"`
+		UpdateState    string              `json:"update_state" bson:"-"`
+		DateOfDeposit  int64               `json:"date_of_deposit" bson:"date_of_deposit"`
+		Money          vmod.Money          `json:"money" bson:"money"`
 	}
 	DepositDatabase struct {
 		ID               string        `json:"id" bson:"_id"`
@@ -65,6 +67,7 @@ type (
 		Status           string        `json:"status" bson:"status"`
 		Money            vmod.Money    `json:"money" bson:"money"`
 		CrewID           string        `json:"crew_id" bson:"crew_id"`
+		OrganisationID   string        `json:"organisation_id" bson:"organisation_id"`
 		CreatorID        string        `json:"creator_id" bson:"creator_id"`
 		ConfirmerID      string        `json:"confirmer_id" bson:"confirmer_id"`
 		HasExternal      bool          `json:"has_external" bson:"has_external"`
@@ -78,6 +81,8 @@ type (
 		Status           string        `json:"status" bson:"status"`
 		DepositUnit      []DepositUnit `json:"deposit_units" bson:"deposit_units"`
 		CrewID           string        `json:"crew_id" bson:"crew_id"`
+		OrganisationID   string        `json:"organisation_id" bson:"organisation_id"`
+		Organisation     Organisation  `json:"organisation" bson:"organisation"`
 		Crew             Crew          `json:"crew" bson:"crew"`
 		Money            vmod.Money    `json:"money" bson:"money"`
 		Creator          User          `json:"creator" bson:"creator"`
@@ -93,6 +98,7 @@ type (
 		Name             string   `query:"deposit_unit_name"`
 		ReasonForPayment string   `query:"reason_for_payment"`
 		CrewID           []string `query:"crew_id"`
+		OrganisationID   []string `query:"organisation_id"`
 		Status           []string `query:"deposit_status"`
 		Creator          []string `query:"deposit_creator"`
 		Confirmer        []string `query:"deposit_confirmer"`
@@ -104,8 +110,9 @@ type (
 		vmdb.Query
 	}
 	DepositParam struct {
-		ID     string `param:"id"`
-		CrewID string `param:"crew_id"`
+		ID             string `param:"id"`
+		CrewID         string `param:"crew_id"`
+		OrganisationID string `param:"organisation_id"`
 	}
 )
 
@@ -142,6 +149,7 @@ func DepositPipeline() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	pipe.Lookup(ReceiptFileCollection, "_id", "deposit_id", "receipts")
 	return pipe
 }
@@ -161,6 +169,7 @@ func DepositPipelineList() *vmdb.Pipeline {
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
+	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	return pipe
 }
 func DepositPipelineCount(filter bson.D) *vmdb.Pipeline {
@@ -218,11 +227,12 @@ func (i *DepositCreate) DepositDatabase(token *AccessToken) (r *DepositDatabase,
 			Amount:   amount,
 			Currency: currency,
 		},
-		CrewID:      i.CrewID,
-		CreatorID:   token.ID,
-		HasExternal: i.HasExternal,
-		External:    i.External,
-		Modified:    vmod.NewModified(),
+		CrewID:         i.CrewID,
+		OrganisationID: i.OrganisationID,
+		CreatorID:      token.ID,
+		HasExternal:    i.HasExternal,
+		External:       i.External,
+		Modified:       vmod.NewModified(),
 	}
 	return
 }
@@ -280,6 +290,7 @@ func (i *DepositQuery) PermittedFilter(token *AccessToken) bson.D {
 		filter.EqualString("crew_id", token.CrewID)
 	} else {
 		filter.EqualStringList("crew_id", i.CrewID)
+		filter.EqualStringList("organisation_id", i.OrganisationID)
 	}
 	filter.EqualStringList("status", i.Status)
 	filter.EqualBool("has_external", i.HasExternal)

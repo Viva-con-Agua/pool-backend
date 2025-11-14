@@ -166,6 +166,8 @@ type (
 		EndAt                 int64                  `json:"end_at" bson:"end_at"`
 		CrewID                string                 `json:"crew_id" bson:"crew_id"`
 		Crew                  Crew                   `json:"crew" bson:"crew"`
+		OrganisationID        string                 `json:"organisation_id" bson:"organisation_id"`
+		Organisation          Organisation           `json:"organisation" bson:"organisation"`
 		EventASPID            string                 `json:"event_asp_id" bson:"event_asp_id"`
 		EventASP              EventASPPublic         `json:"event_asp" bson:"event_asp"`
 		InternalASPID         string                 `json:"internal_asp_id" bson:"internal_asp_id"`
@@ -198,6 +200,7 @@ type (
 		EventASP              User              `json:"event_asp" bson:"event_asp"`
 		InteralASP            User              `json:"internal_asp" bson:"internal_asp"`
 		OrganisationID        string            `json:"organisation_id" bson:"organisation_id"`
+		Organisation          Organisation      `json:"organisation" bson:"organisation"`
 		ExternalASP           UserExternal      `json:"external_asp" bson:"external_asp"`
 		TakingID              string            `json:"taking_id" bson:"taking_id"`
 		DepositID             string            `json:"deposit_id" bson:"deposit_id"`
@@ -337,12 +340,13 @@ var PublicEventView = "events_public_view"
 
 func (i *EventDatabase) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
-		ID:           uuid.NewString(),
-		Name:         i.Name,
-		CrewID:       i.CrewID,
-		DateOfTaking: i.EndAt,
-		Type:         "automatically",
-		Modified:     vmod.NewModified(),
+		ID:             uuid.NewString(),
+		Name:           i.Name,
+		CrewID:         i.CrewID,
+		OrganisationID: i.OrganisationID,
+		DateOfTaking:   i.EndAt,
+		Type:           "automatically",
+		Modified:       vmod.NewModified(),
 	}
 }
 func (i *EventCreate) EventDatabase(token *AccessToken) *EventDatabase {

@@ -70,7 +70,7 @@ func NewsletterImport(ctx context.Context, i *models.NewsletterImport) (result *
 	return
 }
 
-func NewsletterSync(ctx context.Context, i *models.User, token *models.AccessToken) (result *[]models.Newsletter, err error) {
+func NewsletterSync(i *models.User) (result *[]models.Newsletter, err error) {
 	export := &models.NewsletterExport{
 		UserID:     i.ID,
 		Newsletter: i.Newsletter,

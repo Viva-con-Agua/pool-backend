@@ -50,26 +50,30 @@ type (
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserParticipation struct {
-		ID      string      `json:"id" bson:"_id"`
-		EventID string      `json:"event_id" bson:"event_id"`
-		Comment string      `json:"comment" bson:"comment"`
-		Status  string      `json:"status" bson:"status"`
-		Event   EventPublic `json:"event" bson:"event"`
-		CrewID  string      `json:"crew_id" bson:"crew_id"`
-		Crew    CrewName    `json:"crew" bson:"crew"`
+		ID             string       `json:"id" bson:"_id"`
+		EventID        string       `json:"event_id" bson:"event_id"`
+		Comment        string       `json:"comment" bson:"comment"`
+		Status         string       `json:"status" bson:"status"`
+		Event          EventPublic  `json:"event" bson:"event"`
+		CrewID         string       `json:"crew_id" bson:"crew_id"`
+		Crew           CrewName     `json:"crew" bson:"crew"`
+		OrganisationID string       `json:"organisation_id" bson:"organisation_id"`
+		Organisation   Organisation `json:"organisation" bson:"organisation"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	EventParticipation struct {
-		ID      string          `json:"id" bson:"_id"`
-		UserID  string          `json:"user_id" bson:"user_id"`
-		User    UserParticipant `json:"user" bson:"user"`
-		EventID string          `json:"event_id" bson:"event_id"`
-		Comment string          `json:"comment" bson:"comment"`
-		Status  string          `json:"status" bson:"status"`
-		Event   ListEvent       `json:"event" bson:"event"`
-		CrewID  string          `json:"crew_id" bson:"crew_id"`
-		Crew    Crew            `json:"crew" bson:"crew"`
+		ID             string          `json:"id" bson:"_id"`
+		UserID         string          `json:"user_id" bson:"user_id"`
+		User           UserParticipant `json:"user" bson:"user"`
+		EventID        string          `json:"event_id" bson:"event_id"`
+		Comment        string          `json:"comment" bson:"comment"`
+		Status         string          `json:"status" bson:"status"`
+		Event          ListEvent       `json:"event" bson:"event"`
+		CrewID         string          `json:"crew_id" bson:"crew_id"`
+		Crew           Crew            `json:"crew" bson:"crew"`
+		OrganisationID string          `json:"organisation_id" bson:"organisation_id"`
+		Organisation   Organisation    `json:"organisation" bson:"organisation"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -150,6 +154,7 @@ func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	//pipe.LookupUnwind(ProfileCollection, "event.creator_id", "user_id", "event.creator.profile")
 	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind(OrganizerCollection, "event.organizer_id", "_id", "event.organizer")
+	pipe.LookupUnwind(OrganisationCollection, "event.organisation_id", "_id", "event.organisation")
 	pipe.LookupUnwind(CrewCollection, "event.crew_id", "_id", "event.crew")
 	return
 }
