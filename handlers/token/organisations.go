@@ -37,11 +37,7 @@ func (i *OrganisationHandler) Create(cc echo.Context) (err error) {
 	if result, err = dao.OrganisationInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
-	//go func() {
-	//	if err = dao.IDjango.Post(result, "/v1/pool/organisation/"); err != nil {
-	//		log.Print(err)
-	//	}
-	//}()
+	dao.OrganisationSync(result)
 	return c.Created(result)
 }
 
@@ -85,11 +81,7 @@ func (i *OrganisationHandler) Update(cc echo.Context) (err error) {
 	if result, err = dao.OrganisationUpdate(c.Ctx(), body, token); err != nil {
 		return
 	}
-	//go func() {
-	//	if err = dao.IDjango.Post(body, "/v1/pool/organisation/"); err != nil {
-	//		log.Print(err)
-	//	}
-	//}()
+	dao.OrganisationSync(result)
 	return c.Updated(result)
 }
 

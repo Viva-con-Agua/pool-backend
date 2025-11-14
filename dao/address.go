@@ -5,7 +5,7 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/Viva-con-Agua/vcago/vmod"
 )
 
 func AddressInsert(ctx context.Context, i *models.AddressCreate, token *models.AccessToken) (result *models.Address, err error) {
@@ -63,18 +63,20 @@ func AddressUpdate(ctx context.Context, i *models.AddressUpdate, token *models.A
 	return
 }
 
-func AddressDelete(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *models.NVM, err error) {
+func AddressDelete(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *vmod.DeletedResponse, err error) {
 	filter := i.PermittedFilter(token)
 	if err = AddressesCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}
-	if result, err = NVMWithdraw(ctx, token); err != nil {
+	//reject nvm state
+	if _, err = nvmWithdraw(ctx, token.ID); err != nil {
 		return
 	}
+	result = vmod.NewDeletedResponse(i.ID)
 	return
 }
 
-func UsersAddressDelete(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *models.NVM, err error) {
+func UsersAddressDelete(ctx context.Context, i *models.AddressParam, token *models.AccessToken) (result *vmod.DeletedResponse, err error) {
 	if err = models.AddressPermission(token); err != nil {
 		return
 	}
@@ -85,16 +87,10 @@ func UsersAddressDelete(ctx context.Context, i *models.AddressParam, token *mode
 	if err = AddressesCollection.DeleteOne(ctx, i.Match()); err != nil {
 		return
 	}
-	//reject nvm state
-	if err = NVMCollection.UpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: address.UserID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-		nil,
-	); err != nil && vmdb.ErrNoDocuments(err) {
+	if _, err = nvmWithdraw(ctx, address.UserID); err != nil {
 		return
 	}
-
+	result = vmod.NewDeletedResponse(i.ID)
 	return
 }
 

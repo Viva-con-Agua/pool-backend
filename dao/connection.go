@@ -24,7 +24,7 @@ var (
 	// ActiveCollection represents the database collection of the Active model.
 	ActiveCollection *vmdb.Collection
 
-	// NVMCollection represents the database collection of the NVM model.
+	// NVMCollection represents the database collection of the NVM model. !!! deprecated !!!
 	NVMCollection *vmdb.Collection
 
 	// AdressesCollection represents the database colltection of the Address model.
@@ -146,10 +146,10 @@ func InitialDatabase() {
 	ReasonForPaymentCollection = Database.Collection(models.ReasonForPaymentCollection)
 
 	UserPipe.LookupUnwind(models.AddressesCollection, "_id", "user_id", "address")
-	UserPipe.LookupUnwind(models.ProfileCollection, "_id", "user_id", "profile")
-	UserPipe.LookupUnwind(models.UserCrewCollection, "_id", "user_id", "crew")
-	UserPipe.LookupUnwind(models.ActiveCollection, "_id", "user_id", "active")
-	UserPipe.LookupUnwind(models.NVMCollection, "_id", "user_id", "nvm")
+	//UserPipe.LookupUnwind(models.ProfileCollection, "_id", "user_id", "profile")
+	//UserPipe.LookupUnwind(models.UserCrewCollection, "_id", "user_id", "crew")
+	//UserPipe.LookupUnwind(models.ActiveCollection, "_id", "user_id", "active")
+	//UserPipe.LookupUnwind(models.NVMCollection, "_id", "user_id", "nvm")
 	UserPipe.Lookup(models.PoolRoleCollection, "_id", "user_id", "pool_roles")
 	Database.Database.CreateView(
 		context.Background(),

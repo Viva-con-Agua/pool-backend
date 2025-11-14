@@ -6,6 +6,7 @@ import (
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"github.com/labstack/echo/v4"
 )
 
@@ -214,7 +215,7 @@ func (i *AddressHandler) Delete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(models.NVM)
+	var result *vmod.DeletedResponse
 	if result, err = dao.AddressDelete(c.Ctx(), body, token); err != nil {
 		return
 	}
@@ -241,7 +242,7 @@ func (i *AddressHandler) UsersDelete(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new(models.NVM)
+	var result *vmod.DeletedResponse
 	if result, err = dao.UsersAddressDelete(c.Ctx(), body, token); err != nil {
 		return
 	}

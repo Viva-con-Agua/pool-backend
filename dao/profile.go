@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"pool-backend/models"
-	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,7 +11,9 @@ import (
 
 func ProfileInsert(ctx context.Context, i *models.ProfileCreate, token *models.AccessToken) (result *models.Profile, err error) {
 	result = i.Profile(token.ID)
-	if err = ProfileCollection.InsertOne(ctx, result); err != nil {
+	update := bson.D{{Key: "profile", Value: result}}
+	filter := bson.D{{Key: "_id", Value: result.UserID}}
+	if err = UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
 	return
@@ -30,36 +31,43 @@ func ProfileGetByID(ctx context.Context, i *models.UserParam, token *models.Acce
 
 func ProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *models.AccessToken) (result *models.Profile, err error) {
 	filter := i.PermittedFilter(token)
-	birthdate := time.Unix(i.Birthdate, 0)
-	if i.Birthdate != 0 {
-		i.BirthdateDatetime = birthdate.Format("2006-01-02")
-	} else {
-		i.BirthdateDatetime = ""
-	}
-	if err = ProfileCollection.UpdateOne(
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
 		filter,
 		vmdb.UpdateSet(i),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.Profile
 	if i.Birthdate == 0 {
 		var nvm *models.NVM
 		if nvm, err = NVMWithdraw(ctx, token); err == nil {
-			go func() {
-				if err = IDjango.Post(nvm, "/v1/pool/profile/nvm/"); err != nil {
-					log.Print(err)
-				}
-			}()
+			NvmSync(nvm)
 		}
 	}
 	return
 }
 
-func ProfileSync(ctx context.Context, i models.Profile, token *models.AccessToken) (result *models.Profile, err error) {
+func ProfileSync(i *models.Profile) (result *models.Profile, err error) {
 	go func() {
-		if err = IDjango.Post(i, "/v1/pool/profile/"); err != nil {
+		user := new(models.User)
+		userFilter := bson.D{{Key: "_id", Value: i.UserID}}
+		if err = UserCollection.FindOne(context.Background(), userFilter, user); err != nil {
+			log.Print(err)
+			return
+		}
+		if err = IDjango.Post(user, "/v1/pool/profile/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return
+}
+
+func NvmSync(i *models.NVM) (result *models.NVM, err error) {
+	go func() {
+		if err = IDjango.Post(result, "/v1/pool/profile/nvm/"); err != nil {
 			log.Print(err)
 		}
 	}()
@@ -70,9 +78,11 @@ func UsersProfileUpdate(ctx context.Context, i *models.ProfileUpdate, token *mod
 	if err = models.UsersEditPermission(token); err != nil {
 		return
 	}
-	if err = ProfileCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i.ToUserUpdate()), &result); err != nil {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(ctx, i.Match(), vmdb.UpdateSet(i.ToUserUpdate()), &user); err != nil {
 		return
 	}
+	result = &user.Profile
 	return
 }
 
@@ -83,7 +93,9 @@ func ProfileImport(ctx context.Context, profile *models.ProfileImport) (result *
 		return
 	}
 	result = profile.Profile(user.ID)
-	if err = ProfileCollection.InsertOne(ctx, result); err != nil {
+	update := bson.D{{Key: "profile", Value: result}}
+	filter := bson.D{{Key: "_id", Value: result.UserID}}
+	if err = UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 		return
 	}
 	return

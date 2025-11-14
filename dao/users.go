@@ -52,9 +52,9 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	var cErr error
 	ctxCount, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	if cErr = UserCollection.AggregateOne(ctxCount, models.SortedUserPermittedPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+	if cErr = UserCollection.AggregateOne(ctxCount, models.SortedUserPermittedPipeline(token).Match(filter).Limit(500, 500).Count().Pipe, &count); cErr != nil {
 		log.Print(cErr)
-		listSize = 1
+		listSize = 0
 	} else {
 		listSize = int64(count.Total)
 	}
@@ -125,24 +125,29 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = AddressesCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = ActiveCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = NVMCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = NVMCollection.TryDeleteMany(ctx, delete); err != nil {
-		return
-	}
-	if err = AvatarCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
+	/*
+		if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}*/
+	/*
+		if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}*/
+	/*
+		if err = ActiveCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}*/
+	/*
+		if err = NVMCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}
+		if err = NVMCollection.TryDeleteMany(ctx, delete); err != nil {
+			return
+		}*/
+	/*
+		if err = AvatarCollection.TryDeleteOne(ctx, delete); err != nil {
+			return
+		}*/
 	if err = MailboxCollection.TryDeleteOne(ctx, bson.D{{Key: "_id", Value: user.MailboxID}}); err != nil {
 		return
 	}
@@ -156,11 +161,11 @@ func UserDelete(ctx context.Context, id string) (err error) {
 }
 
 func UserSync(ctx context.Context, i *models.ProfileParam, token *models.AccessToken) (result *models.User, err error) {
-	profile := new(models.Profile)
-	if err = ProfileCollection.FindOne(ctx, i.Match(), profile); err != nil {
+	user := new(models.User)
+	if err = UserCollection.FindOne(ctx, i.Match(), user); err != nil {
 		return
 	}
-	if result, err = ProfileGetByID(ctx, &models.UserParam{ID: profile.UserID}, token); err != nil {
+	if result, err = ProfileGetByID(ctx, &models.UserParam{ID: user.ID}, token); err != nil {
 		return
 	}
 	if err = IDjango.Post(result, "/v1/pool/user/"); err != nil {

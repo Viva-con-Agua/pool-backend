@@ -74,7 +74,6 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *model
 			return
 		}
 		userRole := new(models.RoleDatabase)
-		result.Users = append(result.Users, models.ExportRole{UserID: user.ID, Role: role.Role})
 
 		if err = PoolRoleCollection.FindOne(ctx, role.Filter(), userRole); err != nil {
 
@@ -140,7 +139,29 @@ func RoleBulkUpdate(ctx context.Context, i *models.RoleBulkRequest, token *model
 			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, deleteRole.Name)
 		}
 	}
-	result.CrewID = i.CrewID
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.CrewID}}, &crew); err != nil {
+		return
+	}
+
+	if err = UserCollection.Aggregate(ctx, models.UserPipelinePublic().Match(i.SyncFilter()).Pipe, userCrewRoles); err != nil {
+		log.Print("Currently no roles set yet")
+	}
+	var userIdList []string
+	for _, u := range *userCrewRoles {
+		userIdList = append(userIdList, u.ID)
+	}
+
+	userRoles := new([]models.RoleDatabase)
+	if err = PoolRoleCollection.Find(ctx, bson.D{{Key: "user_id", Value: bson.D{{Key: "$in", Value: userIdList}}}}, userRoles); err != nil {
+		return
+	}
+
+	for _, poolRole := range *userRoles {
+		result.Users = append(result.Users, models.ExportRole{UserID: poolRole.UserID, Role: poolRole.Name})
+	}
+
+	result.Crew = *crew
 	return
 }
 
@@ -221,7 +242,11 @@ func RoleBulkConfirm(ctx context.Context, i *[]models.RoleHistory, crew_id strin
 			userRolesMap[role.UserID].DeletedRoles = append(userRolesMap[role.UserID].DeletedRoles, role.Name)
 		}
 	}
-	result.CrewID = crew_id
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: crew_id}}, &crew); err != nil {
+		return
+	}
+	result.Crew = *crew
 	return
 }
 func getIndex(role *vmod.Role, data []vmod.Role) (index int) {
@@ -261,7 +286,7 @@ func RoleDelete(ctx context.Context, i *models.RoleRequest, token *models.Access
 		i.Filter(),
 		&history,
 	); err != nil {
-		return
+		return result, nil
 	}
 	history.EndDate = time.Now().Unix()
 	if err = PoolRoleHistoryCollection.UpdateOne(ctx, history.Filter(), vmdb.UpdateSet(history), history); err != nil {
