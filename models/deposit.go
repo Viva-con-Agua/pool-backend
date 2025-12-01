@@ -93,6 +93,15 @@ type (
 		External         External      `json:"external" bson:"external"`
 		Modified         vmod.Modified `json:"modified" bson:"modified"`
 	}
+	DepositUserDeletion struct {
+		ID               string        `json:"id" bson:"_id" `
+		ReasonForPayment string        `json:"reason_for_payment" bson:"reason_for_payment"`
+		Status           string        `json:"status" bson:"status"`
+		Money            vmod.Money    `json:"money" bson:"money"`
+		Creator          User          `json:"creator" bson:"creator"`
+		DateOfDeposit    int64         `json:"date_of_deposit" bson:"date_of_deposit"`
+		Modified         vmod.Modified `json:"modified" bson:"modified"`
+	}
 	DepositQuery struct {
 		ID               []string `query:"id"`
 		Name             string   `query:"deposit_unit_name"`

@@ -49,6 +49,16 @@ type (
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
+	ParticipationUserDeletion struct {
+		ID       string        `json:"id" bson:"_id"`
+		UserID   string        `json:"user_id" bson:"user_id"`
+		User     User          `json:"user" bson:"user"`
+		EventID  string        `json:"event_id" bson:"event_id"`
+		Comment  string        `json:"comment" bson:"comment"`
+		Status   string        `json:"status" bson:"status"`
+		Event    EventMinimal  `json:"event" bson:"event"`
+		Modified vmod.Modified `json:"modified" bson:"modified"`
+	}
 	UserParticipation struct {
 		ID             string       `json:"id" bson:"_id"`
 		EventID        string       `json:"event_id" bson:"event_id"`

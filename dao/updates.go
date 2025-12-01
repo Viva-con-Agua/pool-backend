@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -132,6 +133,11 @@ func UpdateDatabase() {
 		log.Print("update_taking_organisation_ids")
 		UpdateTakingOrganisationID(ctx)
 		Updates.Insert(ctx, "update_taking_organisation_ids")
+	}
+	if !Updates.Check(ctx, "create_deleted_user") {
+		log.Print("create_deleted_user")
+		CreateDeletedUser(ctx)
+		Updates.Insert(ctx, "create_deleted_user")
 	}
 }
 
@@ -481,5 +487,44 @@ func UpdateTakingOrganisationID(ctx context.Context) {
 		if err := TakingCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
+	}
+}
+
+func CreateDeletedUser(ctx context.Context) {
+	user := &models.User{
+		ID:            "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF",
+		Email:         "deleted_user@vivaconagua.org",
+		FirstName:     "deleted",
+		LastName:      "user",
+		DisplayName:   "deleted user",
+		Country:       "DE",
+		Confirmed:     true,
+		PrivacyPolicy: true,
+		Modified:      vmod.NewModified(),
+		LastUpdate:    time.Now().Format(time.RFC3339),
+		LastLoginDate: time.Now().Add(time.Hour * 876000).Unix(),
+		//Address:       models.Address{},
+		//Address:       models.Active{},
+	}
+	if err := UserCollection.InsertOne(ctx, user); err != nil {
+		log.Print(err)
+	}
+	user = &models.User{
+		ID:            "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFE",
+		Email:         "deleted_employee@vivaconagua.org",
+		FirstName:     "deleted",
+		LastName:      "employee",
+		DisplayName:   "deleted employee",
+		Country:       "DE",
+		Confirmed:     true,
+		PrivacyPolicy: true,
+		Modified:      vmod.NewModified(),
+		LastUpdate:    time.Now().Format(time.RFC3339),
+		LastLoginDate: time.Now().Add(time.Hour * 876000).Unix(),
+		//Address:       models.Address{},
+		//Address:       models.Active{},
+	}
+	if err := UserCollection.InsertOne(ctx, user); err != nil {
+		log.Print(err)
 	}
 }
