@@ -125,35 +125,13 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = AddressesCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	/*
-		if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
-			return
-		}*/
-	/*
-		if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
-			return
-		}*/
-	/*
-		if err = ActiveCollection.TryDeleteOne(ctx, delete); err != nil {
-			return
-		}*/
-	/*
-		if err = NVMCollection.TryDeleteOne(ctx, delete); err != nil {
-			return
-		}
-		if err = NVMCollection.TryDeleteMany(ctx, delete); err != nil {
-			return
-		}*/
-	/*
-		if err = AvatarCollection.TryDeleteOne(ctx, delete); err != nil {
-			return
-		}*/
 	if err = MailboxCollection.TryDeleteOne(ctx, bson.D{{Key: "_id", Value: user.MailboxID}}); err != nil {
 		return
 	}
 	if err = MessageCollection.TryDeleteMany(ctx, bson.D{{Key: "mailbox_id", Value: user.MailboxID}}); err != nil {
 		return
 	}
+	ClearUserDataOnDelete(ctx, id)
 	if err = UserCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
 		return
 	}
@@ -186,6 +164,37 @@ func UserOrganisationUpdate(ctx context.Context, i *models.UserOrganisationUpdat
 		&result,
 	); err != nil {
 		return
+	}
+	return
+}
+
+func ClearUserDataOnDelete(ctx context.Context, id string) (err error) {
+	participationsFilter := bson.D{{Key: "user_id", Value: id}}
+	updateParticipations := bson.D{{Key: "user_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}, {Key: "comment", Value: ""}}
+	if err = ParticipationCollection.UpdateMany(context.Background(), participationsFilter, vmdb.UpdateSet(updateParticipations)); err != nil {
+		log.Print(err)
+	}
+
+	depositsFilter := bson.D{{Key: "creator_id", Value: id}}
+	updateDeposits := bson.D{{Key: "creator_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}
+	if err = DepositCollection.UpdateMany(context.Background(), depositsFilter, vmdb.UpdateSet(updateDeposits)); err != nil {
+		log.Print(err)
+	}
+
+	eventsFilter := bson.D{{Key: "event_asp_id", Value: id}}
+	updateEvents := bson.D{{Key: "event_asp_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}
+	if err = EventCollection.UpdateMany(context.Background(), eventsFilter, vmdb.UpdateSet(updateEvents)); err != nil {
+		log.Print(err)
+	}
+	eventsFilter = bson.D{{Key: "internal_asp_id", Value: id}}
+	updateEvents = bson.D{{Key: "internal_asp_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFE"}}
+	if err = EventCollection.UpdateMany(context.Background(), eventsFilter, vmdb.UpdateSet(updateEvents)); err != nil {
+		log.Print(err)
+	}
+	eventsFilter = bson.D{{Key: "creator_id", Value: id}}
+	updateEvents = bson.D{{Key: "creator_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}
+	if err = EventCollection.UpdateMany(context.Background(), eventsFilter, vmdb.UpdateSet(updateEvents)); err != nil {
+		log.Print(err)
 	}
 	return
 }
