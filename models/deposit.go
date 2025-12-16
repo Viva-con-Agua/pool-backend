@@ -97,6 +97,7 @@ type (
 		Creator          []string `query:"deposit_creator"`
 		Confirmer        []string `query:"deposit_confirmer"`
 		HasExternal      string   `query:"deposit_has_external"`
+		DonationRquest   string   `query:"donation_request"`
 		UpdatedTo        string   `query:"updated_to" qs:"updated_to"`
 		UpdatedFrom      string   `query:"updated_from" qs:"updated_from"`
 		CreatedTo        string   `query:"created_to" qs:"created_to"`
@@ -283,6 +284,9 @@ func (i *DepositQuery) PermittedFilter(token *AccessToken) bson.D {
 	}
 	filter.EqualStringList("status", i.Status)
 	filter.EqualBool("has_external", i.HasExternal)
+	if i.DonationRquest == "true" {
+		filter.EqualBool("external.donation_request", i.DonationRquest)
+	}
 	filter.SearchString([]string{"deposit_units.taking.name"}, i.Name)
 	filter.SearchString([]string{"reason_for_payment"}, i.ReasonForPayment)
 	return filter.Bson()
