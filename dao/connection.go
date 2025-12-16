@@ -63,10 +63,11 @@ var (
 
 	ActivityCollection *vmdb.Collection
 
-	ReasonForPaymentCollection *vmdb.Collection
-	UserViewCollection         *vmdb.Collection
-	EventViewCollection        *vmdb.Collection
-	PublicEventViewCollection  *vmdb.Collection
+	ReasonForPaymentCollection       *vmdb.Collection
+	UserViewCollection               *vmdb.Collection
+	EventViewCollection              *vmdb.Collection
+	ParticipationEventViewCollection *vmdb.Collection
+	PublicEventViewCollection        *vmdb.Collection
 
 	NewsletterCollection *vmdb.Collection
 
@@ -198,6 +199,8 @@ func InitialDatabase() {
 		models.ParticipationCollection,
 		ParticipationEventPipe.Pipe,
 	)
+	ParticipationEventViewCollection = Database.Collection(models.ParticipationEventView)
+
 	ActitityUserPipe.LookupUnwind(models.UserCollection, "user_id", "_id", "user")
 	Database.Database.CreateView(
 		context.Background(),

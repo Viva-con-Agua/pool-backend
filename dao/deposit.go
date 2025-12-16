@@ -40,7 +40,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 			return
 		}
 	}
-	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID)
+	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID, i.OrganisationID)
 	if err != nil {
 		return
 	}

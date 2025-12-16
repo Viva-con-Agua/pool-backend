@@ -183,6 +183,20 @@ type (
 		FullCount      string   `query:"full_count"`
 		vmdb.Query
 	}
+	DeletionRequest struct {
+		ID       string        `json:"id" bson:"_id"`
+		Email    string        `json:"email" bson:"email"`
+		UserID   string        `json:"user_id" bson:"user_id"`
+		Modified vmod.Modified `json:"modified" bson:"modified"`
+	}
+	DeletionResponse struct {
+		ID            string            `bson:"_id" json:"id"`
+		UserID        string            `bson:"user_id" json:"user_id"`
+		Service       string            `bson:"service" json:"service"`
+		StatusMessage string            `bson:"status_message" json:"status_message"`
+		StatusType    string            `bson:"status_type" json:"status_type"`
+		Data          map[string]string `bson:"data" json:"data"`
+	}
 )
 
 var UserCollection = "users"
@@ -301,13 +315,13 @@ func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 }
 
 func UserMatch(userID string) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualString("_id", userID)
 	return filter.Bson()
 }
 
 func UserMatchEmail(email string) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualString("email", email)
 	return filter.Bson()
 }
@@ -410,8 +424,15 @@ func (i *UserQuery) CrewUsersPermission(token *AccessToken) (err error) {
 	return
 }
 
-func (i *UserParam) Match() bson.D {
+func UserFilter() *vmdb.Filter {
 	filter := vmdb.NewFilter()
+	filter.Append(bson.E{Key: "_id", Value: bson.D{{Key: "$ne", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}})
+	filter.Append(bson.E{Key: "_id", Value: bson.D{{Key: "$ne", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFE"}}})
+	return filter
+}
+
+func (i *UserParam) Match() bson.D {
+	filter := UserFilter()
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
@@ -423,7 +444,7 @@ func (i UserQuery) Sort() bson.D {
 }
 
 func (i *UserQuery) PermittedFilter(token *AccessToken) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("email", i.Email)
 	filter.LikeString("first_name", i.FirstName)
@@ -445,7 +466,7 @@ func (i *UserQuery) PermittedFilter(token *AccessToken) bson.D {
 }
 
 func (i *UserQuery) PermittedUserFilter(token *AccessToken) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"})
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("first_name", i.FirstName)
@@ -465,7 +486,7 @@ func (i *UserQuery) PermittedUserFilter(token *AccessToken) bson.D {
 }
 
 func (i *UserQuery) Filter() bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("first_name", i.FirstName)
 	filter.LikeString("last_name", i.LastName)

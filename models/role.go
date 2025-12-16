@@ -263,3 +263,10 @@ func (i *RoleBulkRequest) PermittedFilter(token *AccessToken) bson.D {
 	}
 	return filter.Bson()
 }
+
+func (i *RoleBulkRequest) SyncFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other", "asp"})
+	return filter.Bson()
+}

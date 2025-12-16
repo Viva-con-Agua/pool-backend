@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"log"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -161,4 +162,13 @@ func UserCrewImport(ctx context.Context, imp *models.UserCrewImport) (result *mo
 	}
 	return
 
+}
+
+func UserCrewSync(i models.UserCrew) (result *models.UserCrew, err error) {
+	go func() {
+		if err = IDjango.Post(i, "/v1/pool/profile/crew/"); err != nil {
+			log.Print(err)
+		}
+	}()
+	return
 }

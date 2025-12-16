@@ -19,7 +19,6 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *models.Acc
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	//create taking model form i.
 	taking := i.TakingDatabase()
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
