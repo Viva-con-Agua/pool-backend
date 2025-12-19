@@ -300,24 +300,25 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 	event.CreatorID = admin.ID
 	event.InternalASPID = admin.ID
 	event.EventState.InternalConfirmation = admin.ID
+	/*
+		if event.CrewID != "" {
+			aspRole := new(models.RoleDatabase)
+			if err = UserCrewCollection.AggregateOne(ctx, models.EventRolePipeline().Match(bson.D{{Key: "crew_id", Value: event.CrewID}}).Pipe, aspRole); err != nil {
+				return
+			}
+			event.EventASPID = aspRole.UserID
 
-	if event.CrewID != "" {
-		aspRole := new(models.RoleDatabase)
-		if err = UserCrewCollection.AggregateOne(ctx, models.EventRolePipeline().Match(bson.D{{Key: "crew_id", Value: event.CrewID}}).Pipe, aspRole); err != nil {
-			return
-		}
-		event.EventASPID = aspRole.UserID
+			crew := new(models.Crew)
+			if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: event.CrewID}}, &crew); err != nil {
+				return
+			}
+			event.OrganisationID = crew.OrganisationID
 
-		crew := new(models.Crew)
-		if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: event.CrewID}}, &crew); err != nil {
-			return
-		}
-		event.OrganisationID = crew.OrganisationID
+		} else {
+			event.EventASPID = admin.ID
+		}*/
 
-	} else {
-		event.EventASPID = admin.ID
-	}
-
+	event.EventASPID = admin.ID
 	if err = EventCollection.InsertOne(ctx, i); err != nil {
 		return
 	}

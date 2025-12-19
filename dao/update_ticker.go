@@ -115,9 +115,9 @@ func UserActiveStateTicker() {
 		log.Print(err)
 	}
 	for _, user := range userList {
-		update := bson.D{{Key: "status", Value: "rejected"}}
-		userFilter := bson.D{{Key: "_id", Value: user.Active.ID}}
-		if err := ActiveCollection.UpdateOne(context.Background(), userFilter, vmdb.UpdateSet(update), nil); err != nil {
+		update := bson.D{{Key: "active.status", Value: "rejected"}}
+		userFilter := bson.D{{Key: "_id", Value: user.ID}}
+		if err := UserCollection.UpdateOne(context.Background(), userFilter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
 	}

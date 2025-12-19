@@ -23,8 +23,8 @@ type RoleBulkRequest struct {
 }
 
 type RoleBulkExport struct {
-	CrewID string       `bson:"crew_id" json:"crew_id"`
-	Users  []ExportRole `json:"users"`
+	Crew  Crew         `bson:"crew" json:"crew"`
+	Users []ExportRole `json:"users"`
 }
 type ExportRole struct {
 	UserID string `json:"uuid"`
@@ -261,5 +261,12 @@ func (i *RoleBulkRequest) PermittedFilter(token *AccessToken) bson.D {
 		filter.EqualString("crew.crew_id", i.CrewID)
 		filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other", "asp"})
 	}
+	return filter.Bson()
+}
+
+func (i *RoleBulkRequest) SyncFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other", "asp"})
 	return filter.Bson()
 }

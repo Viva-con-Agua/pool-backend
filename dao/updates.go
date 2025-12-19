@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -97,6 +98,46 @@ func UpdateDatabase() {
 		log.Print("organisation_options")
 		UpdateOrganisationOptions(ctx)
 		Updates.Insert(ctx, "organisation_options")
+	}
+	if !Updates.Check(ctx, "update_nvm_to_user") {
+		log.Print("update_nvm_to_user")
+		UpdateNVMtoUser(ctx)
+		Updates.Insert(ctx, "update_nvm_to_user")
+	}
+	if !Updates.Check(ctx, "update_active_to_user") {
+		log.Print("update_active_to_user")
+		UpdateActivetoUser(ctx)
+		Updates.Insert(ctx, "update_active_to_user")
+	}
+	if !Updates.Check(ctx, "update_avatar_to_user") {
+		log.Print("update_avatar_to_user")
+		UpdateAvatartoUser(ctx)
+		Updates.Insert(ctx, "update_avatar_to_user")
+	}
+	if !Updates.Check(ctx, "update_usercrew_to_user") {
+		log.Print("update_usercrew_to_user")
+		UpdateUserCrewtoUser(ctx)
+		Updates.Insert(ctx, "update_usercrew_to_user")
+	}
+	if !Updates.Check(ctx, "update_profile_to_user") {
+		log.Print("update_profile_to_user")
+		UpdateUserCrewtoUser(ctx)
+		Updates.Insert(ctx, "update_profile_to_user")
+	}
+	if !Updates.Check(ctx, "update_profile_to_user") {
+		log.Print("update_profile_to_user")
+		UpdateUserCrewtoUser(ctx)
+		Updates.Insert(ctx, "update_profile_to_user")
+	}
+	if !Updates.Check(ctx, "update_taking_organisation_ids") {
+		log.Print("update_taking_organisation_ids")
+		UpdateTakingOrganisationID(ctx)
+		Updates.Insert(ctx, "update_taking_organisation_ids")
+	}
+	if !Updates.Check(ctx, "create_deleted_user") {
+		log.Print("create_deleted_user")
+		CreateDeletedUser(ctx)
+		Updates.Insert(ctx, "create_deleted_user")
 	}
 }
 
@@ -347,6 +388,143 @@ func UpdateDateOfDeposit(ctx context.Context) {
 func UpdateOrganisationOptions(ctx context.Context) {
 	update := bson.D{{Key: "options", Value: []string{models.OptionActiv, models.OptionNVM, models.OptionVolunteerCert}}}
 	if err := OrganisationCollection.UpdateMany(ctx, bson.D{}, vmdb.UpdateSet(update)); err != nil {
+		log.Print(err)
+	}
+}
+
+func UpdateNVMtoUser(ctx context.Context) {
+	nvm := []models.NVM{}
+	if err := NVMCollection.Find(ctx, bson.D{}, &nvm); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range nvm {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "nvm", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateActivetoUser(ctx context.Context) {
+	active := []models.Active{}
+	if err := ActiveCollection.Find(ctx, bson.D{}, &active); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range active {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "active", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateAvatartoUser(ctx context.Context) {
+	active := []models.Active{}
+	if err := AvatarCollection.Find(ctx, bson.D{}, &active); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range active {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "avatar", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateUserCrewtoUser(ctx context.Context) {
+	userCrew := []models.UserCrew{}
+	if err := UserCrewCollection.Find(ctx, bson.D{}, &userCrew); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range userCrew {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "crew", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateProfiletoUser(ctx context.Context) {
+	profile := []models.Profile{}
+	if err := UserCrewCollection.Find(ctx, bson.D{}, &profile); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range profile {
+		filter := bson.D{{Key: "_id", Value: entry.UserID}}
+		update := bson.D{{Key: "profile", Value: entry}}
+		if err := UserCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func UpdateTakingOrganisationID(ctx context.Context) {
+	takingFilter := bson.D{{Key: "$or", Value: bson.A{
+		bson.D{{Key: "crew_id", Value: ""}},
+		bson.D{{Key: "organisation_id", Value: ""}},
+		bson.D{{Key: "organisation_id", Value: bson.D{{Key: "$exists", Value: false}}}},
+	}}}
+
+	pipe := vmdb.NewPipeline()
+	pipe.LookupUnwind(models.EventCollection, "_id", "taking_id", "event")
+	pipe.Match(takingFilter)
+
+	takings := []models.Taking{}
+	if err := TakingCollection.Aggregate(
+		ctx,
+		pipe.Pipe,
+		&takings,
+	); err != nil {
+		log.Print(err)
+	}
+	for _, entry := range takings {
+		filter := bson.D{{Key: "_id", Value: entry.ID}}
+		update := bson.D{{Key: "organisation_id", Value: entry.Event.OrganisationID}}
+		if err := TakingCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
+	}
+}
+
+func CreateDeletedUser(ctx context.Context) {
+	user := &models.User{
+		ID:            "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF",
+		Email:         "deleted_user@vivaconagua.org",
+		FirstName:     "deleted",
+		LastName:      "user",
+		DisplayName:   "deleted user",
+		Country:       "DE",
+		Confirmed:     true,
+		PrivacyPolicy: true,
+		Modified:      vmod.NewModified(),
+		LastUpdate:    time.Now().Format(time.RFC3339),
+		LastLoginDate: time.Now().Add(time.Hour * 876000).Unix(),
+		//Address:       models.Address{},
+		//Address:       models.Active{},
+	}
+	if err := UserCollection.InsertOne(ctx, user); err != nil {
+		log.Print(err)
+	}
+	user = &models.User{
+		ID:            "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFE",
+		Email:         "deleted_employee@vivaconagua.org",
+		FirstName:     "deleted",
+		LastName:      "employee",
+		DisplayName:   "deleted employee",
+		Country:       "DE",
+		Confirmed:     true,
+		PrivacyPolicy: true,
+		Modified:      vmod.NewModified(),
+		LastUpdate:    time.Now().Format(time.RFC3339),
+		LastLoginDate: time.Now().Add(time.Hour * 876000).Unix(),
+		//Address:       models.Address{},
+		//Address:       models.Active{},
+	}
+	if err := UserCollection.InsertOne(ctx, user); err != nil {
 		log.Print(err)
 	}
 }

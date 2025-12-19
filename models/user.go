@@ -31,6 +31,8 @@ type (
 		OrganisationID string        `bson:"organisation_id" json:"organisation_id"`
 		MailboxID      string        `bson:"mailbox_id" json:"mailbox_id"`
 		LastLoginDate  int64         `bson:"last_login_date" json:"last_login_date"`
+		NVM            NVM           `json:"nvm" bson:"nvm,omitempty"`
+		Active         Active        `json:"active" bson:"active,omitempty"`
 		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
 	UserUpdate struct {
@@ -142,16 +144,16 @@ type (
 		DisplayName string `bson:"display_name" json:"display_name"`
 	}
 	UserBasic struct {
-		ID          string         `json:"id,omitempty" bson:"_id"`
-		FirstName   string         `bson:"first_name" json:"first_name" `
-		LastName    string         `bson:"last_name" json:"last_name" `
-		FullName    string         `bson:"full_name" json:"full_name"`
-		Profile     ProfileMinimal `bson:"profile" json:"profile"`
-		DisplayName string         `bson:"display_name" json:"display_name"`
-		Roles       vmod.RoleList  `json:"system_roles" bson:"system_roles"`
-		Avatar      Avatar         `bson:"avatar,omitempty" json:"avatar"`
-		PoolRoles   vmod.RoleList  `json:"pool_roles" bson:"pool_roles,omitempty"`
-		NVM         NVM            `json:"nvm" bson:"nvm,omitempty"`
+		ID        string `json:"id,omitempty" bson:"_id"`
+		FirstName string `bson:"first_name" json:"first_name" `
+		LastName  string `bson:"last_name" json:"last_name" `
+		FullName  string `bson:"full_name" json:"full_name"`
+		//Profile     ProfileMinimal `bson:"profile" json:"profile"`
+		DisplayName string        `bson:"display_name" json:"display_name"`
+		Roles       vmod.RoleList `json:"system_roles" bson:"system_roles"`
+		Avatar      Avatar        `bson:"avatar,omitempty" json:"avatar"`
+		PoolRoles   vmod.RoleList `json:"pool_roles" bson:"pool_roles,omitempty"`
+		NVM         NVM           `json:"nvm" bson:"nvm,omitempty"`
 	}
 	UserContact struct {
 		ID        string         `json:"id,omitempty" bson:"_id"`
@@ -180,6 +182,20 @@ type (
 		CrewID         string   `query:"crew_id" qs:"crew_id"`
 		FullCount      string   `query:"full_count"`
 		vmdb.Query
+	}
+	DeletionRequest struct {
+		ID       string        `json:"id" bson:"_id"`
+		Email    string        `json:"email" bson:"email"`
+		UserID   string        `json:"user_id" bson:"user_id"`
+		Modified vmod.Modified `json:"modified" bson:"modified"`
+	}
+	DeletionResponse struct {
+		ID            string            `bson:"_id" json:"id"`
+		UserID        string            `bson:"user_id" json:"user_id"`
+		Service       string            `bson:"service" json:"service"`
+		StatusMessage string            `bson:"status_message" json:"status_message"`
+		StatusType    string            `bson:"status_type" json:"status_type"`
+		Data          map[string]string `bson:"data" json:"data"`
 	}
 )
 
@@ -216,6 +232,8 @@ func NewUserDatabase(user *vmod.User) *UserDatabase {
 		PrivacyPolicy: user.PrivacyPolicy,
 		Confirmed:     user.Confirmd,
 		LastUpdate:    user.LastUpdate,
+		NVM:           *NVMClean(),
+		Active:        *ActiveClean(),
 		Modified:      vmod.NewModified(),
 	}
 }
@@ -244,23 +262,23 @@ func UserPipeline(user bool) (pipe *vmdb.Pipeline) {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	//pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
 }
 
 func SortedUserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	return
 }
@@ -274,36 +292,36 @@ func UserPermittedPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 		pipe.LookupUnwind(AddressesCollection, "_id", "user_id", "address_data")
 		pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "address_id", Value: "$address_data._id"}}}})
 	}
-	pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
-	pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//pipe.LookupUnwind(ProfileCollection, "_id", "user_id", "profile")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(ActiveCollection, "_id", "user_id", "active")
+	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
 	if token.Roles.Validate("admin;employee;pool_employee") {
 		pipe.Lookup(NewsletterCollection, "_id", "user_id", "newsletter")
 	}
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 
 	return
 }
 
 func UserPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
-	pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
+	//pipe.LookupUnwind(UserCrewCollection, "_id", "user_id", "crew")
 	pipe.Lookup(PoolRoleCollection, "_id", "user_id", "pool_roles")
-	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
-	pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
+	//	pipe.LookupUnwind(NVMCollection, "_id", "user_id", "nvm")
+	//pipe.LookupUnwind(AvatarCollection, "_id", "user_id", "avatar")
 	return
 }
 
 func UserMatch(userID string) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualString("_id", userID)
 	return filter.Bson()
 }
 
 func UserMatchEmail(email string) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualString("email", email)
 	return filter.Bson()
 }
@@ -406,8 +424,15 @@ func (i *UserQuery) CrewUsersPermission(token *AccessToken) (err error) {
 	return
 }
 
-func (i *UserParam) Match() bson.D {
+func UserFilter() *vmdb.Filter {
 	filter := vmdb.NewFilter()
+	filter.Append(bson.E{Key: "_id", Value: bson.D{{Key: "$ne", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}})
+	filter.Append(bson.E{Key: "_id", Value: bson.D{{Key: "$ne", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFE"}}})
+	return filter
+}
+
+func (i *UserParam) Match() bson.D {
+	filter := UserFilter()
 	filter.EqualString("_id", i.ID)
 	return filter.Bson()
 }
@@ -419,7 +444,7 @@ func (i UserQuery) Sort() bson.D {
 }
 
 func (i *UserQuery) PermittedFilter(token *AccessToken) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("email", i.Email)
 	filter.LikeString("first_name", i.FirstName)
@@ -441,7 +466,7 @@ func (i *UserQuery) PermittedFilter(token *AccessToken) bson.D {
 }
 
 func (i *UserQuery) PermittedUserFilter(token *AccessToken) bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other"})
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("first_name", i.FirstName)
@@ -461,7 +486,7 @@ func (i *UserQuery) PermittedUserFilter(token *AccessToken) bson.D {
 }
 
 func (i *UserQuery) Filter() bson.D {
-	filter := vmdb.NewFilter()
+	filter := UserFilter()
 	filter.EqualBool("confirmed", "true")
 	filter.LikeString("first_name", i.FirstName)
 	filter.LikeString("last_name", i.LastName)

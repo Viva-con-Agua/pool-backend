@@ -164,6 +164,8 @@ type (
 		EndAt                 int64                  `json:"end_at" bson:"end_at"`
 		CrewID                string                 `json:"crew_id" bson:"crew_id"`
 		Crew                  Crew                   `json:"crew" bson:"crew"`
+		OrganisationID        string                 `json:"organisation_id" bson:"organisation_id"`
+		Organisation          Organisation           `json:"organisation" bson:"organisation"`
 		EventASPID            string                 `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string                 `json:"internal_asp_id" bson:"internal_asp_id"`
 		Application           EventApplication       `json:"application" bson:"application"`
@@ -193,8 +195,9 @@ type (
 		EventASPID            string            `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string            `json:"internal_asp_id" bson:"internal_asp_id"`
 		EventASP              User              `json:"event_asp" bson:"event_asp"`
-		InteralASP            User              `json:"internal_asp" bson:"internal_asp"`
+		InternalASP           User              `json:"internal_asp" bson:"internal_asp"`
 		OrganisationID        string            `json:"organisation_id" bson:"organisation_id"`
+		Organisation          Organisation      `json:"organisation" bson:"organisation"`
 		ExternalASP           UserExternal      `json:"external_asp" bson:"external_asp"`
 		TakingID              string            `json:"taking_id" bson:"taking_id"`
 		DepositID             string            `json:"deposit_id" bson:"deposit_id"`
@@ -233,7 +236,31 @@ type (
 	EventParam struct {
 		ID string `param:"id"`
 	}
-
+	EventUserDeletion struct {
+		ID                    string        `json:"id" bson:"_id"`
+		Name                  string        `json:"name" bson:"name"`
+		TypeOfEvent           string        `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation string        `json:"additional_information" bson:"additional_information"`
+		StartAt               int64         `json:"start_at" bson:"start_at"`
+		EndAt                 int64         `json:"end_at" bson:"end_at"`
+		EventASPID            string        `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID         string        `json:"internal_asp_id" bson:"internal_asp_id"`
+		EventASP              User          `json:"event_asp" bson:"event_asp"`
+		InternalASP           User          `json:"internal_asp" bson:"internal_asp"`
+		ExternalASP           UserExternal  `json:"external_asp" bson:"external_asp"`
+		CreatorID             string        `json:"creator_id" bson:"creator_id"`
+		Creator               User          `json:"creator" bson:"creator"`
+		EditorID              string        `json:"editor_id" bson:"editor_id"`
+		Modified              vmod.Modified `json:"modified" bson:"modified"`
+	}
+	EventMinimal struct {
+		ID       string        `json:"id" bson:"_id"`
+		Name     string        `json:"name" bson:"name"`
+		Location Location      `json:"location" bson:"location"`
+		StartAt  int64         `json:"start_at" bson:"start_at"`
+		EndAt    int64         `json:"end_at" bson:"end_at"`
+		Modified vmod.Modified `json:"modified" bson:"modified"`
+	}
 	EventQuery struct {
 		ID                  []string `query:"id" qs:"id"`
 		Name                string   `query:"name" qs:"name"`
@@ -314,7 +341,7 @@ type (
 		EventASPID            string           `json:"event_asp_id" bson:"event_asp_id"`
 		InternalASPID         string           `json:"internal_asp_id" bson:"internal_asp_id"`
 		EventASP              User             `json:"event_asp" bson:"event_asp"`
-		InteralASP            User             `json:"internal_asp" bson:"internal_asp"`
+		InternalASP           User             `json:"internal_asp" bson:"internal_asp"`
 		ExternalASP           UserExternal     `json:"external_asp" bson:"external_asp"`
 		Application           EventApplication `json:"application" bson:"application"`
 		Participation         []Participation  `json:"participations" bson:"participations"`
@@ -334,12 +361,13 @@ var PublicEventView = "events_public_view"
 
 func (i *EventDatabase) TakingDatabase() *TakingDatabase {
 	return &TakingDatabase{
-		ID:           uuid.NewString(),
-		Name:         i.Name,
-		CrewID:       i.CrewID,
-		DateOfTaking: i.EndAt,
-		Type:         "automatically",
-		Modified:     vmod.NewModified(),
+		ID:             uuid.NewString(),
+		Name:           i.Name,
+		CrewID:         i.CrewID,
+		OrganisationID: i.OrganisationID,
+		DateOfTaking:   i.EndAt,
+		Type:           "automatically",
+		Modified:       vmod.NewModified(),
 	}
 }
 func (i *EventCreate) EventDatabase(token *AccessToken) *EventDatabase {
@@ -406,11 +434,11 @@ func (i *EventImport) EventDatabase() *EventDatabase {
 func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
 	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
-	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
+	//pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.LookupUnwind(OrganizerCollection, "organizer_id", "_id", "organizer")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	if token.Roles.Validate("admin;employee;pool_employee") || token.ID == "internal" {
@@ -428,11 +456,11 @@ func EventPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
 func EventImportPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event_asp_id", "user_id", "event_asp.profile")
 	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
-	pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "internal_asp_id", "user_id", "internal_asp.profile")
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
-	pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
+	//pipe.LookupUnwind(ProfileCollection, "creator_id", "user_id", "creator.profile")
 	pipe.Lookup(ParticipationCollection, "_id", "event_id", "participations")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	return
@@ -445,6 +473,14 @@ func EventPipelinePublic() (pipe *vmdb.Pipeline) {
 	pipe.LookupList(ArtistCollection, "artist_ids", "_id", "artists")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
+	return
+}
+
+func EventUserPipeline() (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
+	pipe.LookupUnwind(UserCollection, "event_asp_id", "_id", "event_asp")
+	pipe.LookupUnwind(UserCollection, "internal_asp_id", "_id", "internal_asp")
+	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
 	return
 }
 

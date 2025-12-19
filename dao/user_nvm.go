@@ -12,15 +12,16 @@ func NVMConfirm(ctx context.Context, token *models.AccessToken) (result *models.
 	if err = models.NVMConfirmedPermission(token); err != nil {
 		return
 	}
-	if err = NVMCollection.UpdateOne(
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
+		bson.D{{Key: "_id", Value: token.ID}},
 		vmdb.UpdateSet(models.NVMConfirm()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
-
+	result = &user.NVM
 	return
 }
 
@@ -28,54 +29,100 @@ func NVMConfirmUser(ctx context.Context, i *models.NVMIDParam, token *models.Acc
 	if err = models.NVMPermission(token); err != nil {
 		return
 	}
-	if err = NVMCollection.UpdateOne(
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: i.ID}},
+		bson.D{{Key: "_id", Value: i.ID}},
 		vmdb.UpdateSet(models.NVMConfirm()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.NVM
 
 	return
 }
 
-func NVMRejectUser(ctx context.Context, i *models.NVMIDParam, token *models.AccessToken) (result *models.NVM, err error) {
+func NVMReject(ctx context.Context, i *models.NVMIDParam, token *models.AccessToken) (result *models.NVM, err error) {
 	if err = models.NVMPermission(token); err != nil {
 		return
 	}
-	if err = NVMCollection.UpdateOne(
+	return nvmReject(ctx, i.ID)
+}
+
+func nvmReject(ctx context.Context, id string) (result *models.NVM, err error) {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: i.ID}},
+		bson.D{{Key: "_id", Value: id}},
 		vmdb.UpdateSet(models.NVMReject()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.NVM
 	if err = PoolRoleCollection.TryDeleteMany(
 		ctx,
-		bson.D{{Key: "user_id", Value: i.ID}},
+		bson.D{{Key: "user_id", Value: id}},
 	); err != nil {
 		return
 	}
-
 	return
 }
 
 func NVMWithdraw(ctx context.Context, token *models.AccessToken) (result *models.NVM, err error) {
-	if err = NVMCollection.UpdateOne(
+	if err = models.NVMPermission(token); err != nil {
+		return
+	}
+	return nvmWithdraw(ctx, token.ID)
+}
+
+func nvmWithdraw(ctx context.Context, id string) (result *models.NVM, err error) {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
+		bson.D{{Key: "_id", Value: id}},
 		vmdb.UpdateSet(models.NVMWithdraw()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.NVM
 	if err = PoolRoleCollection.TryDeleteMany(
 		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
+		bson.D{{Key: "user_id", Value: id}},
 	); err != nil {
 		return
 	}
+	return
+}
+
+func nvmClean(ctx context.Context, id string) (result *models.NVM, err error) {
+	user := new(models.User)
+	update := bson.D{{Key: "nvm", Value: models.NVMClean()}}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: id}},
+		vmdb.UpdateSet(update),
+		&user,
+	); err != nil {
+		return
+	}
+	result = &user.NVM
+	return
+}
+
+func nvmNew(ctx context.Context, id string) (result *models.NVM, err error) {
+	user := new(models.User)
+	update := bson.D{{Key: "nvm", Value: models.NewNVM(id)}}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: id}},
+		vmdb.UpdateSet(update),
+		&user,
+	); err != nil {
+		return
+	}
+	result = &user.NVM
 	return
 }

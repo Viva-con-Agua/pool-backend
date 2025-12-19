@@ -54,7 +54,7 @@ var OrganisationCollection = "organisations"
 func OrganisationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "default_asp_id", "_id", "default_asp")
-	pipe.LookupUnwind(ProfileCollection, "default_asp_id", "user_id", "default_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "default_asp_id", "user_id", "default_asp.profile")
 	return
 }
 
