@@ -203,7 +203,7 @@ func (i *EventHandler) GetPublic(cc echo.Context) (err error) {
 // @Produce json
 // @Param   q query   models.EventQuery   false  "string collection"  collectionFormat(multi)
 // @Model: vcago.Response
-// @Success 200 {object} vcago.Response{payload=[]models.ListDetailsEvent}
+// @Success 200 {object} vcago.Response{payload=[]models.AspListEvent}
 // @Failure 400 {object} vcago.Response{}
 // @Router /events/event/user [get]
 func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
@@ -216,7 +216,7 @@ func (i *EventHandler) GetByEventAsp(cc echo.Context) (err error) {
 	if err = c.AccessToken(token); err != nil {
 		return
 	}
-	result := new([]models.ListDetailsEvent)
+	result := new([]models.AspListEvent)
 	var listSize int64
 	if result, listSize, err = dao.EventGetAps(c.Ctx(), body, token); err != nil {
 		return
