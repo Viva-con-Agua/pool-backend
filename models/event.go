@@ -483,7 +483,7 @@ func EventUserPipeline() (pipe *vmdb.Pipeline) {
 	pipe.LookupUnwind(UserCollection, "creator_id", "_id", "creator")
 	return
 }
-  
+
 func EventCrewPublic() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
