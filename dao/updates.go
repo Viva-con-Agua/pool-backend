@@ -129,6 +129,11 @@ func UpdateDatabase() {
 		UpdateUserCrewtoUser(ctx)
 		Updates.Insert(ctx, "update_profile_to_user")
 	}
+	if !Updates.Check(ctx, "update_profile_to_user1") {
+		log.Print("update_profile_to_user1")
+		UpdateProfiletoUser(ctx)
+		Updates.Insert(ctx, "update_profile_to_user1")
+	}
 	if !Updates.Check(ctx, "update_taking_organisation_ids") {
 		log.Print("update_taking_organisation_ids")
 		UpdateTakingOrganisationID(ctx)
