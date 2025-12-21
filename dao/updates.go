@@ -119,15 +119,10 @@ func UpdateDatabase() {
 		UpdateUserCrewtoUser(ctx)
 		Updates.Insert(ctx, "update_usercrew_to_user")
 	}
-	if !Updates.Check(ctx, "update_profile_to_user") {
-		log.Print("update_profile_to_user")
-		UpdateUserCrewtoUser(ctx)
-		Updates.Insert(ctx, "update_profile_to_user")
-	}
-	if !Updates.Check(ctx, "update_profile_to_user") {
-		log.Print("update_profile_to_user")
-		UpdateUserCrewtoUser(ctx)
-		Updates.Insert(ctx, "update_profile_to_user")
+	if !Updates.Check(ctx, "update_profile_to_user2") {
+		log.Print("update_profile_to_user2")
+		UpdateProfiletoUser(ctx)
+		Updates.Insert(ctx, "update_profile_to_user2")
 	}
 	if !Updates.Check(ctx, "update_taking_organisation_ids") {
 		log.Print("update_taking_organisation_ids")
@@ -450,7 +445,7 @@ func UpdateUserCrewtoUser(ctx context.Context) {
 
 func UpdateProfiletoUser(ctx context.Context) {
 	profile := []models.Profile{}
-	if err := UserCrewCollection.Find(ctx, bson.D{}, &profile); err != nil {
+	if err := ProfileCollection.Find(ctx, bson.D{}, &profile); err != nil {
 		log.Print(err)
 	}
 	for _, entry := range profile {
