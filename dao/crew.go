@@ -66,9 +66,7 @@ func CrewPublicGet(ctx context.Context, i *models.CrewQuery) (result *[]models.C
 
 func CrewGetAsMember(ctx context.Context, i *models.CrewQuery, token *models.AccessToken) (result *models.Crew, err error) {
 	filter := i.PermittedFilter(token)
-	if err = CrewsCollection.FindOne(ctx, filter, &result); err != nil {
-		return
-	}
+	if err = CrewsCollection.AggregateOne(ctx, models.CrewPipeline().Match(filter).Pipe, &result); err != nil {return}
 	return
 }
 
