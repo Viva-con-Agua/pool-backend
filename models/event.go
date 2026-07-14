@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -672,7 +673,7 @@ func (i *EventQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter.GteInt64("modified.created", i.CreatedFrom)
 	filter.LteInt64("modified.updated", i.UpdatedTo)
 	filter.LteInt64("modified.created", i.CreatedTo)
-	filter.SearchString([]string{"_id", "name", "crew.name", "artists.name", "location.name"}, i.Search)
+	filter.SearchString([]string{"_id", "name", "crew.name", "artists.name", "location.name"}, strings.TrimSpace(i.Search))
 	return filter.Bson()
 }
 
