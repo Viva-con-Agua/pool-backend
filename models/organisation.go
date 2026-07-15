@@ -16,14 +16,26 @@ type (
 		Options      []string `json:"options" bson:"options"`
 	}
 	Organisation struct {
-		ID           string        `json:"id" bson:"_id"`
-		Name         string        `json:"name" bson:"name"`
-		Abbreviation string        `json:"abbreviation" bson:"abbreviation"`
-		DefaultAspID string        `json:"default_asp_id" bson:"default_asp_id"`
-		DefaultAsp   UserContact   `json:"default_asp" bson:"default_asp"`
-		Email        string        `json:"email" bson:"email"`
-		Options      []string      `json:"options" bson:"options"`
-		Modified     vmod.Modified `json:"modified" bson:"modified"`
+		ID           string                  `json:"id" bson:"_id"`
+		Name         string                  `json:"name" bson:"name"`
+		Abbreviation string                  `json:"abbreviation" bson:"abbreviation"`
+		DefaultAspID string                  `json:"default_asp_id" bson:"default_asp_id"`
+		DefaultAsp   OrganisationUserContact `json:"default_asp" bson:"default_asp"`
+		Email        string                  `json:"email" bson:"email"`
+		Options      []string                `json:"options" bson:"options"`
+		Modified     vmod.Modified           `json:"modified" bson:"modified"`
+	}
+	OrganisationUserContact struct {
+		ID        string                     `json:"id,omitempty" bson:"_id"`
+		Email     string                     `json:"email" bson:"email" `
+		FirstName string                     `bson:"first_name" json:"first_name" `
+		LastName  string                     `bson:"last_name" json:"last_name" `
+		FullName  string                     `bson:"full_name" json:"full_name"`
+		Profile   OrganisationProfileMinimal `bson:"profile" json:"profile"`
+	}
+	OrganisationProfileMinimal struct {
+		Mattermost string `bson:"mattermost_username" json:"mattermost_username"`
+		UserID     string `bson:"user_id" json:"user_id"`
 	}
 	OrganisationUpdate struct {
 		ID           string   `json:"id" bson:"_id"`
