@@ -26,6 +26,12 @@ func OrganisationGet(ctx context.Context, i *models.OrganisationQuery) (result *
 	if err = OrganisationCollection.Aggregate(ctx, models.OrganisationPipeline().Match(filter).Pipe, result); err != nil {
 		return
 	}
+
+	for _, r := range *result {
+		r.DefaultAsp.Profile.Birthdate = 0
+		r.DefaultAsp.Profile.BirthdateDatetime = ""
+	}
+
 	return
 }
 
