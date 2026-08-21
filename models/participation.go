@@ -326,13 +326,20 @@ func (i *ParticipationQuery) FilterAspInformation(token *AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *EventParam) FilterEvent(token *AccessToken) bson.D {
+func (i *EventParam) FilterEvent(token *AccessToken, event *Event) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
+
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
 		filter.EqualString("event.event_asp_id", token.ID)
 	} else if !token.Roles.Validate("admin;employee;pool_employee") {
-		filter.EqualString("event.crew_id", token.CrewID)
+		if token.ID == event.EventASPID {
+			// if external person has ASPEventRole AND is ASP of other crew
+			filter.EqualString("event.crew_id", event.CrewID)
+		} else {
+			// else return only participations of own crew
+			filter.EqualString("event.crew_id", token.CrewID)
+		}
 	}
 	return filter.Bson()
 }
