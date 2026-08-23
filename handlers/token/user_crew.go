@@ -39,11 +39,7 @@ func (i *UserCrewHandler) Create(cc echo.Context) (err error) {
 	if result, err = dao.UserCrewInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
-	go func() {
-		if err = dao.IDjango.Post(result, "/v1/pool/profile/crew/"); err != nil {
-			log.Print(err)
-		}
-	}()
+	dao.UserCrewSync(*result)
 	return c.Created(result)
 }
 
@@ -61,11 +57,7 @@ func (i *UserCrewHandler) UsersCreate(cc echo.Context) (err error) {
 	if result, err = dao.UsersUserCrewInsert(c.Ctx(), body, token); err != nil {
 		return
 	}
-	go func() {
-		if err = dao.IDjango.Post(result, "/v1/pool/profile/crew/"); err != nil {
-			log.Print(err)
-		}
-	}()
+	dao.UserCrewSync(*result)
 	return c.Created(result)
 }
 
@@ -137,11 +129,9 @@ func (i *UserCrewHandler) Delete(cc echo.Context) (err error) {
 	if err = dao.UserCrewDelete(c.Ctx(), token.ID); err != nil {
 		return
 	}
-	go func() {
-		if err = dao.IDjango.Post(&models.UserCrewUpdate{UserID: token.ID}, "/v1/pool/profile/crew/"); err != nil {
-			log.Print(err)
-		}
-	}()
+	if err = dao.IDjango.Post(&models.UserCrewUpdate{UserID: token.ID}, "/v1/pool/profile/crew/"); err != nil {
+		log.Print(err)
+	}
 	return c.Deleted(token.ID)
 
 }

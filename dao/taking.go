@@ -22,7 +22,6 @@ func TakingInsert(ctx context.Context, i *models.TakingCreate, token *models.Acc
 	if err = models.TakingPermission(token); err != nil {
 		return
 	}
-	//create taking model form i.
 	taking := i.TakingDatabase()
 	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
 		return
@@ -121,7 +120,7 @@ func TakingGet(ctx context.Context, query *models.TakingQuery, token *models.Acc
 	result = []models.Taking{}
 	filter := query.PermittedFilter(token)
 	sort := query.Sort()
-	pipeline := models.TakingPipelineList().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
+	pipeline := models.TakingPipelineList().SortFields(sort, query.SortOption()).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe
 	if err = TakingCollection.Aggregate(
 		ctx,
 		pipeline,

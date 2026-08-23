@@ -74,7 +74,14 @@ func EventStateClosedTicker() {
 		if err := EventCollection.UpdateOne(context.Background(), updateFilter, vmdb.UpdateSet(update), e); err != nil {
 			log.Print(err)
 		}
-		if err := IDjango.Post(i, "/v1/pool/taking/create/"); err != nil {
+		org := new(models.Organisation)
+		if err := OrganisationCollection.FindOne(context.Background(), bson.D{{Key: "_id", Value: takings[i].Event.OrganisationID}}, org); err != nil {
+			log.Print(err)
+		} else {
+			takings[i].EditorID = org.DefaultAspID
+			e.EditorID = org.DefaultAspID
+		}
+		if err := IDjango.Post(takings[i], "/v1/pool/taking/create/"); err != nil {
 			log.Print(err)
 		}
 		if err := IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
@@ -108,9 +115,9 @@ func UserActiveStateTicker() {
 		log.Print(err)
 	}
 	for _, user := range userList {
-		update := bson.D{{Key: "status", Value: "rejected"}}
-		userFilter := bson.D{{Key: "_id", Value: user.Active.ID}}
-		if err := ActiveCollection.UpdateOne(context.Background(), userFilter, vmdb.UpdateSet(update), nil); err != nil {
+		update := bson.D{{Key: "active.status", Value: "rejected"}}
+		userFilter := bson.D{{Key: "_id", Value: user.ID}}
+		if err := UserCollection.UpdateOne(context.Background(), userFilter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
 	}

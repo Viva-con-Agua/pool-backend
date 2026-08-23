@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
+	"github.com/Viva-con-Agua/vcago/vmod"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -38,7 +39,7 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	if err = models.UsersPermission(token); err != nil {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
@@ -47,18 +48,15 @@ func UsersGet(i *models.UserQuery, token *models.AccessToken) (result *[]models.
 	if err = UserCollection.Aggregate(ctx, pipeline, result); err != nil {
 		return
 	}
-	count := new([]Count)
-	if err = UserCollection.Aggregate(
-		context.Background(),
-		models.UserCountPipeline(filter).Pipe,
-		count,
-	); err != nil {
-		return
-	}
-	if len(*count) == 0 {
+	count := vmod.Count{}
+	var cErr error
+	ctxCount, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	if cErr = UserCollection.AggregateOne(ctxCount, models.SortedUserPermittedPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+		log.Print(cErr)
 		listSize = 0
 	} else {
-		listSize = (*count)[0].ListSize
+		listSize = int64(count.Total)
 	}
 	return
 }
@@ -127,30 +125,13 @@ func UserDelete(ctx context.Context, id string) (err error) {
 	if err = AddressesCollection.TryDeleteOne(ctx, delete); err != nil {
 		return
 	}
-	if err = ProfileCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = UserCrewCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = ActiveCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = NVMCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
-	if err = NVMCollection.TryDeleteMany(ctx, delete); err != nil {
-		return
-	}
-	if err = AvatarCollection.TryDeleteOne(ctx, delete); err != nil {
-		return
-	}
 	if err = MailboxCollection.TryDeleteOne(ctx, bson.D{{Key: "_id", Value: user.MailboxID}}); err != nil {
 		return
 	}
 	if err = MessageCollection.TryDeleteMany(ctx, bson.D{{Key: "mailbox_id", Value: user.MailboxID}}); err != nil {
 		return
 	}
+	ClearUserDataOnDelete(ctx, id)
 	if err = UserCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}}); err != nil {
 		return
 	}
@@ -158,11 +139,11 @@ func UserDelete(ctx context.Context, id string) (err error) {
 }
 
 func UserSync(ctx context.Context, i *models.ProfileParam, token *models.AccessToken) (result *models.User, err error) {
-	profile := new(models.Profile)
-	if err = ProfileCollection.FindOne(ctx, i.Match(), profile); err != nil {
+	user := new(models.User)
+	if err = UserCollection.FindOne(ctx, i.Match(), user); err != nil {
 		return
 	}
-	if result, err = ProfileGetByID(ctx, &models.UserParam{ID: profile.UserID}, token); err != nil {
+	if result, err = ProfileGetByID(ctx, &models.UserParam{ID: user.ID}, token); err != nil {
 		return
 	}
 	if err = IDjango.Post(result, "/v1/pool/user/"); err != nil {
@@ -183,6 +164,37 @@ func UserOrganisationUpdate(ctx context.Context, i *models.UserOrganisationUpdat
 		&result,
 	); err != nil {
 		return
+	}
+	return
+}
+
+func ClearUserDataOnDelete(ctx context.Context, id string) (err error) {
+	participationsFilter := bson.D{{Key: "user_id", Value: id}}
+	updateParticipations := bson.D{{Key: "user_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}, {Key: "comment", Value: ""}}
+	if err = ParticipationCollection.UpdateMany(context.Background(), participationsFilter, vmdb.UpdateSet(updateParticipations)); err != nil {
+		log.Print(err)
+	}
+
+	depositsFilter := bson.D{{Key: "creator_id", Value: id}}
+	updateDeposits := bson.D{{Key: "creator_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}
+	if err = DepositCollection.UpdateMany(context.Background(), depositsFilter, vmdb.UpdateSet(updateDeposits)); err != nil {
+		log.Print(err)
+	}
+
+	eventsFilter := bson.D{{Key: "event_asp_id", Value: id}}
+	updateEvents := bson.D{{Key: "event_asp_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}
+	if err = EventCollection.UpdateMany(context.Background(), eventsFilter, vmdb.UpdateSet(updateEvents)); err != nil {
+		log.Print(err)
+	}
+	eventsFilter = bson.D{{Key: "internal_asp_id", Value: id}}
+	updateEvents = bson.D{{Key: "internal_asp_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFE"}}
+	if err = EventCollection.UpdateMany(context.Background(), eventsFilter, vmdb.UpdateSet(updateEvents)); err != nil {
+		log.Print(err)
+	}
+	eventsFilter = bson.D{{Key: "creator_id", Value: id}}
+	updateEvents = bson.D{{Key: "creator_id", Value: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"}}
+	if err = EventCollection.UpdateMany(context.Background(), eventsFilter, vmdb.UpdateSet(updateEvents)); err != nil {
+		log.Print(err)
 	}
 	return
 }

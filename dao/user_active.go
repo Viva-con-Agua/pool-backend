@@ -10,26 +10,28 @@ import (
 )
 
 func ActiveWithdraw(ctx context.Context, token *models.AccessToken) (result *models.Active, err error) {
-	if err = ActiveCollection.UpdateOne(
+	return activeWithdraw(ctx, token.ID)
+}
+
+func activeWithdraw(ctx context.Context, id string) (result *models.Active, err error) {
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
+		bson.D{{Key: "_id", Value: id}},
 		vmdb.UpdateSet(models.ActiveWithdraw()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.Active
 	//withdrawn nvm
-	if err = NVMCollection.TryUpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
-		vmdb.UpdateSet(models.NVMWithdraw()),
-	); err != nil {
+	if _, err = nvmWithdraw(ctx, id); err != nil {
 		return
 	}
 	//Delete Pool Roles
 	if err = PoolRoleCollection.TryDeleteMany(
 		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
+		bson.D{{Key: "user_id", Value: id}},
 	); err != nil {
 		return
 	}
@@ -41,21 +43,19 @@ func ActiveReject(ctx context.Context, i *models.ActiveParam, token *models.Acce
 	if err = models.ActivePermission(token); err != nil {
 		return
 	}
+	user := new(models.User)
 	filter := i.PermittedFilter(token)
-	if err = ActiveCollection.UpdateOne(
+	if err = UserCollection.UpdateOne(
 		ctx,
 		filter,
 		vmdb.UpdateSet(models.ActiveReject()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.Active
 	//reject nvm state
-	if err = NVMCollection.TryUpdateOne(
-		ctx,
-		bson.D{{Key: "user_id", Value: i.UserID}},
-		vmdb.UpdateSet(models.NVMReject()),
-	); err != nil {
+	if _, err = nvmReject(ctx, token.ID); err != nil {
 		return
 	}
 	//Delete Pool Roles
@@ -73,15 +73,17 @@ func ActiveConfirm(ctx context.Context, i *models.ActiveParam, token *models.Acc
 	if err = models.ActivePermission(token); err != nil {
 		return
 	}
+	user := new(models.User)
 	filter := i.PermittedFilter(token)
-	if err = ActiveCollection.UpdateOne(
+	if err = UserCollection.UpdateOne(
 		ctx,
 		filter,
 		vmdb.UpdateSet(models.ActiveConfirm()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.Active
 	return
 }
 
@@ -90,14 +92,46 @@ func ActiveRequest(ctx context.Context, token *models.AccessToken) (result *mode
 	if err = models.ActiveRequestPermission(token); err != nil {
 		return
 	}
-	if err = ActiveCollection.UpdateOne(
+	user := new(models.User)
+	if err = UserCollection.UpdateOne(
 		ctx,
-		bson.D{{Key: "user_id", Value: token.ID}},
+		bson.D{{Key: "_id", Value: token.ID}},
 		vmdb.UpdateSet(models.ActiveRequest()),
-		&result,
+		&user,
 	); err != nil {
 		return
 	}
+	result = &user.Active
+	return
+}
+
+func activeNew(ctx context.Context, id string, crewID string) (result *models.Active, err error) {
+	user := new(models.User)
+	update := bson.D{{Key: "nvm", Value: models.NewActive(id, crewID)}}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: id}},
+		vmdb.UpdateSet(update),
+		&user,
+	); err != nil {
+		return
+	}
+	result = &user.Active
+	return
+}
+
+func activeClean(ctx context.Context, id string) (result *models.Active, err error) {
+	user := new(models.User)
+	update := bson.D{{Key: "nvm", Value: models.NVMClean()}}
+	if err = UserCollection.UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: id}},
+		vmdb.UpdateSet(update),
+		&user,
+	); err != nil {
+		return
+	}
+	result = &user.Active
 	return
 }
 

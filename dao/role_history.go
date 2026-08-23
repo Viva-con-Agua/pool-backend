@@ -16,9 +16,7 @@ func RoleHistoryInsert(ctx context.Context, i *models.RoleHistoryCreate, token *
 	if err = models.RolesHistoryAdminPermission(token); err != nil {
 		return
 	}
-	if result = i.NewRoleHistory(); err != nil {
-		return
-	}
+	result = i.NewRoleHistory()
 	if err = PoolRoleHistoryCollection.InsertOne(ctx, result); err != nil {
 		return
 	}
@@ -59,7 +57,11 @@ func RoleHistoryBulkInsert(ctx context.Context, i *models.RoleHistoryBulkRequest
 		}
 
 	}
-	result.CrewID = i.CrewID
+	crew := new(models.Crew)
+	if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: i.CrewID}}, &result); err != nil {
+		return
+	}
+	result.Crew = *crew
 	return
 }
 

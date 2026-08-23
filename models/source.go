@@ -55,6 +55,7 @@ type (
 		Reciept          bool   `json:"reciept" bson:"reciept"`
 		Purpose          string `json:"purpose" bson:"purpose"`
 		ReasonForPayment string `json:"reason_for_payment" bson:"reason_for_payment"`
+		DonationRequest  bool   `json:"donation_request" bson:"donation_request"`
 	}
 )
 

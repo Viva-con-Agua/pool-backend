@@ -45,10 +45,13 @@ func NewAvatar(token *AccessToken) *Avatar {
 	}
 }
 
+func NewAvatarClean() *Avatar {
+	return &Avatar{}
+}
+
 func (i *AvatarUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	filter.EqualString("user_id", token.ID)
+	filter.EqualString("_id", token.ID)
 	return filter.Bson()
 }
 

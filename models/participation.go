@@ -10,8 +10,10 @@ import (
 
 type (
 	ParticipationCreate struct {
-		EventID string `json:"event_id" bson:"event_id"`
-		Comment string `json:"comment" bson:"comment"`
+		EventID          string `json:"event_id" bson:"event_id"`
+		Comment          string `json:"comment" bson:"comment"`
+		CodeOfConduct    bool   `json:"code_of_conduct" bson:"code_of_conduct"`
+		FestivalBriefing bool   `json:"festival_briefing" bson:"festival_briefing"`
 	}
 
 	ParticipationUpdate struct {
@@ -21,49 +23,67 @@ type (
 		//Confirmer UserInternal `json:"confirmer" bson:"confirmer"`
 	}
 	ParticipationDatabase struct {
-		ID      string `json:"id" bson:"_id"`
-		UserID  string `json:"user_id" bson:"user_id"`
-		EventID string `json:"event_id" bson:"event_id"`
-		Comment string `json:"comment" bson:"comment"`
-		Status  string `json:"status" bson:"status"`
-		CrewID  string `json:"crew_id" bson:"crew_id"`
+		ID               string `json:"id" bson:"_id"`
+		UserID           string `json:"user_id" bson:"user_id"`
+		EventID          string `json:"event_id" bson:"event_id"`
+		Comment          string `json:"comment" bson:"comment"`
+		Status           string `json:"status" bson:"status"`
+		CrewID           string `json:"crew_id" bson:"crew_id"`
+		CodeOfConduct    bool   `json:"code_of_conduct" bson:"code_of_conduct"`
+		FestivalBriefing bool   `json:"festival_briefing" bson:"festival_briefing"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	Participation struct {
-		ID      string `json:"id" bson:"_id"`
-		UserID  string `json:"user_id" bson:"user_id"`
-		User    User   `json:"user" bson:"user"`
-		EventID string `json:"event_id" bson:"event_id"`
-		Comment string `json:"comment" bson:"comment"`
-		Status  string `json:"status" bson:"status"`
-		Event   Event  `json:"event" bson:"event"`
-		CrewID  string `json:"crew_id" bson:"crew_id"`
-		Crew    Crew   `json:"crew" bson:"crew"`
+		ID               string `json:"id" bson:"_id"`
+		UserID           string `json:"user_id" bson:"user_id"`
+		User             User   `json:"user" bson:"user"`
+		EventID          string `json:"event_id" bson:"event_id"`
+		Comment          string `json:"comment" bson:"comment"`
+		Status           string `json:"status" bson:"status"`
+		Event            Event  `json:"event" bson:"event"`
+		CrewID           string `json:"crew_id" bson:"crew_id"`
+		Crew             Crew   `json:"crew" bson:"crew"`
+		CodeOfConduct    bool   `json:"code_of_conduct" bson:"code_of_conduct"`
+		FestivalBriefing bool   `json:"festival_briefing" bson:"festival_briefing"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
+	ParticipationUserDeletion struct {
+		ID       string        `json:"id" bson:"_id"`
+		UserID   string        `json:"user_id" bson:"user_id"`
+		User     User          `json:"user" bson:"user"`
+		EventID  string        `json:"event_id" bson:"event_id"`
+		Comment  string        `json:"comment" bson:"comment"`
+		Status   string        `json:"status" bson:"status"`
+		Event    EventMinimal  `json:"event" bson:"event"`
+		Modified vmod.Modified `json:"modified" bson:"modified"`
+	}
 	UserParticipation struct {
-		ID      string      `json:"id" bson:"_id"`
-		EventID string      `json:"event_id" bson:"event_id"`
-		Comment string      `json:"comment" bson:"comment"`
-		Status  string      `json:"status" bson:"status"`
-		Event   EventPublic `json:"event" bson:"event"`
-		CrewID  string      `json:"crew_id" bson:"crew_id"`
-		Crew    CrewName    `json:"crew" bson:"crew"`
+		ID             string       `json:"id" bson:"_id"`
+		EventID        string       `json:"event_id" bson:"event_id"`
+		Comment        string       `json:"comment" bson:"comment"`
+		Status         string       `json:"status" bson:"status"`
+		Event          EventPublic  `json:"event" bson:"event"`
+		CrewID         string       `json:"crew_id" bson:"crew_id"`
+		Crew           CrewName     `json:"crew" bson:"crew"`
+		OrganisationID string       `json:"organisation_id" bson:"organisation_id"`
+		Organisation   Organisation `json:"organisation" bson:"organisation"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
 	EventParticipation struct {
-		ID      string          `json:"id" bson:"_id"`
-		UserID  string          `json:"user_id" bson:"user_id"`
-		User    UserParticipant `json:"user" bson:"user"`
-		EventID string          `json:"event_id" bson:"event_id"`
-		Comment string          `json:"comment" bson:"comment"`
-		Status  string          `json:"status" bson:"status"`
-		Event   ListEvent       `json:"event" bson:"event"`
-		CrewID  string          `json:"crew_id" bson:"crew_id"`
-		Crew    Crew            `json:"crew" bson:"crew"`
+		ID             string          `json:"id" bson:"_id"`
+		UserID         string          `json:"user_id" bson:"user_id"`
+		User           UserParticipant `json:"user" bson:"user"`
+		EventID        string          `json:"event_id" bson:"event_id"`
+		Comment        string          `json:"comment" bson:"comment"`
+		Status         string          `json:"status" bson:"status"`
+		Event          ListEvent       `json:"event" bson:"event"`
+		CrewID         string          `json:"crew_id" bson:"crew_id"`
+		Crew           Crew            `json:"crew" bson:"crew"`
+		OrganisationID string          `json:"organisation_id" bson:"organisation_id"`
+		Organisation   Organisation    `json:"organisation" bson:"organisation"`
 		//Confirmer UserInternal   `json:"confirmer" bson:"confirmer"`
 		Modified vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -131,19 +151,20 @@ func (i *ParticipationUpdate) ParticipationUpdatePermission(token *AccessToken, 
 func ParticipationPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "user_id", "_id", "user")
-	pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
-	pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "user.crew")
-	pipe.LookupUnwind(ActiveCollection, "user_id", "user_id", "user.active")
+	//pipe.LookupUnwind(ProfileCollection, "user_id", "user_id", "user.profile")
+	//pipe.LookupUnwind(UserCrewCollection, "user_id", "user_id", "user.crew")
+	//pipe.LookupUnwind(ActiveCollection, "user_id", "user_id", "user.active")
 	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
 	pipe.LookupUnwind(UserCollection, "event.internal_asp_id", "_id", "event.internal_asp")
-	pipe.LookupUnwind(ProfileCollection, "event.internal_asp_id", "user_id", "event.internal_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.internal_asp_id", "user_id", "event.internal_asp.profile")
 	pipe.LookupUnwind(UserCollection, "event.creator_id", "_id", "event.creator")
-	pipe.LookupUnwind(ProfileCollection, "event.creator_id", "user_id", "event.creator.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.creator_id", "user_id", "event.creator.profile")
 	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind(OrganizerCollection, "event.organizer_id", "_id", "event.organizer")
+	pipe.LookupUnwind(OrganisationCollection, "event.organisation_id", "_id", "event.organisation")
 	pipe.LookupUnwind(CrewCollection, "event.crew_id", "_id", "event.crew")
 	return
 }
@@ -152,7 +173,7 @@ func ParticipationAspPipeline() (pipe *vmdb.Pipeline) {
 	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(EventCollection, "event_id", "_id", "event")
 	pipe.LookupUnwind(UserCollection, "event.event_asp_id", "_id", "event.event_asp")
-	pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
+	//pipe.LookupUnwind(ProfileCollection, "event.event_asp_id", "user_id", "event.event_asp.profile")
 	return
 }
 
@@ -164,19 +185,61 @@ func (i *Participation) ToContent() *vmod.Content {
 	return content
 }
 
-func (i *Participation) UpdateEventApplicationsUpdate(value int, applications *EventApplications) *EventApplicationsUpdate {
-	switch i.Status {
-	case "confirmed":
-		applications.Confirmed = i.Event.Applications.Confirmed + value
-	case "rejected":
-		applications.Rejected = i.Event.Applications.Rejected + value
-	case "requested":
-		applications.Requested = i.Event.Applications.Requested + value
-	case "withdrawn":
-		applications.Withdrawn = i.Event.Applications.Withdrawn + value
+// GetEventApplicationsInsert returns the update struct for an event application count
+// in case of an participation creates based on the type of an Event.
+func GetEventApplicationsInsert(typeOfEvent string) (result bson.D) {
+	if typeOfEvent == "crew_meeting" {
+		//if the type of event is crew_meeting, then the value of confirmed and total is increased by one.
+		result = bson.D{{Key: "applications.total", Value: 1}, {Key: "applications.confirmed", Value: 1}}
+	} else {
+		//else the participation is a request for an asp so the requested count is increased by one.
+		result = bson.D{{Key: "applications.total", Value: 1}, {Key: "applications.requested", Value: 1}}
 	}
-	applications.Total = i.Event.Applications.Total + value
-	return &EventApplicationsUpdate{ID: i.EventID, Applications: *applications}
+	return
+}
+
+// GetEventApplicationsUpdate returns the update bson.D struct for an event application count
+// in case of an participation update. Please check if the state of current and update is equal, otherwise mongo will return
+// an error because it does not allow multiple mutations of one key in one request.
+func GetEventApplicationsUpdate(current *Participation, update *Participation) (result bson.D) {
+	result = bson.D{}
+	switch current.Status {
+	case "confirmed":
+		result = append(result, bson.E{Key: "applications.confirmed", Value: -1})
+	case "rejected":
+		result = append(result, bson.E{Key: "applications.rejected", Value: -1})
+	case "requested":
+		result = append(result, bson.E{Key: "applications.requested", Value: -1})
+	case "withdrawn":
+		result = append(result, bson.E{Key: "applications.withdrawn", Value: -1})
+	}
+	switch update.Status {
+	case "confirmed":
+		result = append(result, bson.E{Key: "applications.confirmed", Value: 1})
+	case "rejected":
+		result = append(result, bson.E{Key: "applications.rejected", Value: 1})
+	case "requested":
+		result = append(result, bson.E{Key: "applications.requested", Value: 1})
+	case "withdrawn":
+		result = append(result, bson.E{Key: "applications.withdrawn", Value: 1})
+	}
+	return
+}
+
+// GetEventApplicationsUpdate returns the update bson.D struct for an event application count in case of an participation delete.
+func GetEventApplicationsDelete(current *Participation) (result bson.D) {
+	result = bson.D{}
+	switch current.Status {
+	case "confirmed":
+		result = append(result, bson.E{Key: "applications.confirmed", Value: -1})
+	case "rejected":
+		result = append(result, bson.E{Key: "applications.rejected", Value: -1})
+	case "requested":
+		result = append(result, bson.E{Key: "applications.requested", Value: -1})
+	case "withdrawn":
+		result = append(result, bson.E{Key: "applications.withdrawn", Value: -1})
+	}
+	return
 }
 
 func (i *ParticipationCreate) ParticipationDatabase(token *AccessToken, event *Event) *ParticipationDatabase {
@@ -185,13 +248,15 @@ func (i *ParticipationCreate) ParticipationDatabase(token *AccessToken, event *E
 		eventStatus = "confirmed"
 	}
 	return &ParticipationDatabase{
-		ID:       uuid.NewString(),
-		UserID:   token.ID,
-		EventID:  i.EventID,
-		Comment:  i.Comment,
-		Status:   eventStatus,
-		CrewID:   token.CrewID,
-		Modified: vmod.NewModified(),
+		ID:               uuid.NewString(),
+		UserID:           token.ID,
+		EventID:          i.EventID,
+		Comment:          i.Comment,
+		Status:           eventStatus,
+		CrewID:           token.CrewID,
+		CodeOfConduct:    i.CodeOfConduct,
+		FestivalBriefing: i.FestivalBriefing,
+		Modified:         vmod.NewModified(),
 	}
 }
 

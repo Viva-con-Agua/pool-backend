@@ -1,6 +1,7 @@
 package models
 
 import (
+	"slices"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -22,8 +23,8 @@ type RoleBulkRequest struct {
 }
 
 type RoleBulkExport struct {
-	CrewID string       `bson:"crew_id" json:"crew_id"`
-	Users  []ExportRole `json:"users"`
+	Crew  Crew         `bson:"crew" json:"crew"`
+	Users []ExportRole `json:"users"`
 }
 type ExportRole struct {
 	UserID string `json:"uuid"`
@@ -121,9 +122,12 @@ func NewRoleRequestHistory(i *RoleRequest, user *User) (r *RoleHistoryDatabase) 
 var ASPRole = "other;asp;finance;operation;education;network;socialmedia;awareness"
 var ASPEventRole = "network;operation;education"
 
-func RolesPermission(role string, user *User, token *AccessToken) (err error) {
-	if user.NVM.Status != "confirmed" {
+func RolesPermission(role string, user *User, token *AccessToken, options []string) (err error) {
+	if user.NVM.Status != "confirmed" && slices.Contains(options, "nvm") {
 		return vcago.NewBadRequest(PoolRoleCollection, "nvm required", nil)
+	}
+	if user.Active.Status != "confirmed" {
+		return vcago.NewBadRequest(PoolRoleCollection, "active required", nil)
 	}
 	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(role)) {
 		return vcago.NewPermissionDenied(PoolRoleCollection)
@@ -257,5 +261,12 @@ func (i *RoleBulkRequest) PermittedFilter(token *AccessToken) bson.D {
 		filter.EqualString("crew.crew_id", i.CrewID)
 		filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other", "asp"})
 	}
+	return filter.Bson()
+}
+
+func (i *RoleBulkRequest) SyncFilter() bson.D {
+	filter := vmdb.NewFilter()
+	filter.EqualString("crew.crew_id", i.CrewID)
+	filter.ElemMatchList("pool_roles", "name", []string{"network", "education", "finance", "operation", "awareness", "socialmedia", "other", "asp"})
 	return filter.Bson()
 }

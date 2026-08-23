@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"log"
 	"pool-backend/models"
 
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -25,6 +26,7 @@ func OrganisationGet(ctx context.Context, i *models.OrganisationQuery) (result *
 	if err = OrganisationCollection.Aggregate(ctx, models.OrganisationPipeline().Match(filter).Pipe, result); err != nil {
 		return
 	}
+
 	return
 }
 
@@ -55,5 +57,14 @@ func OrganisationDelete(ctx context.Context, i *models.OrganisationParam, token 
 	if err = OrganisationCollection.DeleteOne(ctx, filter); err != nil {
 		return
 	}
+	return
+}
+
+func OrganisationSync(i *models.Organisation) (result *models.Organisation, err error) {
+	go func() {
+		if err = IDjango.Post(i, "/v1/pool/organisation/"); err != nil {
+			log.Print(err)
+		}
+	}()
 	return
 }

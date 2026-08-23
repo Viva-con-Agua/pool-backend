@@ -52,8 +52,7 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 }
 
 func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models.ListEvent, list_size int64, err error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	filter := i.PermittedFilter(token)
 	sort := i.Sort()
@@ -64,8 +63,10 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 	}
 
 	count := vmod.Count{}
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel2()
 	var cErr error
-	if cErr = EventCollection.AggregateOne(ctx, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
+	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
 		list_size = 1
 	} else {
 		list_size = int64(count.Total)
@@ -121,21 +122,22 @@ func EventViewGetByID(ctx context.Context, i *models.EventParam) (result *models
 	return
 }
 
-func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_size int64, err error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models.EventPublic, list_size int64, err error) {
 	filter := i.PublicFilter()
 	sort := i.Sort()
 	pipeline := models.EventPipelinePublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
 	result = new([]models.EventPublic)
-	if err = EventCollection.Aggregate(ctx, pipeline, result); err != nil {
+	cTx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	if err = EventCollection.Aggregate(cTx, pipeline, result); err != nil {
 		return
 	}
-
 	count := vmod.Count{}
 	var cErr error
-	if cErr = EventCollection.AggregateOne(ctx, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel2()
+	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
 		list_size = 1
 	} else {
@@ -147,19 +149,32 @@ func EventGetPublic(i *models.EventQuery) (result *[]models.EventPublic, list_si
 func EventsGetReceiverEvents(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.EventPublic, err error) {
 	filter := i.FilterEmailEvents(token)
 	result = new([]models.EventPublic)
-	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Pipe, result); err != nil {
+	if err = EventCollection.Aggregate(ctx, models.EventPipelinePublic().Match(filter).Limit(100, 100).Pipe, result); err != nil {
 		return
 	}
 	return
 }
 
-func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.ListDetailsEvent, err error) {
+func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.AccessToken) (result *[]models.AspListEvent, list_size int64, err error) {
 	filter := i.FilterAsp(token)
-	result = new([]models.ListDetailsEvent)
-	if err = EventCollection.Aggregate(ctx, models.EventPipeline(token).Match(filter).Pipe, result); err != nil {
+	result = new([]models.AspListEvent)
+	sort := i.Sort()
+	pipeline := models.EventCrewPublic().SortFields(sort).Match(filter).Sort(sort).Skip(i.Skip, 0).Limit(i.Limit, 100).Pipe
+	cTx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	if err = EventCollection.Aggregate(cTx, pipeline, result); err != nil {
 		return
 	}
-
+	count := vmod.Count{}
+	var cErr error
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel2()
+	if cErr = EventCollection.AggregateOne(ctx2, models.EventCrewPublic().Match(filter).Count().Pipe, &count); cErr != nil {
+		log.Print(cErr)
+		list_size = 1
+	} else {
+		list_size = int64(count.Total)
+	}
 	return
 }
 
@@ -233,20 +248,6 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 	return
 }
 
-func EventApplicationsUpdate(ctx context.Context, i *models.EventApplicationsUpdate) (result *models.Event, err error) {
-
-	filter := bson.D{{Key: "_id", Value: i.ID}}
-	if err = EventCollection.UpdateOne(
-		ctx,
-		filter,
-		vmdb.UpdateSet(i),
-		&result,
-	); err != nil {
-		return
-	}
-	return
-}
-
 func EventDelete(ctx context.Context, i *models.EventParam, token *models.AccessToken) (err error) {
 	if err = models.EventDeletePermission(token); err != nil {
 		return
@@ -299,24 +300,25 @@ func EventImport(ctx context.Context, i *models.EventImport) (result *models.Eve
 	event.CreatorID = admin.ID
 	event.InternalASPID = admin.ID
 	event.EventState.InternalConfirmation = admin.ID
+	/*
+		if event.CrewID != "" {
+			aspRole := new(models.RoleDatabase)
+			if err = UserCrewCollection.AggregateOne(ctx, models.EventRolePipeline().Match(bson.D{{Key: "crew_id", Value: event.CrewID}}).Pipe, aspRole); err != nil {
+				return
+			}
+			event.EventASPID = aspRole.UserID
 
-	if event.CrewID != "" {
-		aspRole := new(models.RoleDatabase)
-		if err = UserCrewCollection.AggregateOne(ctx, models.EventRolePipeline().Match(bson.D{{Key: "crew_id", Value: event.CrewID}}).Pipe, aspRole); err != nil {
-			return
-		}
-		event.EventASPID = aspRole.UserID
+			crew := new(models.Crew)
+			if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: event.CrewID}}, &crew); err != nil {
+				return
+			}
+			event.OrganisationID = crew.OrganisationID
 
-		crew := new(models.Crew)
-		if err = CrewsCollection.FindOne(ctx, bson.D{{Key: "_id", Value: event.CrewID}}, &crew); err != nil {
-			return
-		}
-		event.OrganisationID = crew.OrganisationID
+		} else {
+			event.EventASPID = admin.ID
+		}*/
 
-	} else {
-		event.EventASPID = admin.ID
-	}
-
+	event.EventASPID = admin.ID
 	if err = EventCollection.InsertOne(ctx, i); err != nil {
 		return
 	}

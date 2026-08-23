@@ -41,12 +41,12 @@ type (
 		Organisation   string `bson:"organisation" json:"organisation"`
 	}
 	UserCrewUpdate struct {
-		ID             string `bson:"_id" json:"id"`
-		UserID         string `bson:"user_id" json:"user_id"`
-		Name           string `bson:"name" json:"name"`
-		Email          string `bson:"email" json:"email"`
-		CrewID         string `bson:"crew_id" json:"crew_id"`
-		OrganisationID string `bson:"organisation_id" json:"organisation_id"`
+		ID             string `bson:"crew._id" json:"id"`
+		UserID         string `bson:"crew.user_id" json:"user_id"`
+		Name           string `bson:"crew.name" json:"name"`
+		Email          string `bson:"crew.email" json:"email"`
+		CrewID         string `bson:"crew.crew_id" json:"crew_id"`
+		OrganisationID string `bson:"crew.organisation_id" json:"organisation_id"`
 	}
 	UserCrewParam struct {
 		ID string `param:"id"`
@@ -165,13 +165,16 @@ func (i *UserCrewUpdate) CrewFilter() bson.D {
 
 func (i *UserCrewUpdate) Match() bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
+	filter.EqualString("_id", i.UserID)
 	return filter.Bson()
 }
 
 func (i *UserCrewUpdate) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	filter.EqualString("user_id", token.ID)
+	filter.EqualString("_id", token.ID)
 	return filter.Bson()
+}
+
+func UserCrewClean() *UserCrew {
+	return &UserCrew{}
 }

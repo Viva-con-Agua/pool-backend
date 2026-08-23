@@ -40,7 +40,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 			return
 		}
 	}
-	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID)
+	deposit.ReasonForPayment, err = GetNewReasonForPayment(ctx, i.CrewID, i.OrganisationID)
 	if err != nil {
 		return
 	}
@@ -63,6 +63,7 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 		if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
 		}
 	}
+	DepositCreateNotification(ctx, result)
 	return
 }
 
@@ -164,6 +165,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *models.A
 					); err != nil {
 						return
 					}
+					e.EditorID = token.ID
 
 					// Update CRM event
 					if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
@@ -245,6 +247,7 @@ func DepositSync(ctx context.Context, i *models.DepositParam, token *models.Acce
 				); err != nil {
 					return
 				}
+				e.EditorID = token.ID
 
 				// Update CRM event
 				if err = IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
@@ -293,7 +296,7 @@ func DepositGet(ctx context.Context, query *models.DepositQuery, token *models.A
 	result = &[]models.Deposit{}
 	if err = DepositCollection.Aggregate(
 		ctx,
-		models.DepositPipelineList().SortFields(sort).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe,
+		models.DepositPipelineList().SortFields(sort, query.SortOption()).Match(filter).Sort(sort).Skip(query.Skip, 0).Limit(query.Limit, 100).Pipe,
 		result,
 	); err != nil {
 		return
@@ -327,4 +330,10 @@ func DepositGetByID(ctx context.Context, i *models.DepositParam, token *models.A
 		return
 	}
 	return
+}
+
+func DepositCreateNotification(ctx context.Context, deposit *models.Deposit) {
+	mail := vcago.NewMailData("netzwerk@vivaconagua.org", "pool-backend", "deposit_create", "pool", "de")
+	mail.AddContent(deposit.Content())
+	vcago.Nats.Publish("system.mail.job", mail)
 }
