@@ -99,7 +99,16 @@ func ParticipationAspGet(ctx context.Context, i *models.ParticipationQuery, toke
 }
 
 func ParticipationEventGet(ctx context.Context, i *models.EventParam, token *models.AccessToken) (result *[]models.EventParticipation, err error) {
-	filter := i.FilterEvent(token)
+	event := new(models.Event)
+	if err = EventCollection.AggregateOne(
+		ctx,
+		models.EventUserPipeline().Match(i.FilterID()).Pipe,
+		&event,
+	); err != nil {
+		return
+	}
+
+	filter := i.FilterEvent(token, event)
 	result = new([]models.EventParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,

@@ -326,14 +326,29 @@ func (i *ParticipationQuery) FilterAspInformation(token *AccessToken) bson.D {
 	return filter.Bson()
 }
 
-func (i *EventParam) FilterEvent(token *AccessToken) bson.D {
+func (i *EventParam) FilterEvent(token *AccessToken, event *Event) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
-	if !(token.Roles.Validate("admin;employee;pool_employee") || token.PoolRoles.Validate(ASPEventRole)) {
-		filter.EqualString("event.event_asp_id", token.ID)
-	} else if !token.Roles.Validate("admin;employee;pool_employee") {
-		filter.EqualString("event.crew_id", token.CrewID)
+
+	// Admins, employees, and pool employees see all events
+	if token.Roles.Validate("admin;employee;pool_employee") {
+		return filter.Bson()
 	}
+
+	// Non-privileged users: ASPs filter by crew
+	if token.PoolRoles.Validate(ASPEventRole) {
+		if token.ID == event.EventASPID {
+			// External ASP with role for this specific event: see event's crew
+			filter.EqualString("event.crew_id", event.CrewID)
+		} else {
+			// Everyone else: see only from their own crew
+			filter.EqualString("event.crew_id", token.CrewID)
+		}
+	} else {
+		// see all events where the person is ASP
+		filter.EqualString("event.event_asp_id", token.ID)
+	}
+
 	return filter.Bson()
 }
 
