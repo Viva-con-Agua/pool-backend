@@ -335,13 +335,18 @@ func (i *EventParam) FilterEvent(token *AccessToken, event *Event) bson.D {
 		return filter.Bson()
 	}
 
-	// Non-privileged users: filter by crew
-	if token.PoolRoles.Validate(ASPEventRole) && token.ID == event.EventASPID {
-		// External ASP with role for this specific event: see event's crew
-		filter.EqualString("event.crew_id", event.CrewID)
+	// Non-privileged users: ASPs filter by crew
+	if token.PoolRoles.Validate(ASPEventRole) {
+		if token.ID == event.EventASPID {
+			// External ASP with role for this specific event: see event's crew
+			filter.EqualString("event.crew_id", event.CrewID)
+		} else {
+			// Everyone else: see only from their own crew
+			filter.EqualString("event.crew_id", token.CrewID)
+		}
 	} else {
-		// Everyone else: see only their own crew
-		filter.EqualString("event.crew_id", token.CrewID)
+		// see all events where the person is ASP
+		filter.EqualString("event.event_asp_id", token.ID)
 	}
 
 	return filter.Bson()
