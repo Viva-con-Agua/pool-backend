@@ -96,7 +96,7 @@ func (i *ActiveParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("_id", i.UserID)
 	if !token.Roles.Validate("admin;employee;pool_employee") {
-		filter.EqualString("active.crew_id", token.CrewID)
+		filter.EqualString("crew.crew_id", token.CrewID)
 	}
 	return filter.Bson()
 }
