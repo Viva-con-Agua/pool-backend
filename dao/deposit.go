@@ -57,13 +57,16 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 		return
 	}
 
+	DepositCreateNotification(ctx, result)
+
 	for _, unit := range depositUnits {
 		activity := DepositCreatedActivity.New(token.ID, unit.TakingID)
 		activity.Comment += ";" + deposit.ID
 		if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+			return
 		}
 	}
-	DepositCreateNotification(ctx, result)
+
 	return
 }
 
