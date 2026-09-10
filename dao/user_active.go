@@ -55,7 +55,7 @@ func ActiveReject(ctx context.Context, i *models.ActiveParam, token *models.Acce
 	}
 	result = &user.Active
 	//reject nvm state
-	if _, err = nvmReject(ctx, token.ID); err != nil {
+	if _, err = nvmReject(ctx, i.UserID); err != nil {
 		return
 	}
 	//Delete Pool Roles

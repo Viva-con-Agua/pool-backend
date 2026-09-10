@@ -57,8 +57,8 @@ func (i *AvatarUpdate) PermittedFilter(token *AccessToken) bson.D {
 
 func (i *AvatarParam) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
-	filter.EqualString("_id", i.ID)
-	filter.EqualString("user_id", token.ID)
+	filter.EqualString("_id", token.ID)
+	filter.EqualString("avatar._id", i.ID)
 	return filter.Bson()
 }
 
