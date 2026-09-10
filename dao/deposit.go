@@ -57,13 +57,16 @@ func DepositInsert(ctx context.Context, i *models.DepositCreate, token *models.A
 		return
 	}
 
+	DepositCreateNotification(ctx, result)
+
 	for _, unit := range depositUnits {
 		activity := DepositCreatedActivity.New(token.ID, unit.TakingID)
 		activity.Comment += ";" + deposit.ID
 		if err = ActivityCollection.InsertOne(ctx, activity); err != nil {
+			return
 		}
 	}
-	DepositCreateNotification(ctx, result)
+
 	return
 }
 
@@ -128,6 +131,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *models.A
 				activity := DepositWaitedActivity.New(token.ID, unit.TakingID)
 				activity.Comment += ";" + i.ID
 				if err = ActivityCollection.InsertOne(ctxAsync, activity); err != nil {
+					return
 				}
 			}
 		}()
@@ -140,6 +144,7 @@ func DepositUpdate(ctx context.Context, i *models.DepositUpdate, token *models.A
 				activity := DepositConfirmedActivity.New(token.ID, unit.TakingID)
 				activity.Comment += ";" + i.ID
 				if err = ActivityCollection.InsertOne(ctxAsync, activity); err != nil {
+					return
 				}
 
 				event := new(models.EventUpdate)
