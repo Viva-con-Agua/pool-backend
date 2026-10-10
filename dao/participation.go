@@ -38,7 +38,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 		return
 	}
 
-	if !IsAtLeast16(token.Birthdate, event.StartAt) {
+	if event.TypeOfEvent != "crew_meeting" && !IsAtLeast16(token.Birthdate, event.StartAt) {
 		return
 	}
 
