@@ -36,8 +36,8 @@ func NewMailboxDatabase(t string) *MailboxDatabase {
 	}
 }
 
-func MailboxPipeline(token *AccessToken) *vmdb.Pipeline {
-	pipe := vmdb.NewPipeline()
+func MailboxPipeline(token *AccessToken) (pipe *vmdb.Pipeline) {
+	pipe = vmdb.NewPipeline()
 	pipe.LookupUnwind(UserCollection, "_id", "mailbox_id", "user")
 	pipe.LookupUnwind(CrewCollection, "_id", "mailbox_id", "crew")
 	lastSixMonth := fmt.Sprint(time.Now().AddDate(0, -3, 0).Unix())
@@ -46,32 +46,45 @@ func MailboxPipeline(token *AccessToken) *vmdb.Pipeline {
 		inboxMatch.EqualString("type", "inbox")
 		inboxMatch.GteInt64("modified.updated", lastSixMonth)
 		inboxMatch.EqualString("user_id", token.ID)
-		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
+		lookupWithSort(pipe, inboxMatch, "inbox")
 		outboxMatch := vmdb.NewFilter()
 		outboxMatch.EqualString("type", "outbox")
 		outboxMatch.GteInt64("modified.updated", lastSixMonth)
 		outboxMatch.EqualString("user_id", token.ID)
-		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
+		lookupWithSort(pipe, outboxMatch, "outbox")
 		draftMatch := vmdb.NewFilter()
 		draftMatch.EqualString("type", "draft")
 		draftMatch.GteInt64("modified.updated", lastSixMonth)
 		draftMatch.EqualString("user_id", token.ID)
-		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
+		lookupWithSort(pipe, draftMatch, "draft")
 	} else {
 		inboxMatch := vmdb.NewFilter()
 		inboxMatch.GteInt64("modified.updated", lastSixMonth)
 		inboxMatch.EqualString("type", "inbox")
-		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "inbox", inboxMatch.Bson())
+		lookupWithSort(pipe, inboxMatch, "inbox")
 		outboxMatch := vmdb.NewFilter()
 		outboxMatch.GteInt64("modified.updated", lastSixMonth)
 		outboxMatch.EqualString("type", "outbox")
-		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "outbox", outboxMatch.Bson())
+		lookupWithSort(pipe, outboxMatch, "outbox")
 		draftMatch := vmdb.NewFilter()
 		draftMatch.GteInt64("modified.updated", lastSixMonth)
 		draftMatch.EqualString("type", "draft")
-		pipe.LookupMatch(MessageCollection, "_id", "mailbox_id", "draft", draftMatch.Bson())
+		lookupWithSort(pipe, draftMatch, "draft")
 	}
-	return pipe
+	return
+}
+
+func lookupWithSort(pipe *vmdb.Pipeline, inboxMatch *vmdb.Filter, as string) {
+	lookup := bson.D{{
+		Key: "$lookup",
+		Value: bson.D{
+			{Key: "from", Value: MessageCollection},
+			{Key: "localField", Value: "_id"},
+			{Key: "foreignField", Value: "mailbox_id"},
+			{Key: "pipeline", Value: append([]bson.D{}, bson.D{{Key: "$match", Value: inboxMatch.Bson()}}, bson.D{{Key: "$sort", Value: bson.D{{Key: "modified.created", Value: -1}}}})},
+			{Key: "as", Value: as},
+		}}}
+	pipe.Pipe = append(pipe.Pipe, lookup)
 }
 
 func (i *MailboxParam) Permission(token *AccessToken, mailbox *Mailbox) (err error) {
