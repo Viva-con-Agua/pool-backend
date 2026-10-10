@@ -117,7 +117,6 @@ func TakingPipelineList() *vmdb.Pipeline {
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
 	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
-	//pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
 	}}})
