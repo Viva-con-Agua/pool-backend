@@ -29,6 +29,7 @@ type (
 		OrganisationID string `json:"organisation_id" bson:"organisation_id"`
 		Additional     string `json:"additional" bson:"additional"`
 		Status         string `json:"status" bson:"status"`
+		Choosable      bool   `json:"choosable" bson:"choosable"`
 		AspSelection   string `json:"asp_selection" bson:"asp_selection"`
 		Cities         []City `json:"cities" bson:"cities"`
 	}
@@ -49,6 +50,7 @@ type (
 		MailboxID      string        `json:"mailbox_id" bson:"mailbox_id"`
 		Cities         []City        `json:"cities" bson:"cities"`
 		Status         string        `json:"status" bson:"status"`
+		Choosable      bool          `json:"choosable" bson:"choosable"`
 		AspSelection   string        `json:"asp_selection" bson:"asp_selection"`
 		Modified       vmod.Modified `json:"modified" bson:"modified"`
 	}
@@ -58,7 +60,8 @@ type (
 		Cities         []City       `json:"cities" bson:"cities"`
 		Organisation   Organisation `json:"organisation" bson:"organisation"`
 		OrganisationID string       `json:"organisation_id" bson:"organisation_id"`
-		Mattermost     string       `bson:"mattermost_username" json:"mattermost_username"`
+		Mattermost     string       `json:"mattermost_username" bson:"mattermost_username"`
+		Choosable      bool         `json:"choosable" bson:"choosable"`
 	}
 	CrewName struct {
 		ID   string `json:"id,omitempty" bson:"_id"`
