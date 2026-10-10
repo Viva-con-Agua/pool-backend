@@ -144,10 +144,22 @@ func (i *DepositParam) DepositSyncPermission(token *AccessToken) (err error) {
 	return
 }
 
+// DepositUnitFilterEmpty removes the empty deposit unit that $group pushes for deposits without any deposit units.
+// LookupUnwind preserves empty arrays, so the lookup of "deposit_units.taking" leaves an empty "deposit_units" object behind.
+// wichtig für valide, leere Einzahlungen
+func DepositUnitFilterEmpty() bson.D {
+	return bson.D{{Key: "$addFields", Value: bson.D{
+		{Key: "deposit_units", Value: bson.D{{Key: "$filter", Value: bson.D{
+			{Key: "input", Value: "$deposit_units"},
+			{Key: "cond", Value: bson.D{{Key: "$ne", Value: bson.A{bson.D{{Key: "$type", Value: "$$this._id"}}, "missing"}}}},
+		}}}},
+	}}}
+}
+
 func DepositPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
-	pipe.LookupUnwind(TakingDepositView, "deposit_units.taking_id", "_id", "deposit_units.taking")
+	pipe.LookupUnwind(TakingDepositView, "deposit_units.ta	king_id", "_id", "deposit_units.taking")
 	pipe.Append(bson.D{
 		{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
@@ -155,6 +167,7 @@ func DepositPipeline() *vmdb.Pipeline {
 			}},
 		}},
 	})
+	pipe.Append(DepositUnitFilterEmpty())
 	pipe.LookupUnwind(DepositCollection, "_id", "_id", "deposits")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
@@ -175,6 +188,7 @@ func DepositPipelineList() *vmdb.Pipeline {
 			}},
 		}},
 	})
+	pipe.Append(DepositUnitFilterEmpty())
 	pipe.LookupUnwind(DepositCollection, "_id", "_id", "deposits")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{{Key: "deposits.deposit_units", Value: "$deposit_units"}}}})
 	pipe.Append(bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: "$deposits"}}}})
