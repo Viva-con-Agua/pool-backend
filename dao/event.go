@@ -25,19 +25,23 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 		event.OrganisationID = crew.OrganisationID
 	}
 	taking := event.TakingDatabase()
-	event.TakingID = taking.ID
+	if i.TypeOfEvent != "crew_meeting" {
+		event.TakingID = taking.ID
+	}
 	if err = EventCollection.InsertOne(ctx, event); err != nil {
 		return
 	}
-	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
-		return
+	if i.TypeOfEvent != "crew_meeting" {
+		if err = TakingCollection.InsertOne(ctx, taking); err != nil {
+			return
+		}
+		takingActivity := models.NewActivity(event.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
+		if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
+			return
+		}
 	}
 	eventActivity := models.NewActivity(event.CreatorID, "event", event.ID, "Event created", "created")
 	if err = ActivityCollection.InsertOne(ctx, eventActivity); err != nil {
-		return
-	}
-	takingActivity := models.NewActivity(event.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
-	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
 	filter := event.Match()
