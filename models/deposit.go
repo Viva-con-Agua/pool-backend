@@ -227,7 +227,7 @@ func (i *DepositCreate) DepositDatabase(token *AccessToken) (r *DepositDatabase,
 		amount += depositUnit.Money.Amount
 	}
 	currency := "EUR"
-	if d != nil {
+	if len(d) > 0 {
 		currency = d[0].Money.Currency
 	}
 	r = &DepositDatabase{
