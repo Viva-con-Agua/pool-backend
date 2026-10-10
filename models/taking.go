@@ -115,6 +115,7 @@ func TakingPipelineList() *vmdb.Pipeline {
 	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
 	//pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
