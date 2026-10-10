@@ -3,12 +3,31 @@ package dao
 import (
 	"context"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func ConvertInt64ToDate(timestamp int64, isMillis bool) time.Time {
+	if isMillis {
+		return time.Unix(0, timestamp*int64(time.Millisecond))
+	}
+	return time.Unix(timestamp, 0)
+}
+
+// IsAtLeast16 checks age using pure integer math (YYYYMMDD format)
+func IsAtLeast16(birthDateInt, targetDateInt int64) bool {
+
+	birthday := ConvertInt64ToDate(birthDateInt, false)
+	targetDate := ConvertInt64ToDate(targetDateInt, false)
+	// Add 16 years to the birthday
+	sixteenYearsLater := birthday.AddDate(16, 0, 0)
+
+	// Check if the 16th birthday is on or before the target date
+	return !sixteenYearsLater.After(targetDate)
+}
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
 	event := new(models.Event)
 	if err = EventCollection.FindOne(
@@ -18,6 +37,11 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	); err != nil {
 		return
 	}
+
+	if !IsAtLeast16(token.Birthdate, event.StartAt) {
+		return
+	}
+
 	database := i.ParticipationDatabase(token, event)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
@@ -190,7 +214,7 @@ func ParticipationNotification(ctx context.Context, i *models.Participation) (er
 	mail.AddUser(i.User.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
-
+	vcago.NewServer()
 	return
 }
 
