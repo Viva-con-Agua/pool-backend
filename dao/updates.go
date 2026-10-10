@@ -134,6 +134,12 @@ func UpdateDatabase() {
 		CreateDeletedUser(ctx)
 		Updates.Insert(ctx, "create_deleted_user")
 	}
+
+	if !Updates.Check(ctx, "set_all_crews_choosable") {
+		log.Print("set_all_crews_choosable")
+		SetAllCrewsChoosable(ctx)
+		Updates.Insert(ctx, "set_all_crews_choosable")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -521,5 +527,19 @@ func CreateDeletedUser(ctx context.Context) {
 	}
 	if err := UserCollection.InsertOne(ctx, user); err != nil {
 		log.Print(err)
+	}
+}
+
+func SetAllCrewsChoosable(ctx context.Context) {
+	crews := new([]models.Crew)
+	if err := CrewsCollection.Find(ctx, bson.D{}, crews); err != nil {
+		log.Print(err)
+	}
+	for i := range *crews {
+		filter := bson.D{{Key: "_id", Value: (*crews)[i].ID}}
+		update := bson.D{{Key: "choosable", Value: true}}
+		if err := CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
+			log.Print(err)
+		}
 	}
 }
