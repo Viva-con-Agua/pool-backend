@@ -98,10 +98,11 @@ func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, tok
 
 func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *[]models.UserParticipation, err error) {
 	filter := i.FilterUser(token)
+	sort := i.SortUser()
 	result = new([]models.UserParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
-		models.ParticipationPipeline().Match(filter).Pipe,
+		models.ParticipationPipeline().SortFields(sort).Match(filter).Sort(sort).Pipe,
 		result,
 	); err != nil {
 		return
