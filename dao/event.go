@@ -71,7 +71,7 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 	defer cancel2()
 	var cErr error
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
-		list_size = 1
+		print(cErr)
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -143,7 +143,6 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -175,7 +174,6 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventCrewPublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		log.Print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}

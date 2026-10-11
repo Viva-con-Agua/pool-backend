@@ -28,7 +28,6 @@ func EventStateHistoryGet(ctx context.Context, i *models.EventStateHistoryQuery,
 	var cErr error
 	if cErr = EventStateHistoryCollection.AggregateOne(ctx, pipeline.Count().Pipe, &count); cErr != nil {
 		print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}
