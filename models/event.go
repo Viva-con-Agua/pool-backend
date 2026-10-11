@@ -37,30 +37,31 @@ type (
 		EventState            EventState       `json:"event_state" bson:"event_state"`
 	}
 	EventDatabase struct {
-		ID                    string            `json:"id" bson:"_id"`
-		Name                  string            `json:"name" bson:"name"`
-		TypeOfEvent           string            `json:"type_of_event" bson:"type_of_event"`
-		AdditionalInformation string            `json:"additional_information" bson:"additional_information"`
-		Website               string            `json:"website" bson:"website"`
-		TourID                string            `json:"tour_id" bson:"tour_id"`
-		Location              Location          `json:"location" bson:"location"`
-		MeetingURL            string            `json:"meeting_url" bson:"meeting_url"`
-		ArtistIDs             []string          `json:"artist_ids" bson:"artist_ids"`
-		OrganizerID           string            `json:"organizer_id" bson:"organizer_id"`
-		StartAt               int64             `json:"start_at" bson:"start_at"`
-		EndAt                 int64             `json:"end_at" bson:"end_at"`
-		CrewID                string            `json:"crew_id" bson:"crew_id"`
-		OrganisationID        string            `json:"organisation_id" bson:"organisation_id"`
-		TakingID              string            `json:"taking_id" bson:"taking_id"`
-		EventASPID            string            `json:"event_asp_id" bson:"event_asp_id"`
-		InternalASPID         string            `json:"internal_asp_id" bson:"internal_asp_id"`
-		ExternalASP           UserExternal      `json:"external_asp" bson:"external_asp"`
-		Application           EventApplication  `json:"application" bson:"application"`
-		Applications          EventApplications `json:"applications" bson:"applications"`
-		EventTools            EventTools        `json:"event_tools" bson:"event_tools"`
-		CreatorID             string            `json:"creator_id" bson:"creator_id"`
-		EventState            EventState        `json:"event_state" bson:"event_state"`
-		Modified              vmod.Modified     `json:"modified" bson:"modified"`
+		ID                          string            `json:"id" bson:"_id"`
+		Name                        string            `json:"name" bson:"name"`
+		TypeOfEvent                 string            `json:"type_of_event" bson:"type_of_event"`
+		AdditionalInformation       string            `json:"additional_information" bson:"additional_information"`
+		Website                     string            `json:"website" bson:"website"`
+		TourID                      string            `json:"tour_id" bson:"tour_id"`
+		Location                    Location          `json:"location" bson:"location"`
+		MeetingURL                  string            `json:"meeting_url" bson:"meeting_url"`
+		ArtistIDs                   []string          `json:"artist_ids" bson:"artist_ids"`
+		OrganizerID                 string            `json:"organizer_id" bson:"organizer_id"`
+		StartAt                     int64             `json:"start_at" bson:"start_at"`
+		EndAt                       int64             `json:"end_at" bson:"end_at"`
+		CrewID                      string            `json:"crew_id" bson:"crew_id"`
+		OrganisationID              string            `json:"organisation_id" bson:"organisation_id"`
+		TakingID                    string            `json:"taking_id" bson:"taking_id"`
+		EventASPID                  string            `json:"event_asp_id" bson:"event_asp_id"`
+		InternalASPID               string            `json:"internal_asp_id" bson:"internal_asp_id"`
+		ExternalASP                 UserExternal      `json:"external_asp" bson:"external_asp"`
+		Application                 EventApplication  `json:"application" bson:"application"`
+		Applications                EventApplications `json:"applications" bson:"applications"`
+		ApplicationTimeOverNotified bool              `json:"application_time_over_notified" bson:"application_time_over_notified"`
+		EventTools                  EventTools        `json:"event_tools" bson:"event_tools"`
+		CreatorID                   string            `json:"creator_id" bson:"creator_id"`
+		EventState                  EventState        `json:"event_state" bson:"event_state"`
+		Modified                    vmod.Modified     `json:"modified" bson:"modified"`
 	}
 	EventTools struct {
 		Tools   []string `json:"tools" bson:"tools"`

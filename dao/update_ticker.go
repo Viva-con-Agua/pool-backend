@@ -17,6 +17,7 @@ func UpdateTicker() {
 	EventStateFinishTicker()
 	EventStateClosedTicker()
 	UserActiveStateTicker()
+	ApplicationTimeExpiredTicker()
 	//SendWeeklyNotification()
 	SendWeeklyCrewNotification()
 	go func() {
@@ -28,12 +29,54 @@ func UpdateTicker() {
 				EventStateFinishTicker()
 				EventStateClosedTicker()
 				UserActiveStateTicker()
+				ApplicationTimeExpiredTicker()
 			case <-quit:
 				ticker.Stop()
 				return
 			}
 		}
 	}()
+}
+
+func ApplicationTimeExpiredTicker() {
+	if time.Now().Hour() == 9 {
+		notifyForEventsThatExeededApplicationPhase()
+	}
+}
+
+// notifyForEventsThatExeededApplicationPhase notifies each event's ASP after its application phase ends.
+func notifyForEventsThatExeededApplicationPhase() {
+	now := time.Now().Unix()
+	filter := bson.D{
+		{Key: "application.end_date", Value: bson.D{{Key: "$gt", Value: int64(0)}, {Key: "$lte", Value: now}}},
+		{Key: "start_at", Value: bson.D{{Key: "$gt", Value: now}}},
+		{Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}},
+		{Key: "application_time_over_notified", Value: bson.D{{Key: "$ne", Value: true}}},
+	}
+
+	events := []models.Event{}
+	if err := EventCollection.Aggregate(context.Background(), models.EventImportPipeline().Match(filter).Pipe, &events); err != nil {
+		log.Print(err)
+		return
+	}
+
+	eventsByASP := make(map[string][]models.Event)
+	for i := range events {
+		eventsByASP[events[i].EventASPID] = append(eventsByASP[events[i].EventASPID], events[i])
+	}
+
+	for aspID, aspEvents := range eventsByASP {
+		if err := ApplicationTimeOverNotification(context.Background(), aspID, aspEvents); err != nil {
+			log.Print(err)
+			continue
+		}
+		for i := range aspEvents {
+			update := bson.D{{Key: "application_time_over_notified", Value: true}}
+			if err := EventCollection.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: aspEvents[i].ID}}, vmdb.UpdateSet(update), nil); err != nil {
+				log.Print(err)
+			}
+		}
+	}
 }
 
 // EventStateFinishTicker sets all published events that are already over to finished
