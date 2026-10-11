@@ -4,6 +4,7 @@ import (
 	"context"
 	"pool-backend/models"
 	"time"
+	"errors"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -39,6 +40,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	}
 
 	if event.TypeOfEvent != "crew_meeting" && !IsAtLeast16(token.Birthdate, event.StartAt) {
+		err = errors.New("Too young")
 		return
 	}
 
