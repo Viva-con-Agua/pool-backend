@@ -214,7 +214,6 @@ func ParticipationNotification(ctx context.Context, i *models.Participation) (er
 	mail.AddUser(i.User.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
-	vcago.NewServer()
 	return
 }
 
