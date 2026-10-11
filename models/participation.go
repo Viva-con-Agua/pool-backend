@@ -326,6 +326,12 @@ func (i *ParticipationQuery) FilterAspInformation(token *AccessToken) bson.D {
 	return filter.Bson()
 }
 
+func (i *ParticipationQuery) SortUser() bson.D {
+	sort := vmdb.NewSort()
+	sort.Add("event.start_at", "desc")
+	return sort.Bson()
+}
+
 func (i *EventParam) FilterEvent(token *AccessToken, event *Event) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualString("event_id", i.ID)
