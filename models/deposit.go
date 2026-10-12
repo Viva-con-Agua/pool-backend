@@ -159,7 +159,7 @@ func DepositUnitFilterEmpty() bson.D {
 func DepositPipeline() *vmdb.Pipeline {
 	pipe := vmdb.NewPipeline()
 	pipe.LookupUnwind(DepositUnitCollection, "_id", "deposit_id", "deposit_units")
-	pipe.LookupUnwind(TakingDepositView, "deposit_units.ta	king_id", "_id", "deposit_units.taking")
+	pipe.LookupUnwind(TakingDepositView, "deposit_units.taking_id", "_id", "deposit_units.taking")
 	pipe.Append(bson.D{
 		{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: "$_id"}, {Key: "deposit_units", Value: bson.D{
