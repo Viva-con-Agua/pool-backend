@@ -2,9 +2,9 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"pool-backend/models"
 	"time"
-	"errors"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
@@ -18,17 +18,29 @@ func ConvertInt64ToDate(timestamp int64, isMillis bool) time.Time {
 	return time.Unix(timestamp, 0)
 }
 
-// IsAtLeast16 checks age using pure integer math (YYYYMMDD format)
-func IsAtLeast16(birthDateInt, targetDateInt int64) bool {
+// IsAtLeastYears checks age using pure integer math (YYYYMMDD format)
+func IsAtLeastYears(minAgeInt int, birthDateInt, targetDateInt int64) bool {
 
 	birthday := ConvertInt64ToDate(birthDateInt, false)
 	targetDate := ConvertInt64ToDate(targetDateInt, false)
-	// Add 16 years to the birthday
-	sixteenYearsLater := birthday.AddDate(16, 0, 0)
+	// Add minAgeInt years to the birthday
+	yearsLater := birthday.AddDate(minAgeInt, 0, 0)
 
-	// Check if the 16th birthday is on or before the target date
-	return !sixteenYearsLater.After(targetDate)
+	// Check if the minAgeInt th birthday is on or before the target date
+	return !yearsLater.After(targetDate)
 }
+
+func minAgeFor(eventType string) int {
+	switch eventType {
+	case "crew_meeting":
+		return 0
+	case "festival":
+		return 18
+	default:
+		return 16
+	}
+}
+
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
 	event := new(models.Event)
 	if err = EventCollection.FindOne(
@@ -39,8 +51,8 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 		return
 	}
 
-	if event.TypeOfEvent != "crew_meeting" && !IsAtLeast16(token.Birthdate, event.StartAt) {
-		err = errors.New("Too young")
+	if !IsAtLeastYears(minAgeFor(event.TypeOfEvent), token.Birthdate, event.StartAt) {
+		err = errors.New("too young")
 		return
 	}
 
