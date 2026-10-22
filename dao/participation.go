@@ -18,8 +18,8 @@ func ConvertInt64ToDate(timestamp int64, isMillis bool) time.Time {
 	return time.Unix(timestamp, 0)
 }
 
-// IsAtLeastYears checks age using pure integer math (YYYYMMDD format)
 func IsAtLeastYears(minAgeInt int, birthDateInt, targetDateInt int64) bool {
+	// IsAtLeastYears reports whether targetDateInt is at least minAgeInt years after the birthDateInt Unix timestamp.
 
 	birthday := ConvertInt64ToDate(birthDateInt, false)
 	targetDate := ConvertInt64ToDate(targetDateInt, false)
