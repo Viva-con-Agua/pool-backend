@@ -23,6 +23,8 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 			return
 		}
 		event.OrganisationID = crew.OrganisationID
+		event.Highlight = false
+		event.RegisterURL = ""
 	}
 	taking := event.TakingDatabase()
 	if i.TypeOfEvent != "crew_meeting" {
@@ -192,6 +194,8 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 			return
 		}
 		i.OrganisationID = crew.OrganisationID
+		i.Highlight = false
+		i.RegisterURL = ""
 	}
 	taking := new(models.Taking)
 	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
