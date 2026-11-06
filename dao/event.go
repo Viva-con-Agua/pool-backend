@@ -194,8 +194,8 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 			return
 		}
 		i.OrganisationID = crew.OrganisationID
-		i.Highlight = false
-		i.RegisterURL = ""
+		i.Highlight = event.Highlight
+		i.RegisterURL = event.RegisterURL
 	}
 	taking := new(models.Taking)
 	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {

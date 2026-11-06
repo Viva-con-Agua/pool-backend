@@ -359,6 +359,8 @@ type (
 		TakingID              string           `json:"taking_id" bson:"taking_id"`
 		Taking                Taking           `json:"taking" bson:"taking"`
 		EditorID              string           `json:"editor_id" bson:"editor_id"`
+		RegisterURL           string           `json:"register_url" bson:"register_url"`
+		Highlight             bool             `json:"highlight" bson:"highlight"`
 		Modified              vmod.Modified    `json:"modified" bson:"modified"`
 	}
 )
