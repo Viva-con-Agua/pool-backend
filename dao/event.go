@@ -225,12 +225,14 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 				return
 			}
 		}
-		if result.EventState.State == "published" ||
-			result.EventState.State == "canceled" ||
-			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
-			EventStateNotificationCreator(result)
-			EventStateNotification(ctx, result)
-		}
+		/*
+			if result.EventState.State == "published" ||
+				result.EventState.State == "canceled" ||
+				(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
+				EventStateNotificationCreator(result)
+				EventStateNotification(ctx, result)
+			}
+		*/
 	} else if event.StartAt != result.StartAt ||
 		event.EndAt != result.EndAt ||
 		event.Location.PlaceID != result.Location.PlaceID ||
