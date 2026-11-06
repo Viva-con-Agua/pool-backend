@@ -60,6 +60,8 @@ type (
 		EventTools            EventTools        `json:"event_tools" bson:"event_tools"`
 		CreatorID             string            `json:"creator_id" bson:"creator_id"`
 		EventState            EventState        `json:"event_state" bson:"event_state"`
+		RegisterURL           string            `json:"register_url" bson:"register_url"`
+		Highlight             bool              `json:"highlight" bson:"highlight"`
 		Modified              vmod.Modified     `json:"modified" bson:"modified"`
 	}
 	EventTools struct {
@@ -148,6 +150,7 @@ type (
 		Participation         []ParticipationMinimal `json:"participations" bson:"participations"`
 		EventTools            EventTools             `json:"event_tools" bson:"event_tools"`
 		EventState            EventState             `json:"event_state" bson:"event_state"`
+		RegisterURL           string                 `json:"register_url" bson:"register_url"`
 		Modified              vmod.Modified          `json:"modified" bson:"modified"`
 	}
 	AspListEvent struct {
@@ -208,6 +211,8 @@ type (
 		EventTools            EventTools        `json:"event_tools" bson:"event_tools"`
 		Creator               User              `json:"creator" bson:"creator"`
 		EventState            EventState        `json:"event_state" bson:"event_state"`
+		RegisterURL           string            `json:"register_url" bson:"register_url"`
+		Highlight             bool              `json:"highlight" bson:"highlight"`
 		EditorID              string            `json:"editor_id" bson:"editor_id"`
 		Modified              vmod.Modified     `json:"modified" bson:"modified"`
 	}
@@ -233,6 +238,8 @@ type (
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
 		EventState            EventState       `json:"event_state" bson:"event_state"`
+		RegisterURL           string           `json:"register_url" bson:"register_url"`
+		Highlight             bool             `json:"highlight" bson:"highlight"`
 	}
 	EventParam struct {
 		ID string `param:"id"`
@@ -352,6 +359,8 @@ type (
 		TakingID              string           `json:"taking_id" bson:"taking_id"`
 		Taking                Taking           `json:"taking" bson:"taking"`
 		EditorID              string           `json:"editor_id" bson:"editor_id"`
+		RegisterURL           string           `json:"register_url" bson:"register_url"`
+		Highlight             bool             `json:"highlight" bson:"highlight"`
 		Modified              vmod.Modified    `json:"modified" bson:"modified"`
 	}
 )
@@ -615,6 +624,9 @@ func (i *EventQuery) PublicFilter() bson.D {
 
 func (i EventQuery) Sort() bson.D {
 	sort := vmdb.NewSort()
+	if i.SortField == "start_at" {
+		sort.Add("highlight", "desc")
+	}
 	sort.Add(i.SortField, i.SortDirection)
 	return sort.Bson()
 }
