@@ -61,6 +61,8 @@ type (
 		EventTools                  EventTools        `json:"event_tools" bson:"event_tools"`
 		CreatorID                   string            `json:"creator_id" bson:"creator_id"`
 		EventState                  EventState        `json:"event_state" bson:"event_state"`
+		RegisterURL                 string            `json:"register_url" bson:"register_url"`
+		Highlight                   bool              `json:"highlight" bson:"highlight"`
 		Modified                    vmod.Modified     `json:"modified" bson:"modified"`
 	}
 	EventTools struct {
@@ -149,6 +151,7 @@ type (
 		Participation         []ParticipationMinimal `json:"participations" bson:"participations"`
 		EventTools            EventTools             `json:"event_tools" bson:"event_tools"`
 		EventState            EventState             `json:"event_state" bson:"event_state"`
+		RegisterURL           string                 `json:"register_url" bson:"register_url"`
 		Modified              vmod.Modified          `json:"modified" bson:"modified"`
 	}
 	AspListEvent struct {
@@ -209,6 +212,8 @@ type (
 		EventTools            EventTools        `json:"event_tools" bson:"event_tools"`
 		Creator               User              `json:"creator" bson:"creator"`
 		EventState            EventState        `json:"event_state" bson:"event_state"`
+		RegisterURL           string            `json:"register_url" bson:"register_url"`
+		Highlight             bool              `json:"highlight" bson:"highlight"`
 		EditorID              string            `json:"editor_id" bson:"editor_id"`
 		Modified              vmod.Modified     `json:"modified" bson:"modified"`
 	}
@@ -234,6 +239,8 @@ type (
 		Application           EventApplication `json:"application" bson:"application"`
 		EventTools            EventTools       `json:"event_tools" bson:"event_tools"`
 		EventState            EventState       `json:"event_state" bson:"event_state"`
+		RegisterURL           string           `json:"register_url" bson:"register_url"`
+		Highlight             bool             `json:"highlight" bson:"highlight"`
 	}
 	EventParam struct {
 		ID string `param:"id"`
@@ -353,6 +360,8 @@ type (
 		TakingID              string           `json:"taking_id" bson:"taking_id"`
 		Taking                Taking           `json:"taking" bson:"taking"`
 		EditorID              string           `json:"editor_id" bson:"editor_id"`
+		RegisterURL           string           `json:"register_url" bson:"register_url"`
+		Highlight             bool             `json:"highlight" bson:"highlight"`
 		Modified              vmod.Modified    `json:"modified" bson:"modified"`
 	}
 )
@@ -595,7 +604,7 @@ func (i *EventQuery) PublicFilter() bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
 	filter.LikeString("name", i.Name)
-	filter.EqualStringList("event_state.state", i.publicStateFilter())
+	filter.EqualString("event_state.state", "published")
 	filter.EqualStringList("type_of_event", i.Type)
 	filter.EqualStringList("organisation_id", i.OrganisationId)
 	filter.EqualStringList("crew_id", i.CrewID)
@@ -614,30 +623,11 @@ func (i *EventQuery) PublicFilter() bson.D {
 	return filter.Bson()
 }
 
-// Filter for the event states
-//
-// This function returns a string array with the allowed event states.
-// A basic assumption is, that at max, only events in the states published, finished and closed should be returned.
-// But to allow the user to reduce this, e.g. to only published events, this method was added. It reduces the user
-// input to items matching the above three and then returns this subset if there's at least one valid item.
-// Else the whole set is returned.
-func (i *EventQuery) publicStateFilter() []string {
-	var states = []string{"published", "finished", "closed"}
-	var userFilterStates []string
-	for _, value := range i.EventState {
-		if value == "published" || value == "finished" || value == "closed" {
-			userFilterStates = append(userFilterStates, value)
-		}
-	}
-	if len(userFilterStates) > 0 {
-		return userFilterStates
-	}
-
-	return states
-}
-
 func (i EventQuery) Sort() bson.D {
 	sort := vmdb.NewSort()
+	if i.SortField == "start_at" {
+		sort.Add("highlight", "desc")
+	}
 	sort.Add(i.SortField, i.SortDirection)
 	return sort.Bson()
 }

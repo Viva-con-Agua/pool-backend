@@ -25,21 +25,27 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 			return
 		}
 		event.OrganisationID = crew.OrganisationID
+		event.Highlight = false
+		event.RegisterURL = ""
 	}
 	taking := event.TakingDatabase()
-	event.TakingID = taking.ID
+	if i.TypeOfEvent != "crew_meeting" {
+		event.TakingID = taking.ID
+	}
 	if err = EventCollection.InsertOne(ctx, event); err != nil {
 		return
 	}
-	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
-		return
+	if i.TypeOfEvent != "crew_meeting" {
+		if err = TakingCollection.InsertOne(ctx, taking); err != nil {
+			return
+		}
+		takingActivity := models.NewActivity(event.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
+		if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
+			return
+		}
 	}
 	eventActivity := models.NewActivity(event.CreatorID, "event", event.ID, "Event created", "created")
 	if err = ActivityCollection.InsertOne(ctx, eventActivity); err != nil {
-		return
-	}
-	takingActivity := models.NewActivity(event.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
-	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
 	filter := event.Match()
@@ -70,7 +76,7 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 	defer cancel2()
 	var cErr error
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
-		list_size = 1
+		print(cErr)
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -142,7 +148,6 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -174,7 +179,6 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventCrewPublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		log.Print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -193,6 +197,8 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 			return
 		}
 		i.OrganisationID = crew.OrganisationID
+		i.Highlight = event.Highlight
+		i.RegisterURL = event.RegisterURL
 	}
 	taking := new(models.Taking)
 	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
@@ -226,12 +232,14 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 				return
 			}
 		}
-		if result.EventState.State == "published" ||
-			result.EventState.State == "canceled" ||
-			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
-			EventStateNotificationCreator(result)
-			EventStateNotification(ctx, result)
-		}
+		/*
+			if result.EventState.State == "published" ||
+				result.EventState.State == "canceled" ||
+				(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
+				EventStateNotificationCreator(result)
+				EventStateNotification(ctx, result)
+			}
+		*/
 	} else if event.StartAt != result.StartAt ||
 		event.EndAt != result.EndAt ||
 		event.Location.PlaceID != result.Location.PlaceID ||
