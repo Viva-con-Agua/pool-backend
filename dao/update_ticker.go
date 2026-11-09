@@ -40,12 +40,12 @@ func UpdateTicker() {
 
 func ApplicationTimeExpiredTicker() {
 	if time.Now().Hour() == 9 {
-		notifyForEventsThatExeededApplicationPhase()
+		notifyForEventsThatExceededApplicationPhase()
 	}
 }
 
-// notifyForEventsThatExeededApplicationPhase notifies each event's ASP after its application phase ends.
-func notifyForEventsThatExeededApplicationPhase() {
+// notifyForEventsThatExceededApplicationPhase notifies each event's ASP after its application phase ends.
+func notifyForEventsThatExceededApplicationPhase() {
 	now := time.Now().Unix()
 	filter := bson.D{
 		{Key: "application.end_date", Value: bson.D{{Key: "$gt", Value: int64(0)}, {Key: "$lte", Value: now}}},
