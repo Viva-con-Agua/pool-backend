@@ -51,6 +51,7 @@ func notifyForEventsThatExceededApplicationPhase() {
 		{Key: "application.end_date", Value: bson.D{{Key: "$gt", Value: int64(0)}, {Key: "$lte", Value: now}}},
 		{Key: "start_at", Value: bson.D{{Key: "$gt", Value: now}}},
 		{Key: "event_asp_id", Value: bson.D{{Key: "$ne", Value: ""}}},
+		{Key: "event_state.state", Value: bson.D{{Key: "$ne", Value: "canceled"}}},
 		{Key: "application_time_over_notified", Value: bson.D{{Key: "$ne", Value: true}}},
 	}
 
