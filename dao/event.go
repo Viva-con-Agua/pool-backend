@@ -200,13 +200,15 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		i.Highlight = event.Highlight
 		i.RegisterURL = event.RegisterURL
 	}
-	taking := new(models.Taking)
-	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
-		if !vmdb.ErrNoDocuments(err) {
-			return
+	if event.TakingID != "" {
+		taking := new(models.Taking)
+		if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
+			if !vmdb.ErrNoDocuments(err) {
+				return
+			}
 		}
+		event.Taking = *taking
 	}
-	event.Taking = *taking
 	if err = i.EventStateValidation(token, event); err != nil {
 		return
 	}
@@ -226,10 +228,12 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		}
 		if result.EventState.State == "canceled" {
 			EventParticipantsNotification(ctx, result, "event_cancel")
-			updateTaking := bson.D{{Key: "state.no_income", Value: true}}
-			filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
-			if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
-				return
+			if event.TakingID != "" {
+				updateTaking := bson.D{{Key: "state.no_income", Value: true}}
+				filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
+				if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+					return
+				}
 			}
 		}
 		/*
@@ -256,7 +260,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 			log.Print(err)
 		}
 	}
-	if event.EndAt != i.EndAt {
+	if event.TakingID != "" && event.EndAt != i.EndAt {
 		updateTaking := bson.D{{Key: "date_of_taking", Value: i.EndAt}}
 		filterTaking := bson.D{{Key: "_id", Value: event.TakingID}}
 		if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
