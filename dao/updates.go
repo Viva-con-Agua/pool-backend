@@ -140,6 +140,12 @@ func UpdateDatabase() {
 		SetAllCrewsChoosable(ctx)
 		Updates.Insert(ctx, "set_all_crews_choosable")
 	}
+
+	if !Updates.Check(ctx, "set_all_events_non_highlight") {
+		log.Print("set_all_events_non_highlight")
+		SetAllEventsNonHighlightNotExternal(ctx)
+		Updates.Insert(ctx, "set_all_events_non_highlight")
+	}
 }
 
 func UpdateCrewMaibox(ctx context.Context) {
@@ -541,5 +547,12 @@ func SetAllCrewsChoosable(ctx context.Context) {
 		if err := CrewsCollection.UpdateOne(ctx, filter, vmdb.UpdateSet(update), nil); err != nil {
 			log.Print(err)
 		}
+	}
+}
+
+func SetAllEventsNonHighlightNotExternal(ctx context.Context) {
+	update := bson.D{{Key: "highlight", Value: false}, {Key: "register_url", Value: ""}}
+	if _, err := EventCollection.Collection.UpdateMany(ctx, bson.D{{}}, vmdb.UpdateSet(update)); err != nil {
+		return
 	}
 }
