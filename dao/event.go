@@ -207,7 +207,9 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 				return
 			}
 		}
-		event.Taking = *taking
+		if taking != nil {
+			event.Taking = *taking
+		}
 	}
 	if err = i.EventStateValidation(token, event); err != nil {
 		return
