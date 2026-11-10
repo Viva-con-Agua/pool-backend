@@ -464,9 +464,9 @@ func ApplicationTimeOverNotification(ctx context.Context, aspID string, events [
 	mail.AddUser(eventAsp.User())
 	eventLines := make([]string, 0, len(events))
 	for _, event := range events {
-		eventLines = append(eventLines, fmt.Sprintf("%s (%s)", event.Name, time.Unix(event.StartAt, 0).Format("02.01.2006")))
+		eventLines = append(eventLines, fmt.Sprintf("<li><a href=\"https://pool3.vivaconagua.org/events/%s\">%s</a> (%s)</li>", event.ID, event.Name, time.Unix(event.StartAt, 0).Format("02.01.2006")))
 	}
-	content := &vmod.Content{Fields: map[string]interface{}{"Events": strings.Join(eventLines, "\n")}}
+	content := &vmod.Content{Fields: map[string]interface{}{"Events": fmt.Sprintf("<ul>%s</ul>", strings.Join(eventLines, "\n"))}}
 	mail.AddContent(content)
 	vcago.Nats.Publish("system.mail.job", mail)
 	return nil
