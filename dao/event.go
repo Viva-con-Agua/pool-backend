@@ -200,13 +200,17 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		i.Highlight = event.Highlight
 		i.RegisterURL = event.RegisterURL
 	}
-	taking := new(models.Taking)
-	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
-		if !vmdb.ErrNoDocuments(err) {
-			return
+	if event.TakingID != "" {
+		taking := new(models.Taking)
+		if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
+			if !vmdb.ErrNoDocuments(err) {
+				return
+			}
+		}
+		if taking != nil {
+			event.Taking = *taking
 		}
 	}
-	event.Taking = *taking
 	if err = i.EventStateValidation(token, event); err != nil {
 		return
 	}
@@ -226,10 +230,12 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		}
 		if result.EventState.State == "canceled" {
 			EventParticipantsNotification(ctx, result, "event_cancel")
-			updateTaking := bson.D{{Key: "state.no_income", Value: true}}
-			filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
-			if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
-				return
+			if event.TakingID != "" {
+				updateTaking := bson.D{{Key: "state.no_income", Value: true}}
+				filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
+				if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+					return
+				}
 			}
 		}
 		/*
@@ -256,7 +262,7 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 			log.Print(err)
 		}
 	}
-	if event.EndAt != i.EndAt {
+	if event.TakingID != "" && event.EndAt != i.EndAt {
 		updateTaking := bson.D{{Key: "date_of_taking", Value: i.EndAt}}
 		filterTaking := bson.D{{Key: "_id", Value: event.TakingID}}
 		if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
@@ -458,9 +464,9 @@ func ApplicationTimeOverNotification(ctx context.Context, aspID string, events [
 	mail.AddUser(eventAsp.User())
 	eventLines := make([]string, 0, len(events))
 	for _, event := range events {
-		eventLines = append(eventLines, fmt.Sprintf("%s (%s)", event.Name, time.Unix(event.StartAt, 0).Format("02.01.2006")))
+		eventLines = append(eventLines, fmt.Sprintf("<li><a href=\"https://pool3.vivaconagua.org/events/%s\">%s</a> (%s)</li>", event.ID, event.Name, time.Unix(event.StartAt, 0).Format("02.01.2006")))
 	}
-	content := &vmod.Content{Fields: map[string]interface{}{"Events": strings.Join(eventLines, "\n")}}
+	content := &vmod.Content{Fields: map[string]interface{}{"Events": fmt.Sprintf("<ul>%s</ul>", strings.Join(eventLines, "\n"))}}
 	mail.AddContent(content)
 	vcago.Nats.Publish("system.mail.job", mail)
 	return nil

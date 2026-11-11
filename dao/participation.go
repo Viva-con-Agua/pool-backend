@@ -51,7 +51,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 		return
 	}
 
-	if !IsAtLeastYears(minAgeFor(event.TypeOfEvent), token.Birthdate, event.StartAt) {
+	if minAge := minAgeFor(event.TypeOfEvent); minAge > 0 && (token.Birthdate == 0 || !IsAtLeastYears(minAge, token.Birthdate, event.StartAt)) {
 		err = errors.New("too young")
 		return
 	}
