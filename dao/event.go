@@ -2,7 +2,9 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"pool-backend/models"
+	"strings"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -23,21 +25,27 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 			return
 		}
 		event.OrganisationID = crew.OrganisationID
+		event.Highlight = false
+		event.RegisterURL = ""
 	}
 	taking := event.TakingDatabase()
-	event.TakingID = taking.ID
+	if i.TypeOfEvent != "crew_meeting" {
+		event.TakingID = taking.ID
+	}
 	if err = EventCollection.InsertOne(ctx, event); err != nil {
 		return
 	}
-	if err = TakingCollection.InsertOne(ctx, taking); err != nil {
-		return
+	if i.TypeOfEvent != "crew_meeting" {
+		if err = TakingCollection.InsertOne(ctx, taking); err != nil {
+			return
+		}
+		takingActivity := models.NewActivity(event.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
+		if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
+			return
+		}
 	}
 	eventActivity := models.NewActivity(event.CreatorID, "event", event.ID, "Event created", "created")
 	if err = ActivityCollection.InsertOne(ctx, eventActivity); err != nil {
-		return
-	}
-	takingActivity := models.NewActivity(event.CreatorID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
-	if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
 		return
 	}
 	filter := event.Match()
@@ -52,6 +60,7 @@ func EventInsert(ctx context.Context, i *models.EventCreate, token *models.Acces
 }
 
 func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models.ListEvent, list_size int64, err error) {
+
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	filter := i.PermittedFilter(token)
@@ -67,7 +76,7 @@ func EventGet(i *models.EventQuery, token *models.AccessToken) (result *[]models
 	defer cancel2()
 	var cErr error
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipeline(token).Match(filter).Count().Pipe, &count); cErr != nil {
-		list_size = 1
+		print(cErr)
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -139,7 +148,6 @@ func EventGetPublic(ctx context.Context, i *models.EventQuery) (result *[]models
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventPipelinePublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -171,7 +179,6 @@ func EventGetAps(ctx context.Context, i *models.EventQuery, token *models.Access
 	defer cancel2()
 	if cErr = EventCollection.AggregateOne(ctx2, models.EventCrewPublic().Match(filter).Count().Pipe, &count); cErr != nil {
 		log.Print(cErr)
-		list_size = 1
 	} else {
 		list_size = int64(count.Total)
 	}
@@ -190,14 +197,20 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 			return
 		}
 		i.OrganisationID = crew.OrganisationID
+		i.Highlight = event.Highlight
+		i.RegisterURL = event.RegisterURL
 	}
-	taking := new(models.Taking)
-	if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
-		if !vmdb.ErrNoDocuments(err) {
-			return
+	if event.TakingID != "" {
+		taking := new(models.Taking)
+		if taking, err = TakingGetByIDSystem(ctx, event.TakingID); err != nil {
+			if !vmdb.ErrNoDocuments(err) {
+				return
+			}
+		}
+		if taking != nil {
+			event.Taking = *taking
 		}
 	}
-	event.Taking = *taking
 	if err = i.EventStateValidation(token, event); err != nil {
 		return
 	}
@@ -217,18 +230,22 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 		}
 		if result.EventState.State == "canceled" {
 			EventParticipantsNotification(ctx, result, "event_cancel")
-			updateTaking := bson.D{{Key: "state.no_income", Value: true}}
-			filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
-			if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
-				return
+			if event.TakingID != "" {
+				updateTaking := bson.D{{Key: "state.no_income", Value: true}}
+				filterTaking := bson.D{{Key: "_id", Value: event.Taking.ID}}
+				if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
+					return
+				}
 			}
 		}
-		if result.EventState.State == "published" ||
-			result.EventState.State == "canceled" ||
-			(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
-			EventStateNotificationCreator(result)
-			EventStateNotification(ctx, result)
-		}
+		/*
+			if result.EventState.State == "published" ||
+				result.EventState.State == "canceled" ||
+				(result.EventState.State == "requested" && result.EventState.CrewConfirmation == "") {
+				EventStateNotificationCreator(result)
+				EventStateNotification(ctx, result)
+			}
+		*/
 	} else if event.StartAt != result.StartAt ||
 		event.EndAt != result.EndAt ||
 		event.Location.PlaceID != result.Location.PlaceID ||
@@ -238,7 +255,14 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 	if event.EventASPID != result.EventASPID && result.EventASPID != token.ID {
 		EventASPNotification(ctx, result)
 	}
-	if event.EndAt != i.EndAt {
+	if event.Application.EndDate != result.Application.EndDate && result.Application.EndDate > time.Now().Unix() {
+		updateNotified := bson.D{{Key: "application_time_over_notified", Value: false}}
+		filterEvent := bson.D{{Key: "_id", Value: event.ID}}
+		if err := EventCollection.UpdateOne(ctx, filterEvent, vmdb.UpdateSet(updateNotified), nil); err != nil {
+			log.Print(err)
+		}
+	}
+	if event.TakingID != "" && event.EndAt != i.EndAt {
 		updateTaking := bson.D{{Key: "date_of_taking", Value: i.EndAt}}
 		filterTaking := bson.D{{Key: "_id", Value: event.TakingID}}
 		if err = TakingCollection.UpdateOne(ctx, filterTaking, vmdb.UpdateSet(updateTaking), nil); err != nil {
@@ -423,6 +447,29 @@ func EventASPNotification(ctx context.Context, i *models.Event) (err error) {
 	//notification.AddContent(i.ToContent())
 	//vcago.Nats.Publish("system.notification.job", notification)
 	return
+}
+
+func ApplicationTimeOverNotification(ctx context.Context, aspID string, events []models.Event) (err error) {
+	if aspID == "" {
+		return vcago.NewNotFound(models.EventCollection, events)
+	}
+
+	eventAsp, err := UsersGetByID(ctx, &models.UserParam{ID: aspID})
+	if err != nil {
+		return err
+	}
+
+	template := "application_time_over"
+	mail := vcago.NewMailData(eventAsp.Email, "pool-backend", template, "pool", eventAsp.Country)
+	mail.AddUser(eventAsp.User())
+	eventLines := make([]string, 0, len(events))
+	for _, event := range events {
+		eventLines = append(eventLines, fmt.Sprintf("<li><a href=\"https://pool3.vivaconagua.org/events/%s\">%s</a> (%s)</li>", event.ID, event.Name, time.Unix(event.StartAt, 0).Format("02.01.2006")))
+	}
+	content := &vmod.Content{Fields: map[string]interface{}{"Events": fmt.Sprintf("<ul>%s</ul>", strings.Join(eventLines, "\n"))}}
+	mail.AddContent(content)
+	vcago.Nats.Publish("system.mail.job", mail)
+	return nil
 }
 
 func EventStateNotification(ctx context.Context, i *models.Event) (err error) {
