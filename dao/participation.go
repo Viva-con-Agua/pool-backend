@@ -2,12 +2,44 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"pool-backend/models"
+	"time"
 
 	"github.com/Viva-con-Agua/vcago"
 	"github.com/Viva-con-Agua/vcago/vmdb"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+func ConvertInt64ToDate(timestamp int64, isMillis bool) time.Time {
+	if isMillis {
+		return time.Unix(0, timestamp*int64(time.Millisecond))
+	}
+	return time.Unix(timestamp, 0)
+}
+
+func IsAtLeastYears(minAgeInt int, birthDateInt, targetDateInt int64) bool {
+	// IsAtLeastYears reports whether targetDateInt is at least minAgeInt years after the birthDateInt Unix timestamp.
+
+	birthday := ConvertInt64ToDate(birthDateInt, false)
+	targetDate := ConvertInt64ToDate(targetDateInt, false)
+	// Add minAgeInt years to the birthday
+	yearsLater := birthday.AddDate(minAgeInt, 0, 0)
+
+	// Check if the minAgeInt th birthday is on or before the target date
+	return !yearsLater.After(targetDate)
+}
+
+func minAgeFor(eventType string) int {
+	switch eventType {
+	case "crew_meeting":
+		return 0
+	case "festival":
+		return 18
+	default:
+		return 16
+	}
+}
 
 func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, token *models.AccessToken) (result *models.Participation, err error) {
 	event := new(models.Event)
@@ -18,6 +50,12 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	); err != nil {
 		return
 	}
+
+	if minAge := minAgeFor(event.TypeOfEvent); minAge > 0 && (token.Birthdate == 0 || !IsAtLeastYears(minAge, token.Birthdate, event.StartAt)) {
+		err = errors.New("too young")
+		return
+	}
+
 	database := i.ParticipationDatabase(token, event)
 	if err = ParticipationCollection.InsertOne(ctx, database); err != nil {
 		return
@@ -72,10 +110,11 @@ func ParticipationGetByID(ctx context.Context, i *models.ParticipationParam, tok
 
 func ParticipationUserGet(ctx context.Context, i *models.ParticipationQuery, token *models.AccessToken) (result *[]models.UserParticipation, err error) {
 	filter := i.FilterUser(token)
+	sort := i.SortUser()
 	result = new([]models.UserParticipation)
 	if err = ParticipationCollection.Aggregate(
 		ctx,
-		models.ParticipationPipeline().Match(filter).Pipe,
+		models.ParticipationPipeline().SortFields(sort).Match(filter).Sort(sort).Pipe,
 		result,
 	); err != nil {
 		return
@@ -190,7 +229,6 @@ func ParticipationNotification(ctx context.Context, i *models.Participation) (er
 	mail.AddUser(i.User.User())
 	mail.AddContent(i.ToContent())
 	vcago.Nats.Publish("system.mail.job", mail)
-
 	return
 }
 

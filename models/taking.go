@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -115,8 +116,8 @@ func TakingPipelineList() *vmdb.Pipeline {
 	pipe.Lookup(SourceCollection, "_id", "taking_id", "sources")
 	pipe.LookupUnwind(CrewCollection, "crew_id", "_id", "crew")
 	pipe.LookupUnwind(EventCollection, "_id", "taking_id", "event")
+	pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.LookupUnwind(OrganisationCollection, "organisation_id", "_id", "organisation")
-	//pipe.Lookup(ArtistCollection, "event.artist_ids", "_id", "event.artists")
 	pipe.Append(bson.D{{Key: "$addFields", Value: bson.D{
 		{Key: "state.wait.amount", Value: bson.D{{Key: "$sum", Value: "$wait.money.amount"}}},
 	}}})
@@ -248,6 +249,23 @@ func (i *TakingUpdate) Match() bson.D {
 }
 */
 
+func FilterMultipleFields(filter *vmdb.Filter, value string, comp string, fields ...string) {
+	if value == "" || len(fields) == 0 {
+		return
+	}
+	valueInt, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return
+	}
+
+	orClause := bson.A{}
+	for _, f := range fields {
+		orClause = append(orClause, bson.D{{Key: f, Value: bson.D{{Key: comp, Value: valueInt}}}})
+	}
+
+	*filter = append(*filter, bson.E{Key: "$or", Value: orClause})
+}
+
 func (i *TakingQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter := vmdb.NewFilter()
 	filter.EqualStringList("_id", i.ID)
@@ -263,8 +281,10 @@ func (i *TakingQuery) PermittedFilter(token *AccessToken) bson.D {
 	filter.EqualStringList("event.type_of_event", i.TypeOfEvent)
 	filter.LikeString("event.name", i.EventName)
 	filter.LikeString("event.artists.name", i.ArtistName)
-	filter.GteInt64("event.end_at", i.EventEndFrom)
-	filter.LteInt64("event.end_at", i.EventEndTo)
+
+	FilterMultipleFields(filter, i.EventEndFrom, "$gte", "event.start_at", "date_of_taking")
+	FilterMultipleFields(filter, i.EventEndTo, "$lte", "event.end_at", "date_of_taking")
+
 	status := bson.A{}
 	if i.StatusOpen || i.StatusConfirmed || i.StatusWait || i.StatusNone || i.StatusNoIncome {
 		if i.StatusOpen {
