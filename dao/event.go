@@ -2,9 +2,7 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"pool-backend/models"
-	"strings"
 	"time"
 
 	"github.com/Viva-con-Agua/vcago"
@@ -462,11 +460,19 @@ func ApplicationTimeOverNotification(ctx context.Context, aspID string, events [
 	template := "application_time_over"
 	mail := vcago.NewMailData(eventAsp.Email, "pool-backend", template, "pool", eventAsp.Country)
 	mail.AddUser(eventAsp.User())
-	eventLines := make([]string, 0, len(events))
-	for _, event := range events {
-		eventLines = append(eventLines, fmt.Sprintf("<li><a href=\"https://pool3.vivaconagua.org/events/%s\">%s</a> (%s)</li>", event.ID, event.Name, time.Unix(event.StartAt, 0).Format("02.01.2006")))
+
+	exceededEvents := []models.EventStateHistoryNotification{}
+	for _, e := range events {
+		exceededEvents = append(exceededEvents, models.EventStateHistoryNotification{
+			EventID:       e.ID,
+			EventName:     e.Name,
+			EventCrew:     e.Crew.Name,
+			EventStart:    time.Unix(e.StartAt, 0).Format("02.01.2006"),
+			EventLocation: e.GetLocation(),
+		})
 	}
-	content := &vmod.Content{Fields: map[string]interface{}{"Events": fmt.Sprintf("<ul>%s</ul>", strings.Join(eventLines, "\n"))}}
+
+	content := &vmod.Content{Fields: map[string]interface{}{"Events": exceededEvents}}
 	mail.AddContent(content)
 	vcago.Nats.Publish("system.mail.job", mail)
 	return nil
