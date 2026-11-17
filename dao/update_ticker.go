@@ -128,22 +128,48 @@ func EventStateClosedTicker() {
 		if err := IDjango.Post(takings[i], "/v1/pool/taking/create/"); err != nil {
 			log.Print(err)
 		}
-		if err := IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
-			log.Print(err)
-		}
-		participations := new([]models.Participation)
-		if err := ParticipationCollection.Aggregate(
-			context.Background(),
-			models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
-			participations,
-		); err != nil {
-			log.Print(err)
-		}
+		syncClosedEvent(e)
+	}
+	eventStateClosedNoTaking()
+}
 
-		if err := IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
+// Events without a taking (crew_meeting) have nothing to confirm, so close them right after finished.
+func eventStateClosedNoTaking() {
+	filter := bson.D{{Key: "event_state.state", Value: "finished"}, {Key: "taking_id", Value: ""}}
+	events := []models.EventDatabase{}
+	if err := EventCollection.Find(context.Background(), filter, &events); err != nil {
+		log.Print(err)
+	}
+	for i := range events {
+		e := new(models.Event)
+		update := bson.D{{Key: "event_state.state", Value: "closed"}}
+		if err := EventCollection.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: events[i].ID}}, vmdb.UpdateSet(update), e); err != nil {
 			log.Print(err)
+			continue
 		}
+		org := new(models.Organisation)
+		if err := OrganisationCollection.FindOne(context.Background(), bson.D{{Key: "_id", Value: e.OrganisationID}}, org); err == nil {
+			e.EditorID = org.DefaultAspID
+		}
+		syncClosedEvent(e)
+	}
+}
 
+// syncClosedEvent posts the closed event and its participations to Django.
+func syncClosedEvent(e *models.Event) {
+	if err := IDjango.Post(e, "/v1/pool/event/update/"); err != nil {
+		log.Print(err)
+	}
+	participations := new([]models.Participation)
+	if err := ParticipationCollection.Aggregate(
+		context.Background(),
+		models.ParticipationPipeline().Match(bson.D{{Key: "event_id", Value: e.ID}}).Pipe,
+		participations,
+	); err != nil {
+		log.Print(err)
+	}
+	if err := IDjango.Post(participations, "/v1/pool/participations/create/"); err != nil {
+		log.Print(err)
 	}
 }
 

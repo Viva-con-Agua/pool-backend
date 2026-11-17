@@ -221,6 +221,21 @@ func EventUpdate(ctx context.Context, i *models.EventUpdate, token *models.Acces
 	); err != nil {
 		return
 	}
+	if event.TakingID == "" && result.TypeOfEvent != "crew_meeting" {
+		taking := (&models.EventDatabase{Name: result.Name, CrewID: result.CrewID, OrganisationID: result.OrganisationID, EndAt: result.EndAt}).TakingDatabase()
+		if err = TakingCollection.InsertOne(ctx, taking); err != nil {
+			return
+		}
+		updateTakingID := bson.D{{Key: "taking_id", Value: taking.ID}}
+		if err = EventCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: result.ID}}, vmdb.UpdateSet(updateTakingID), nil); err != nil {
+			return
+		}
+		result.TakingID = taking.ID
+		takingActivity := models.NewActivity(token.ID, "taking", taking.ID, "Taking automatically created for Event", "auto_created")
+		if err = ActivityCollection.InsertOne(ctx, takingActivity); err != nil {
+			return
+		}
+	}
 	if event.EventState.State != result.EventState.State {
 		history := result.NewEventStateHistory(event.EventState.State, result.EventState.State, token)
 		if err = EventStateHistoryInsert(ctx, history, token); err != nil {

@@ -224,10 +224,13 @@ func FixDatabase() {
 	var err error
 	if err = EventCollection.Find(
 		context.Background(),
-		bson.D{{Key: "$or", Value: bson.A{
-			bson.D{{Key: "taking_id", Value: ""}},
-			bson.D{{Key: "taking_id", Value: bson.D{{Key: "$exists", Value: false}}}},
-		}}},
+		bson.D{
+			{Key: "type_of_event", Value: bson.D{{Key: "$ne", Value: "crew_meeting"}}},
+			{Key: "$or", Value: bson.A{
+				bson.D{{Key: "taking_id", Value: ""}},
+				bson.D{{Key: "taking_id", Value: bson.D{{Key: "$exists", Value: false}}}},
+			}},
+		},
 		eventList,
 	); err != nil {
 		log.Print(err)
