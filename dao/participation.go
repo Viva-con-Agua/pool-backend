@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"errors"
 	"pool-backend/models"
 	"time"
 
@@ -52,7 +51,7 @@ func ParticipationInsert(ctx context.Context, i *models.ParticipationCreate, tok
 	}
 
 	if minAge := minAgeFor(event.TypeOfEvent); minAge > 0 && (token.Birthdate == 0 || !IsAtLeastYears(minAge, token.Birthdate, event.StartAt)) {
-		err = errors.New("too young")
+		err = vcago.NewBadRequest(models.ParticipationCollection, "too young")
 		return
 	}
 
